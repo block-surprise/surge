@@ -46,7 +46,6 @@
     #aiModeContainer { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; }
     .ai-bubble { background: #f3f4f6; padding: 15px; border-radius: 12px; line-height: 1.7; margin-bottom: 15px; }
 
-    /* Google標準要素の強制非表示 */
     .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
     .gsc-control-cse { padding: 0 !important; }
   </style>
@@ -60,11 +59,10 @@
   </div>
 
   <div class="search-tabs">
-    <div class="tab active" data-type="web" onclick="clickTab(this)">すべて</div>
-    <div class="tab" data-type="image" onclick="clickTab(this)">画像</div>
-    <div class="tab" data-type="video" onclick="clickTab(this)">動画</div>
-    <div class="tab" data-type="news" onclick="clickTab(this)">ニュース</div>
-    <div class="tab tab-ai" data-type="ai" onclick="clickTab(this)">✨ AI</div>
+    <div class="tab active" data-type="web" id="tab-web" onclick="clickTab(this)">すべて</div>
+    <div class="tab" data-type="image" id="tab-image" onclick="clickTab(this)">画像</div>
+    <div class="tab" data-type="video" data-type="video" onclick="clickTab(this)">動画</div>
+    <div class="tab" data-type="ai" id="tab-ai" onclick="clickTab(this)">✨ AI</div>
   </div>
 
   <div id="aiSummaryBox">
@@ -90,12 +88,11 @@
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: `あなたはSURGEのAI。${query}について簡潔に答え。` })
+          body: JSON.stringify({ inputs: `あなたはSURGEのAI。${query}について簡潔に答えて。` })
         });
         const data = await res.json();
         const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
         const reply = raw.split("AI:").pop()?.trim() || "応答なし";
-        
         if (targetId === 'aiChatHistory') {
           const div = document.createElement('div');
           div.className = 'ai-bubble';
@@ -116,53 +113,46 @@
       const summaryBox = document.getElementById('aiSummaryBox');
       const aiModeArea = document.getElementById('aiModeContainer');
       const webArea = document.getElementById('webResultsArea');
-      
       const element = google.search.cse.element.getElement("searchresults-only");
 
       if (type === 'ai') {
-        webArea.style.display = 'none';
-        summaryBox.style.display = 'none';
-        aiModeArea.style.display = 'block';
+        webArea.style.display = 'none'; summaryBox.style.display = 'none'; aiModeArea.style.display = 'block';
         if (q && !document.getElementById('aiChatHistory').hasChildNodes()) getAIResponse(q, 'aiChatHistory');
       } else {
-        aiModeArea.style.display = 'none';
-        webArea.style.display = 'block';
-        // 「すべて」の時だけAI要約を出す
+        aiModeArea.style.display = 'none'; webArea.style.display = 'block';
         summaryBox.style.display = (type === 'web') ? 'block' : 'none';
-
         if (q && element) {
-          if (type === 'image') {
-            // 画像検索を強制
-            element.execute(q, 1, {searchType: 'image'});
-          } else if (type === 'video') {
-            element.execute(q + " site:youtube.com");
-          } else if (type === 'news') {
-            element.execute(q + " ニュース");
-          } else {
-            // 通常検索
-            element.execute(q, 1, {searchType: ''});
-          }
+          if (type === 'image') element.execute(q, 1, {searchType: 'image'});
+          else if (type === 'video') element.execute(q + " site:youtube.com");
+          else element.execute(q, 1, {searchType: ''});
         }
       }
     }
 
     window.__gcse = {
       callback: function() {
-        const q = new URLSearchParams(location.search).get('q');
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q');
         const input = document.getElementById('searchInput');
+        
         if (q) {
           input.value = q;
-          document.getElementById('aiSummaryBox').style.display = 'block';
-          getAIResponse(q, 'aiSummaryContent');
-          
-          // 初回読み込み時は「すべて（web）」を実行
           const element = google.search.cse.element.getElement("searchresults-only");
-          if (element) element.execute(q);
+
+          // URLのハッシュをチェックして、画像タブなら画像を表示する
+          if (location.hash.includes('gsc.tab=1')) {
+            const imgTab = document.getElementById('tab-image');
+            clickTab(imgTab); // 自作の画像タブをアクティブにする
+          } else {
+            document.getElementById('aiSummaryBox').style.display = 'block';
+            getAIResponse(q, 'aiSummaryContent');
+            if (element) element.execute(q);
+          }
         }
+
         document.getElementById('searchForm').addEventListener('submit', (e) => {
           e.preventDefault();
-          const val = input.value.trim();
-          if (val) location.href = "?q=" + encodeURIComponent(val);
+          if (input.value.trim()) location.href = "?q=" + encodeURIComponent(input.value.trim());
         });
       }
     };
