@@ -17,24 +17,24 @@
     :root { --accent: #4f46e5; --bg: #fdfdfd; }
     body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; padding: 20px; }
 
-    /* レスポンシブ対応のコンテナ設定 */
+    /* レスポンシブ対応 */
     .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer {
       max-width: 1000px;
-      margin-left: 100px; /* デスクトップ用 */
+      margin-left: 100px;
     }
 
-    /* スマホ表示ではマージンを解除して中央に */
     @media (max-width: 768px) {
       .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer {
         margin-left: 0 !important;
         width: 100%;
       }
-      body { padding: 15px; }
+      body { padding: 10px; }
+      #searchInput { font-size: 16px !important; }
     }
 
     #searchInput { width: 100%; padding: 14px 20px; font-size: 18px; border-radius: 32px; border: 1px solid #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.1); outline: none; box-sizing: border-box; }
 
-    .search-tabs { display: flex; gap: 20px; margin-top: 15px; margin-bottom: 25px; font-size: 14px; color: #5f6368; overflow-x: auto; white-space: nowrap; }
+    .search-tabs { display: flex; gap: 20px; margin-top: 15px; margin-bottom: 25px; font-size: 14px; color: #5f6368; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
     .tab { cursor: pointer; padding-bottom: 5px; border-bottom: 3px solid transparent; transition: 0.2s; flex-shrink: 0; }
     .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); font-weight: bold; }
     
@@ -45,10 +45,10 @@
 
     #aiModeContainer { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; }
     .ai-bubble { background: #f3f4f6; padding: 15px; border-radius: 12px; line-height: 1.7; margin-bottom: 15px; }
-    .user-bubble { background: #e0e7ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: right; margin-left: auto; width: fit-content; }
 
-    /* Google標準要素の削除 */
-    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container { display: none !important; }
+    /* Google標準要素の強制非表示 */
+    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
+    .gsc-control-cse { padding: 0 !important; }
   </style>
 </head>
 <body>
@@ -60,7 +60,7 @@
   </div>
 
   <div class="search-tabs">
-    <div class="tab active" data-type="all" onclick="clickTab(this)">すべて</div>
+    <div class="tab active" data-type="web" onclick="clickTab(this)">すべて</div>
     <div class="tab" data-type="image" onclick="clickTab(this)">画像</div>
     <div class="tab" data-type="video" onclick="clickTab(this)">動画</div>
     <div class="tab" data-type="news" onclick="clickTab(this)">ニュース</div>
@@ -90,7 +90,7 @@
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: `あなたはSURGEのAI。${query}について簡潔に答えて。` })
+          body: JSON.stringify({ inputs: `あなたはSURGEのAI。${query}について簡潔に答え。` })
         });
         const data = await res.json();
         const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
@@ -104,7 +104,7 @@
         } else {
           target.innerText = reply;
         }
-      } catch (e) { target.innerText = "エラー"; }
+      } catch (e) { target.innerText = "AIエラー"; }
     }
 
     function clickTab(el) {
@@ -116,9 +116,9 @@
       const summaryBox = document.getElementById('aiSummaryBox');
       const aiModeArea = document.getElementById('aiModeContainer');
       const webArea = document.getElementById('webResultsArea');
+      
       const element = google.search.cse.element.getElement("searchresults-only");
 
-      // 表示切り替え
       if (type === 'ai') {
         webArea.style.display = 'none';
         summaryBox.style.display = 'none';
@@ -127,15 +127,19 @@
       } else {
         aiModeArea.style.display = 'none';
         webArea.style.display = 'block';
-        summaryBox.style.display = (type === 'all') ? 'block' : 'none';
+        // 「すべて」の時だけAI要約を出す
+        summaryBox.style.display = (type === 'web') ? 'block' : 'none';
 
         if (q && element) {
-          // 画像検索への切り替えを修正
           if (type === 'image') {
+            // 画像検索を強制
             element.execute(q, 1, {searchType: 'image'});
           } else if (type === 'video') {
             element.execute(q + " site:youtube.com");
+          } else if (type === 'news') {
+            element.execute(q + " ニュース");
           } else {
+            // 通常検索
             element.execute(q, 1, {searchType: ''});
           }
         }
@@ -150,11 +154,15 @@
           input.value = q;
           document.getElementById('aiSummaryBox').style.display = 'block';
           getAIResponse(q, 'aiSummaryContent');
-          google.search.cse.element.getElement("searchresults-only").execute(q);
+          
+          // 初回読み込み時は「すべて（web）」を実行
+          const element = google.search.cse.element.getElement("searchresults-only");
+          if (element) element.execute(q);
         }
         document.getElementById('searchForm').addEventListener('submit', (e) => {
           e.preventDefault();
-          if (input.value.trim()) location.href = "?q=" + encodeURIComponent(input.value.trim());
+          const val = input.value.trim();
+          if (val) location.href = "?q=" + encodeURIComponent(val);
         });
       }
     };
