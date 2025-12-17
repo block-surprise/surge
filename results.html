@@ -14,101 +14,41 @@
     gtag('config', 'G-D6SC2D5KK4');
   </script>
   <style>
-    body {
-      margin: 0;
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #fdfdfd;
-      color: #222;
-      padding: 40px 20px;
+    :root {
+      --accent: #4f46e5;
+      --bg: #fdfdfd;
     }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; padding: 40px 20px; }
 
+    /* 検索バー周り */
+    .search-container { max-width: 1000px; margin: 0 0 10px 100px; }
+    #searchInput { width: 100%; padding: 14px 20px; font-size: 18px; border-radius: 32px; border: 1px solid #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.1); outline: none; }
 
-    .search-container {
-      max-width: 1000px;
-      margin: 0 0 10px 100px;
-    }
+    /* タブメニュー */
+    .search-tabs { display: flex; gap: 25px; margin: 15px 0 25px 120px; font-size: 14px; color: #5f6368; }
+    .tab { cursor: pointer; padding-bottom: 5px; border-bottom: 3px solid transparent; transition: 0.2s; }
+    .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); font-weight: bold; }
+    .tab:hover { color: var(--accent); }
+    .tab-ai { color: #8e44ad; font-weight: bold; }
 
-    #searchInput {
-      width: 100%;
-      padding: 14px 20px;
-      font-size: 18px;
-      border-radius: 32px;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      outline: none;
-    }
-
-    .search-tabs {
-      display: flex;
-      gap: 25px;
-      margin: 15px 0 25px 120px;
-      font-size: 14px;
-      color: #5f6368;
-    }
-
-    .tab {
-      cursor: pointer;
-      padding-bottom: 5px;
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s;
-    }
-
-    .tab.active {
-      color: #1a73e8;
-      border-bottom: 3px solid #1a73e8;
-      font-weight: bold;
-    }
-
-    .tab:hover { color: #1a73e8; }
-
-    
-    #aiSection {
+    /* AIモード用コンテナ */
+    #aiModeContainer {
       display: none;
-      background: #ffffff;
-      border: 1px solid #e0e0e0;
-      border-radius: 16px;
-      padding: 20px;
-      margin: 0 0 30px 100px;
       max-width: 800px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin: 0 0 30px 100px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     }
 
-    .ai-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, #6e8efb, #a777e3);
-      color: white;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
+    .ai-bubble { background: #f3f4f6; padding: 15px; border-radius: 12px; line-height: 1.7; margin-bottom: 15px; }
+    .user-bubble { background: #e0e7ff; padding: 12px; border-radius: 12px; margin-bottom: 15px; text-align: right; margin-left: auto; width: fit-content; }
 
-    .ai-loader {
-      border: 2px solid #f3f3f3;
-      border-top: 2px solid #6e8efb;
-      border-radius: 50%;
-      width: 14px;
-      height: 14px;
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      margin-right: 8px;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-
-    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container {
-      display: none !important;
-    }
-
-
+    /* Google標準の不要要素非表示 */
+    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container { display: none !important; }
     .gcse-searchresults-only { margin-top: 20px; }
-    .gsc-control-cse { background: transparent !important; border: none !important; }
-    .gsc-webResult.gsc-result { background: #fdfdfd !important; border: none !important; margin-bottom: 20px; }
-    .gsc-webResult.gsc-result:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); transform: translateY(-2px); transition: 0.2s; }
-    .gs-title { font-size: 20px; font-weight: 600; color: #1a73e8 !important; text-decoration: none; }
-    .gs-snippet b { background: #eaf4ff; padding: 0 3px; border-radius: 4px; }
-    .gsc-results .gcsc-more-maybe-branding-root, .gcsc-find-more-on-google-magnifier { display: none !important; }
   </style>
 </head>
 <body>
@@ -124,42 +64,52 @@
     <div class="tab" onclick="clickTab(this, 'image')">画像</div>
     <div class="tab" onclick="clickTab(this, 'video')">動画</div>
     <div class="tab" onclick="clickTab(this, 'news')">ニュース</div>
+    <div class="tab tab-ai" onclick="clickTab(this, 'ai')">✨ AI</div>
   </div>
 
-  <div id="aiSection">
-    <span class="ai-badge">SURGE AI</span>
-    <div id="aiContent" style="line-height: 1.6; color: #333;">
-      <span class="ai-loader"></span>思考中...
-    </div>
+  <div id="aiModeContainer">
+    <div id="aiChatHistory"></div>
+    <div id="aiStatus" style="font-size: 12px; color: #888;">AIが回答を生成中...</div>
   </div>
 
-  <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
+  <div id="webResultsArea">
+    <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
+  </div>
 
   <script>
-
     const WORKER_URL = "https://surgeai.proluce.workers.dev/"; 
-    const SYSTEM_INSTRUCTION = "あなたは検索サイトSURGEのAIアシスタントです。ユーザーの検索ワードに対して、簡潔で役立つ解説を150文字程度で提供してください。";
+    let chatHistory = [];
 
-    async function callAI(query) {
-      const aiContent = document.getElementById('aiContent');
+    async function askAI(query) {
+      const historyDiv = document.getElementById('aiChatHistory');
+      const status = document.getElementById('aiStatus');
+      
+      // ユーザーの問いを表示
+      const userMsg = document.createElement('div');
+      userMsg.className = 'user-bubble';
+      userMsg.innerText = query;
+      historyDiv.appendChild(userMsg);
+      status.style.display = 'block';
+
       try {
-        const fullPrompt = `${SYSTEM_INSTRUCTION}\nユーザー: ${query}について教えて\nAI:`;
+        const fullPrompt = `あなたはSURGEのAIモードです。簡潔に答えつつ、深い洞察を提供してください。\nユーザー: ${query}\nAI:`;
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ inputs: fullPrompt })
         });
-        
-        if (!res.ok) throw new Error("AI応答エラー");
-
         const data = await res.json();
         const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
-        const reply = raw.split("AI:").pop()?.trim() || "応答を取得できませんでした。";
-        
-        aiContent.innerText = reply;
+        const reply = raw.split("AI:").pop()?.trim() || "うまく答えられませんでした。";
+
+        const aiMsg = document.createElement('div');
+        aiMsg.className = 'ai-bubble';
+        aiMsg.innerText = reply;
+        historyDiv.appendChild(aiMsg);
       } catch (e) {
-        aiContent.innerText = "AI回答の取得中にエラーが発生しました。";
         console.error(e);
+      } finally {
+        status.style.display = 'none';
       }
     }
 
@@ -168,17 +118,27 @@
       el.classList.add('active');
 
       const q = document.getElementById('searchInput').value.trim();
+      const webArea = document.getElementById('webResultsArea');
+      const aiArea = document.getElementById('aiModeContainer');
       const element = google.search.cse.element.getElement("searchresults-only");
-      if (!q || !element) return;
 
-      if (type === 'image') {
-        element.execute(q, 1, {searchType: 'image'});
-      } else if (type === 'video') {
-        element.execute(q + " site:youtube.com OR site:vimeo.com");
-      } else if (type === 'news') {
-        element.execute(q + " ニュース");
+      if (type === 'ai') {
+        // AIモード：ウェブ検索を隠してAIを表示
+        webArea.style.display = 'none';
+        aiArea.style.display = 'block';
+        if (q && document.getElementById('aiChatHistory').innerHTML === "") {
+            askAI(q);
+        }
       } else {
-        element.execute(q, 1, {searchType: ''});
+        // 通常モード：AIを隠してウェブ検索を表示
+        aiArea.style.display = 'none';
+        webArea.style.display = 'block';
+        if (!q || !element) return;
+
+        if (type === 'image') element.execute(q, 1, {searchType: 'image'});
+        else if (type === 'video') element.execute(q + " site:youtube.com");
+        else if (type === 'news') element.execute(q + " ニュース");
+        else element.execute(q, 1, {searchType: ''});
       }
     }
 
@@ -187,26 +147,14 @@
         const params = new URLSearchParams(location.search);
         const q = params.get('q');
         const input = document.getElementById('searchInput');
-        const aiSection = document.getElementById('aiSection');
-
         if (q) {
           input.value = q;
-          aiSection.style.display = 'block';
-          
-  
           const element = google.search.cse.element.getElement("searchresults-only");
           if (element) element.execute(q);
-
-  
-          callAI(q);
         }
-
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
           e.preventDefault();
-          const newQuery = input.value.trim();
-          if (newQuery) {
-            location.href = "?q=" + encodeURIComponent(newQuery);
-          }
+          if (input.value.trim()) location.href = "?q=" + encodeURIComponent(input.value.trim());
         });
       }
     };
