@@ -22,7 +22,7 @@
       padding: 40px 20px;
     }
 
-    /* 検索バー周り */
+
     .search-container {
       max-width: 1000px;
       margin: 0 0 10px 100px;
@@ -38,7 +38,6 @@
       outline: none;
     }
 
-    /* タブメニュー */
     .search-tabs {
       display: flex;
       gap: 25px;
@@ -62,7 +61,7 @@
 
     .tab:hover { color: #1a73e8; }
 
-    /* AI回答エリア */
+    
     #aiSection {
       display: none;
       background: #ffffff;
@@ -85,12 +84,24 @@
       margin-bottom: 10px;
     }
 
-    /* Google標準の不要な要素を非表示 */
+    .ai-loader {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #6e8efb;
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+
     .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container {
       display: none !important;
     }
 
-    /* Google CSE スタイル調整 */
+
     .gcse-searchresults-only { margin-top: 20px; }
     .gsc-control-cse { background: transparent !important; border: none !important; }
     .gsc-webResult.gsc-result { background: #fdfdfd !important; border: none !important; margin-bottom: 20px; }
@@ -118,13 +129,40 @@
   <div id="aiSection">
     <span class="ai-badge">SURGE AI</span>
     <div id="aiContent" style="line-height: 1.6; color: #333;">
-      回答を生成しています...
+      <span class="ai-loader"></span>思考中...
     </div>
   </div>
 
   <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
 
   <script>
+
+    const WORKER_URL = "https://surgeai.proluce.workers.dev/"; 
+    const SYSTEM_INSTRUCTION = "あなたは検索サイトSURGEのAIアシスタントです。ユーザーの検索ワードに対して、簡潔で役立つ解説を150文字程度で提供してください。";
+
+    async function callAI(query) {
+      const aiContent = document.getElementById('aiContent');
+      try {
+        const fullPrompt = `${SYSTEM_INSTRUCTION}\nユーザー: ${query}について教えて\nAI:`;
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: fullPrompt })
+        });
+        
+        if (!res.ok) throw new Error("AI応答エラー");
+
+        const data = await res.json();
+        const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
+        const reply = raw.split("AI:").pop()?.trim() || "応答を取得できませんでした。";
+        
+        aiContent.innerText = reply;
+      } catch (e) {
+        aiContent.innerText = "AI回答の取得中にエラーが発生しました。";
+        console.error(e);
+      }
+    }
+
     function clickTab(el, type) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
@@ -150,15 +188,17 @@
         const q = params.get('q');
         const input = document.getElementById('searchInput');
         const aiSection = document.getElementById('aiSection');
-        const aiContent = document.getElementById('aiContent');
 
         if (q) {
           input.value = q;
           aiSection.style.display = 'block';
-          aiContent.innerText = "「" + q + "」についてAIが分析しています。現在はデモ表示です。";
           
+  
           const element = google.search.cse.element.getElement("searchresults-only");
           if (element) element.execute(q);
+
+  
+          callAI(q);
         }
 
         document.getElementById('searchForm').addEventListener('submit', function(e) {
