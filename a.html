@@ -60,36 +60,11 @@
       font-weight: bold;
     }
 
-    .tab:hover {
-      color: #1a73e8;
-    }
-/* 「約 XXX 件（X.XX 秒）」という表示を消す */
-.gsc-result-info {
-  display: none !important;
-}
-
-/* ついでに「並べ替え」のプルダウンも消してスッキリさせる場合 */
-.gsc-orderby-container {
-  display: none !important;
-}
-    /* Google標準のタブメニュー（gsc-tabsArea）を非表示にする */
-.gsc-tabsArea {
-  display: none !important;
-}
-
-/* Google標準の検索結果件数などのヘッダーを非表示にする（スッキリさせる場合） */
-.gsc-result-info {
-  display: none !important;
-}
-
-/* AIセクションと検索結果の間の余白調整 */
-#aiSection {
-  margin-bottom: 20px;
-}
+    .tab:hover { color: #1a73e8; }
 
     /* AI回答エリア */
     #aiSection {
-      display: none; /* 検索時に表示 */
+      display: none;
       background: #ffffff;
       border: 1px solid #e0e0e0;
       border-radius: 16px;
@@ -110,13 +85,18 @@
       margin-bottom: 10px;
     }
 
-    /* 以下、Google CSEの既存スタイル */
+    /* Google標準の不要な要素を非表示 */
+    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container {
+      display: none !important;
+    }
+
+    /* Google CSE スタイル調整 */
     .gcse-searchresults-only { margin-top: 20px; }
     .gsc-control-cse { background: transparent !important; border: none !important; }
-    .gsc-webResult.gsc-result { background: #fdfdfd !important; border: none !important; }
-    .gsc-webResult.gsc-result:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); transform: translateY(-2px); }
-    .gs-title { display: block; font-size: 20px; font-weight: 600; color: #1a73e8 !important; line-height: 1.6; margin: 12px 0 6px; text-decoration: none; }
-    .gs-snippet b { background: #eaf4ff; padding: 0 3px; border-radius: 4px; font-weight: 600; }
+    .gsc-webResult.gsc-result { background: #fdfdfd !important; border: none !important; margin-bottom: 20px; }
+    .gsc-webResult.gsc-result:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); transform: translateY(-2px); transition: 0.2s; }
+    .gs-title { font-size: 20px; font-weight: 600; color: #1a73e8 !important; text-decoration: none; }
+    .gs-snippet b { background: #eaf4ff; padding: 0 3px; border-radius: 4px; }
     .gsc-results .gcsc-more-maybe-branding-root, .gcsc-find-more-on-google-magnifier { display: none !important; }
   </style>
 </head>
@@ -124,15 +104,15 @@
 
   <div class="search-container">
     <form id="searchForm">
-      <input type="search" id="searchInput" placeholder="SURGE で検索…">
+      <input type="search" id="searchInput" placeholder="SURGE で検索…" autocomplete="off">
     </form>
   </div>
 
   <div class="search-tabs">
-    <div class="tab active" onclick="clickTab(this)">すべて</div>
-    <div class="tab" onclick="clickTab(this)">画像</div>
-    <div class="tab" onclick="clickTab(this)">動画</div>
-    <div class="tab" onclick="clickTab(this)">ニュース</div>
+    <div class="tab active" onclick="clickTab(this, 'all')">すべて</div>
+    <div class="tab" onclick="clickTab(this, 'image')">画像</div>
+    <div class="tab" onclick="clickTab(this, 'video')">動画</div>
+    <div class="tab" onclick="clickTab(this, 'news')">ニュース</div>
   </div>
 
   <div id="aiSection">
@@ -145,10 +125,23 @@
   <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
 
   <script>
-    function clickTab(el) {
+    function clickTab(el, type) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
-      // ここに検索種別を切り替える処理を追加可能
+
+      const q = document.getElementById('searchInput').value.trim();
+      const element = google.search.cse.element.getElement("searchresults-only");
+      if (!q || !element) return;
+
+      if (type === 'image') {
+        element.execute(q, 1, {searchType: 'image'});
+      } else if (type === 'video') {
+        element.execute(q + " site:youtube.com OR site:vimeo.com");
+      } else if (type === 'news') {
+        element.execute(q + " ニュース");
+      } else {
+        element.execute(q, 1, {searchType: ''});
+      }
     }
 
     window.__gcse = {
@@ -161,9 +154,8 @@
 
         if (q) {
           input.value = q;
-          aiSection.style.display = 'block'; // 検索されたらAI枠を表示
-          // ※ここにAI APIを叩く処理を入れる
-          aiContent.innerText = "「" + q + "」についてAIが分析しています。現在はデモ表示です。ここにGeminiなどの回答を表示できます。";
+          aiSection.style.display = 'block';
+          aiContent.innerText = "「" + q + "」についてAIが分析しています。現在はデモ表示です。";
           
           const element = google.search.cse.element.getElement("searchresults-only");
           if (element) element.execute(q);
