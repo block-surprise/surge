@@ -63,6 +63,29 @@
     .tab:hover {
       color: #1a73e8;
     }
+/* 「約 XXX 件（X.XX 秒）」という表示を消す */
+.gsc-result-info {
+  display: none !important;
+}
+
+/* ついでに「並べ替え」のプルダウンも消してスッキリさせる場合 */
+.gsc-orderby-container {
+  display: none !important;
+}
+    /* Google標準のタブメニュー（gsc-tabsArea）を非表示にする */
+.gsc-tabsArea {
+  display: none !important;
+}
+
+/* Google標準の検索結果件数などのヘッダーを非表示にする（スッキリさせる場合） */
+.gsc-result-info {
+  display: none !important;
+}
+
+/* AIセクションと検索結果の間の余白調整 */
+#aiSection {
+  margin-bottom: 20px;
+}
 
     /* AI回答エリア */
     #aiSection {
