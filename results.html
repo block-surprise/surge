@@ -77,7 +77,7 @@
   </div>
 
   <script>
-    const WORKER_URL = "https://surgeai.proluce.workers.dev/"; 
+    const WORKER_URL = "https://surge.proluce.workers.dev/"; 
     let chatHistory = [];
 
     async function askAI(query) {
@@ -92,7 +92,7 @@
       status.style.display = 'block';
 
       try {
-        const fullPrompt = `あなたはSURGEのAIモードです。簡潔に答えつつ、深い洞察を提供してください。\nユーザー: ${query}\nAI:`;
+        const fullPrompt = `あなたは検索サイトSURGEのAIアシスタントです。。正しい情報を簡潔に答えてください\nユーザー: ${query}\nAI:`;
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
