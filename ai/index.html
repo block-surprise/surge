@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surge AI — モダンチャット</title>
+    
+    <style>
+        /* モダンデザインの基盤 */
+        :root {
+            --bg-color: #f0f4f8; /* ライトグレーの背景 */
+            --card-bg: #ffffff;
+            --main-ink: #1f2937; /* ダークなテキスト */
+            --muted-ink: #6b7280;
+            --accent-color: #4f46e5; /* 強い紫色 */
+            --user-bubble: #e0e7ff; /* ライトブルーのユーザーバブル */
+            --ai-bubble: #f3f4f6; /* 非常に明るいAIバブル */
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+            --border-color: #e5e7eb;
+        }
+
+        body { 
+            margin: 0; 
+            background-color: var(--bg-color); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--main-ink);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        /* ツール全体のレイアウト */
+        .wrapper { 
+            width: 90%;
+            max-width: 900px; /* メインコンテンツ幅 */
+            margin: 20px auto; 
+            display: flex; 
+            gap: 20px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        h1 { 
+            text-align: center; 
+            font-size: 1.5rem;
+            color: var(--accent-color); 
+            padding: 15px; 
+            border-bottom: 1px solid var(--border-color);
+            margin: 0;
+            font-weight: 600;
+        }
+
+        /* チャットエリア */
+        #chatBox {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: 60vh;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .message {
+            margin-bottom: 18px;
+            max-width: 85%;
+            word-wrap: break-word;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .ai-message {
+            margin-right: auto;
+            text-align: left;
+        }
+        
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .user-message .bubble {
+            background-color: var(--user-bubble);
+            color: var(--main-ink);
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-message .bubble {
+            background-color: var(--ai-bubble);
+            color: var(--main-ink);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+        }
+
+        .role {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            opacity: 0.8;
+            color: var(--muted-ink);
+            text-transform: uppercase;
+        }
+        .user-message .role { color: var(--accent-color); }
+        .ai-message .role { color: var(--muted-ink); }
+
+
+        /* 入力エリア */
+        .input-area {
+            display: flex;
+            padding: 15px 20px;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #userInput {
+            flex-grow: 1;
+            padding: 12px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #userInput:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--ring);
+        }
+
+        #sendButton {
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 24px;
+            transition: background-color 0.2s;
+            font-weight: 600;
+        }
+        #sendButton:hover:not(:disabled) {
+            background-color: #3730a3;
+        }
+        #sendButton:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* ステータスとローディング */
+        #status {
+            font-size: 0.85rem;
+            color: var(--muted-ink);
+            text-align: center;
+            padding: 10px 0;
+            min-height: 1.5em;
+        }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* サイドバー (今回は削除し、メインを全幅にする) */
+        .sidebar { display: none; } 
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            .wrapper {
+                width: 95%;
+                margin: 10px auto;
+            }
+            #chatBox {
+                max-height: 50vh;
+                padding: 15px;
+            }
+            .input-area {
+                padding: 12px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        
+        <!-- メインコンテンツ (全幅) -->
+        <div class="main-content">
+            <h1>Surge AI — モダンチャット</h1>
+
+            <div id="chatBox">
+                <!-- 初期メッセージはJSで追加 -->
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="メッセージを入力してください..." onkeydown="handleKeydown(event)">
+                <button id="sendButton" onclick="sendMessage()">送信</button>
+            </div>
+            
+            <p id="status">Worker経由でAIをロード中...</p>
+
+            <footer style="text-align: center; font-size: 0.75rem; color: var(--muted-ink); padding: 10px; border-top: 1px solid var(--border-color);">
+                <p>このツールはキーレス Worker (<span id="worker-url-display"></span>) 経由で動作します。</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // 🚨 お客様自身のWorker URLを設定してください。
+        // これは、GitHubでもキーなしで動作させるためのプロキシURLです。
+        const WORKER_URL = "https://surgeai.proluce.workers.dev/"; 
+        
+        // シンプルな形式で履歴を保持: { role: "user/ai", text: "..." }
+        let chatHistory = []; 
+
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatBox = document.getElementById('chatBox');
+        const statusElement = document.getElementById('status');
+        const workerUrlDisplay = document.getElementById('worker-url-display');
+        
+        // Worker側のシステム命令に合わせる
+        const SYSTEM_INSTRUCTION_PROMPT = "あなたは静かで詩的なAI。短く、やさしい言葉で返答する。"; 
+
+
+        /**
+         * ユーザーメッセージをチャットボックスに表示する
+         */
+        function displayMessage(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}-message`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+            
+            const roleEl = document.createElement('div');
+            roleEl.className = 'role';
+            roleEl.textContent = role === 'user' ? 'あなた' : 'Surge AI';
+            bubble.appendChild(roleEl);
+
+            // テキストを保持
+            bubble.appendChild(document.createTextNode(text));
+            messageDiv.appendChild(bubble);
+            
+            chatBox.appendChild(messageDiv);
+            // スクロールを最下部に移動
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        /**
+         * Workerへのリクエストを送信 (キーレスの要件を満たすロジック)
+         */
+        async function requestWorker(prompt){
+            const historyString = chatHistory.map(msg => `${msg.role === 'user' ? 'ユーザー' : 'AI'}: ${msg.text}`).join('\n');
+            
+            // Worker側のコードに合わせたプロンプト形式
+            const fullPrompt = `${SYSTEM_INSTRUCTION_PROMPT}\n${historyString}\nユーザー: ${prompt}\nAI:`;
+            
+            if (WORKER_URL.includes("【")) {
+                 throw new Error("Worker URLが未設定です。コードを確認してください。");
+            }
+
+            const res = await fetch(WORKER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inputs: fullPrompt })
+            });
+            
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(`Workerエラー (${res.status})`);
+            }
+
+            const data = await res.json();
+            
+            const raw = Array.isArray(data)
+                ? (data[0]?.generated_text || data[0]?.text || "")
+                : (data.generated_text || data.text || "");
+                
+            // 応答からAI自身の名前やプロンプトの残りを取り除く ("AI:" を削除)
+            const reply = raw.split("AI:").pop()?.trim() || raw.trim() || "……";
+            return reply;
+        }
+
+
+        /**
+         * メッセージ送信時の処理
+         */
+        async function sendMessage() {
+            const userText = userInput.value.trim();
+
+            if (!userText) return;
+            
+            // 1. ユーザーメッセージをUIに表示
+            displayMessage('user', userText);
+            userInput.value = '';
+
+            // 2. 履歴にユーザーメッセージを追加 (シンプルな形式で履歴を保持)
+            chatHistory.push({ role: "user", text: userText }); 
+
+            // 3. ローディング表示とUIロック
+            statusElement.innerHTML = '<span class="loader"></span> 応答生成中...';
+            sendButton.disabled = true;
+            userInput.disabled = true;
+
+            try {
+                const aiText = await requestWorker(userText);
+                
+                // 4. AIの回答を履歴に追加
+                chatHistory.push({ role: "ai", text: aiText });
+                
+                // 5. AIの回答をUIに表示
+                displayMessage('ai', aiText);
+                statusElement.textContent = '✅ 完了。';
+
+            } catch (e) {
+                statusElement.textContent = `🚨 エラー: ${e.message}`;
+                console.error('Fetch Error:', e);
+                
+                if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+                    chatHistory.pop(); 
+                }
+
+            } finally {
+                // UIロック解除
+                sendButton.disabled = false;
+                userInput.disabled = false;
+                userInput.focus();
+            }
+        }
+        
+        /**
+         * Enterキー押下時の処理
+         */
+        function handleKeydown(event) {
+            if (event.key === 'Enter' && !sendButton.disabled) {
+                event.preventDefault(); // Enterキーによるフォーム送信を防ぐ
+                sendMessage();
+            }
+        }
+
+        /**
+         * 履歴をクリアし初期メッセージを表示
+         */
+        function clearHistory() { 
+            chatHistory = [];
+            log.innerHTML = ''; // ログをクリア
+            
+            // 初期メッセージの表示
+            const initialMessage = "こんにちは。私は Surge AI です。静かに、やさしい言葉で対話します。";
+            displayMessage('ai', initialMessage);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            clearHistory(); // 初期メッセージを表示
+
+            // Worker URLをフッターに表示
+            workerUrlDisplay.textContent = WORKER_URL;
+
+            // ステータス表示
+            if (WORKER_URL.includes("【")) {
+                statusElement.textContent = '🚨 Worker URLが未設定です。コードを確認してください。';
+            } else {
+                statusElement.textContent = '準備完了。チャットを開始してください。';
+            }
+            userInput.focus();
+        });
+    </script>
+</body>
+</html>
