@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>SURGE - 検索結果</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon2.png">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D6SC2D5KK4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D6SC2D5KK4');
+  </script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fdfdfd;
+      color: #222;
+      padding: 40px 20px;
+    }
+
+    /* 検索バー周り */
+    .search-container {
+      max-width: 1000px;
+      margin: 0 0 10px 100px;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 18px;
+      border-radius: 32px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      outline: none;
+    }
+
+    /* タブメニュー */
+    .search-tabs {
+      display: flex;
+      gap: 25px;
+      margin: 15px 0 25px 120px;
+      font-size: 14px;
+      color: #5f6368;
+    }
+
+    .tab {
+      cursor: pointer;
+      padding-bottom: 5px;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      color: #1a73e8;
+      border-bottom: 3px solid #1a73e8;
+      font-weight: bold;
+    }
+
+    .tab:hover {
+      color: #1a73e8;
+    }
+
+    /* AI回答エリア */
+    #aiSection {
+      display: none; /* 検索時に表示 */
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 0 0 30px 100px;
+      max-width: 800px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .ai-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #6e8efb, #a777e3);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    /* 以下、Google CSEの既存スタイル */
+    .gcse-searchresults-only { margin-top: 20px; }
+    .gsc-control-cse { background: transparent !important; border: none !important; }
+    .gsc-webResult.gsc-result { background: #fdfdfd !important; border: none !important; }
+    .gsc-webResult.gsc-result:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); transform: translateY(-2px); }
+    .gs-title { display: block; font-size: 20px; font-weight: 600; color: #1a73e8 !important; line-height: 1.6; margin: 12px 0 6px; text-decoration: none; }
+    .gs-snippet b { background: #eaf4ff; padding: 0 3px; border-radius: 4px; font-weight: 600; }
+    .gsc-results .gcsc-more-maybe-branding-root, .gcsc-find-more-on-google-magnifier { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="search-container">
+    <form id="searchForm">
+      <input type="search" id="searchInput" placeholder="SURGE で検索…">
+    </form>
+  </div>
+
+  <div class="search-tabs">
+    <div class="tab active" onclick="clickTab(this)">すべて</div>
+    <div class="tab" onclick="clickTab(this)">画像</div>
+    <div class="tab" onclick="clickTab(this)">動画</div>
+    <div class="tab" onclick="clickTab(this)">ニュース</div>
+  </div>
+
+  <div id="aiSection">
+    <span class="ai-badge">SURGE AI</span>
+    <div id="aiContent" style="line-height: 1.6; color: #333;">
+      回答を生成しています...
+    </div>
+  </div>
+
+  <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
+
+  <script>
+    function clickTab(el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      // ここに検索種別を切り替える処理を追加可能
+    }
+
+    window.__gcse = {
+      callback: function() {
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q');
+        const input = document.getElementById('searchInput');
+        const aiSection = document.getElementById('aiSection');
+        const aiContent = document.getElementById('aiContent');
+
+        if (q) {
+          input.value = q;
+          aiSection.style.display = 'block'; // 検索されたらAI枠を表示
+          // ※ここにAI APIを叩く処理を入れる
+          aiContent.innerText = "「" + q + "」についてAIが分析しています。現在はデモ表示です。ここにGeminiなどの回答を表示できます。";
+          
+          const element = google.search.cse.element.getElement("searchresults-only");
+          if (element) element.execute(q);
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const newQuery = input.value.trim();
+          if (newQuery) {
+            location.href = "?q=" + encodeURIComponent(newQuery);
+          }
+        });
+      }
+    };
+  </script>
+  <script async src="https://cse.google.com/cse.js?cx=818be131768c247f3"></script>
+</body>
+</html>
