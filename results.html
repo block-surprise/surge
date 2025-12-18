@@ -51,9 +51,7 @@
   </div>
   <div class="search-tabs">
     <div class="tab active" data-type="web" id="tab-web" onclick="clickTab(this)">すべて</div>
-<div class="tab" data-type="image" id="tab-image" onclick="clickTab(this); return false;" style="cursor: pointer;">
-  <a href="#gsc.tab=1" style="text-decoration: none; color: inherit;">画像</a>
-</div>
+    <div class="tab" data-type="image" id="tab-image" onclick="clickTab(this)">画像</div>
     <div class="tab" data-type="video" onclick="clickTab(this)">動画</div>
     <div class="tab tab-ai" data-type="ai" id="tab-ai" onclick="clickTab(this)">✨ AI</div>
   </div>
@@ -93,29 +91,25 @@
     }
     function clickTab(el) {
       const type = el.getAttribute('data-type');
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
       const q = document.getElementById('searchInput').value.trim();
-      const summaryBox = document.getElementById('aiSummaryBox');
-      const aiModeArea = document.getElementById('aiModeContainer');
-      const webArea = document.getElementById('webResultsArea');
-      const element = google.search.cse.element.getElement("searchresults-only");
+      if (!q) return;
+
       if (type === 'ai') {
-        webArea.style.display = 'none'; summaryBox.style.display = 'none'; aiModeArea.style.display = 'block';
-        if (q && !document.getElementById('aiChatHistory').hasChildNodes()) getAIResponse(q, 'aiChatHistory');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('webResultsArea').style.display = 'none'; 
+        document.getElementById('aiSummaryBox').style.display = 'none'; 
+        document.getElementById('aiModeContainer').style.display = 'block';
+        if (!document.getElementById('aiChatHistory').hasChildNodes()) getAIResponse(q, 'aiChatHistory');
+      } else if (type === 'image') {
+        // 画像タブ：ハッシュを付けて強制的にリロード
+        location.href = location.pathname + "?q=" + encodeURIComponent(q) + "#gsc.tab=1";
+        location.reload();
       } else {
-        aiModeArea.style.display = 'none'; webArea.style.display = 'block';
-        summaryBox.style.display = (type === 'web') ? 'block' : 'none';
-        if (q && element) {
-          if (type === 'image') {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=1&gsc.q=" + encodeURIComponent(q));
-            element.execute(q, 1, {searchType: 'image'});
-          } else {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0&gsc.q=" + encodeURIComponent(q));
-            if (type === 'video') element.execute(q + " site:youtube.com");
-            else element.execute(q, 1, {searchType: ''});
-          }
-        }
+        // 通常・動画タブ：ハッシュを付けて強制的にリロード
+        const targetQ = (type === 'video') ? q + " site:youtube.com" : q;
+        location.href = location.pathname + "?q=" + encodeURIComponent(targetQ) + "#gsc.tab=0";
+        location.reload();
       }
     }
     window.__gcse = {
@@ -127,13 +121,13 @@
           input.value = q;
           const element = google.search.cse.element.getElement("searchresults-only");
           if (location.hash.includes('gsc.tab=1')) {
-            const imgTab = document.getElementById('tab-image');
-            clickTab(imgTab);
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-image').classList.add('active');
           } else {
             document.getElementById('aiSummaryBox').style.display = 'block';
             getAIResponse(q, 'aiSummaryContent');
-            if (element) element.execute(q);
           }
+          if (element) element.execute(q);
         }
         document.getElementById('searchForm').addEventListener('submit', (e) => {
           e.preventDefault();
