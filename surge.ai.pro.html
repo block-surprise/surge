@@ -7,29 +7,21 @@
     
     <style>
         /* モダンデザインの基盤 */
-        :root {
-            --bg-color: #f0f4f8; /* ライトグレーの背景 */
-            --card-bg: #ffffff;
-            --main-ink: #1f2937; /* ダークなテキスト */
-            --muted-ink: #6b7280;
-            --accent-color: #4f46e5; /* 強い紫色 */
-            --user-bubble: #e0e7ff; /* ライトブルーのユーザーバブル */
-            --ai-bubble: #f3f4f6; /* 非常に明るいAIバブル */
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-            --border-color: #e5e7eb;
-        }
-
-        body { 
-            margin: 0; 
-            background-color: var(--bg-color); 
-            font-family: 'Inter', sans-serif; 
-            color: var(--main-ink);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
+  :root {
+    --bg-color: #667eea; /* グラデーションの背景 */
+    --card-bg: rgba(255, 255, 255, 0.7); /* 半透明 */
+    --main-ink: #2d3748;
+    --muted-ink: #718096;
+    --accent-color: #4a5568;
+    --user-bubble: rgba(102, 126, 234, 0.2);
+    --ai-bubble: rgba(255, 255, 255, 0.5);
+    --shadow-md: 0 10px 30px rgba(0,0,0,0.1);
+    --border-color: rgba(255, 255, 255, 0.3);
+}
+/* 変更点：全体にぼかし（backdrop-filter）をかける */
+body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.main-content { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+.bubble { border: 1px solid rgba(255,255,255,0.3); }
         /* ツール全体のレイアウト */
         .wrapper { 
             width: 90%;
