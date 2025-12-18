@@ -17,90 +17,68 @@
             color: var(--text);
             font-family: 'Inter', sans-serif;
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            min-height: 100vh; overflow-x: hidden;
         }
 
-        /* 背景の装飾 */
         .bg-gradient {
             position: fixed; top: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at 50% -20%, #1a1f35 0%, #050505 80%);
             z-index: -1;
         }
 
-        header {
-            text-align: center; padding: 80px 20px 40px;
-        }
-        header h1 {
-            font-size: 3rem; font-weight: 200; letter-spacing: 15px; margin: 0;
-            text-transform: uppercase;
-        }
-        header p {
-            color: rgba(255,255,255,0.5); letter-spacing: 3px; font-size: 0.8rem; margin-top: 10px;
-        }
+        header { text-align: center; padding: 80px 20px 40px; }
+        header h1 { font-size: 3rem; font-weight: 200; letter-spacing: 15px; margin: 0; text-transform: uppercase; }
+        header p { color: rgba(255,255,255,0.5); letter-spacing: 3px; font-size: 0.8rem; margin-top: 10px; }
 
-        /* セレクターのレイアウト */
         .container {
             display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 20px; padding: 40px; max-width: 1200px;
+            gap: 30px; padding: 40px; max-width: 1300px;
         }
 
-        /* 各ランクのカードスタイル */
         .card {
-            position: relative; width: 200px; height: 350px;
-            border-radius: 15px; overflow: hidden;
-            cursor: pointer; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative; width: 220px; height: 380px;
+            border-radius: 20px; overflow: hidden;
+            cursor: pointer; transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             border: 1px solid rgba(255,255,255,0.1);
-            display: flex; flex-direction: column; justify-content: flex-end;
-            padding: 20px; text-decoration: none;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 30px 20px; text-decoration: none; box-sizing: border-box;
         }
 
         .card:hover {
-            width: 280px; transform: translateY(-10px);
+            width: 280px; transform: translateY(-15px);
             border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
         }
 
-        .card-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; transition: 0.5s;
+        /* ボックス上部のアイコンエリア */
+        .card-icon {
+            font-size: 3rem; text-align: center; transition: 0.5s; opacity: 0.7;
+            margin-top: 20px;
         }
+        .card:hover .card-icon { transform: scale(1.2); opacity: 1; }
 
-        .card h2 { margin: 0; font-size: 1.2rem; letter-spacing: 2px; }
-        .card p { margin: 5px 0 0; font-size: 0.7rem; opacity: 0.6; }
-
-        /* --- 各ランクの個別デザイン --- */
-
-        /* Entry */
-        .entry { background: linear-gradient(180deg, transparent 0%, #3b82f6 100%); }
-        .entry .card-bg { background: #1e293b; }
-
-        /* Standard */
-        .standard { background: linear-gradient(180deg, transparent 0%, #1e40af 100%); }
-        .standard .card-bg { background: #0f172a; }
-
-        /* Premium */
-        .premium { background: linear-gradient(180deg, transparent 0%, #ffffff 100%); color: #000; }
-        .premium .card-bg { background: #e2e8f0; }
-        .premium p { color: #000; }
-
-        /* Ultra */
-        .ultra { background: linear-gradient(180deg, transparent 0%, #c5a059 100%); }
-        .ultra .card-bg { background: #1a1a1a; }
-        .ultra h2 { color: #c5a059; }
-
-        /* Zenith */
-        .zenith { 
-            background: linear-gradient(180deg, transparent 0%, #f9d976 100%); 
-            border: 1px solid rgba(249, 217, 118, 0.3);
+        /* 背景に薄く浮かぶ巨大なアルファベット */
+        .bg-letter {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 12rem; font-weight: 900; opacity: 0.03; pointer-events: none;
+            transition: 0.5s;
         }
-        .zenith .card-bg { background: #02040a; }
-        .zenith h2 { font-family: 'Cinzel', serif; color: #f9d976; text-shadow: 0 0 10px rgba(249, 217, 118, 0.5); }
+        .card:hover .bg-letter { opacity: 0.08; transform: translate(-50%, -60%); }
 
-        .footer {
-            margin-top: auto; padding: 40px; color: rgba(255,255,255,0.2); font-size: 0.7rem;
-            letter-spacing: 2px;
-        }
+        .card-info { position: relative; z-index: 2; }
+        .card h2 { margin: 0; font-size: 1.3rem; letter-spacing: 3px; font-weight: 600; }
+        .card p { margin: 8px 0 0; font-size: 0.75rem; opacity: 0.5; letter-spacing: 1px; }
+
+        /* 個別カラー設定 */
+        .entry { background: linear-gradient(180deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.5)); }
+        .standard { background: linear-gradient(180deg, rgba(30, 64, 175, 0.1), rgba(30, 64, 175, 0.5)); }
+        .premium { background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.8)); color: #fff; }
+        .premium h2, .premium p, .premium .card-icon { color: #fff; }
+        .ultra { background: linear-gradient(180deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.6)); }
+        .zenith { background: linear-gradient(180deg, rgba(249, 217, 118, 0.1), rgba(249, 217, 118, 0.7)); border: 1px solid rgba(249, 217, 118, 0.3); }
+        .zenith h2 { font-family: 'Cinzel', serif; text-shadow: 0 0 15px rgba(249, 217, 118, 0.5); }
+
+        .footer { margin-top: auto; padding: 40px; color: rgba(255,255,255,0.2); font-size: 0.7rem; letter-spacing: 2px; }
     </style>
 </head>
 <body>
@@ -113,34 +91,49 @@
     </header>
 
     <div class="container">
-        <a href="surge_entry.html" class="card">
-            <div class="card-bg"></div>
-            <h2>ENTRY</h2>
-            <p>Friendly & Casual</p>
+        <a href="entry" class="card entry">
+            <div class="bg-letter">E</div>
+            <div class="card-icon">💬</div>
+            <div class="card-info">
+                <h2>ENTRY</h2>
+                <p>Casual & Friendly</p>
+            </div>
         </a>
 
-        <a href="surge_standard.html" class="card">
-            <div class="card-bg"></div>
-            <h2>STANDARD</h2>
-            <p>Modern & Reliable</p>
+        <a href="/" class="card standard">
+            <div class="bg-letter">S</div>
+            <div class="card-icon">⚙️</div>
+            <div class="card-info">
+                <h2>STANDARD</h2>
+                <p>Reliable & Modern</p>
+            </div>
         </a>
 
-        <a href="surge_premium.html" class="card">
-            <div class="card-bg"></div>
-            <h2>PREMIUM</h2>
-            <p>Pure & Minimal</p>
+        <a href="premium" class="card premium">
+            <div class="bg-letter">P</div>
+            <div class="card-icon">💎</div>
+            <div class="card-info">
+                <h2>PREMIUM</h2>
+                <p>Pure & Minimal</p>
+            </div>
         </a>
 
-        <a href="surge_ultra.html" class="card">
-            <div class="card-bg"></div>
-            <h2>ULTRA</h2>
-            <p>Luxury & Depth</p>
+        <a href="ultra" class="card ultra">
+            <div class="bg-letter">U</div>
+            <div class="card-icon">👑</div>
+            <div class="card-info">
+                <h2>ULTRA</h2>
+                <p>Luxury & Deep</p>
+            </div>
         </a>
 
-        <a href="surge_zenith.html" class="card">
-            <div class="card-bg"></div>
-            <h2>ZENITH</h2>
-            <p>The Final知性</p>
+        <a href="zenith" class="card zenith">
+            <div class="bg-letter">Z</div>
+            <div class="card-icon">✨</div>
+            <div class="card-info">
+                <h2>ZENITH</h2>
+                <p>Final知性</p>
+            </div>
         </a>
     </div>
 
