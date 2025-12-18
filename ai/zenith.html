@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surge AI Zenith</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+JP:wght@200;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --zenith-bg: #02040a;
+            --star-gold: #f9d976;
+            --aura-purple: rgba(79, 70, 229, 0.3);
+            --aura-blue: rgba(6, 182, 212, 0.3);
+            --text-silver: #e2e8f0;
+            --border-glow: rgba(249, 217, 118, 0.2);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Noto Serif JP', serif;
+            color: var(--text-silver);
+            background-color: var(--zenith-bg);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+
+        /* 宇宙の星屑とオーロラ背景 */
+        .universe {
+            position: absolute; width: 100%; height: 100%; z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #0a0f1d 0%, #02040a 100%);
+            overflow: hidden;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            opacity: 0.5; animation: twinkle var(--d) infinite ease-in-out;
+        }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+
+        .aura {
+            position: absolute; width: 150%; height: 150%; top: -25%; left: -25%;
+            background: radial-gradient(circle at 30% 30%, var(--aura-purple), transparent 40%),
+                        radial-gradient(circle at 70% 70%, var(--aura-blue), transparent 40%);
+            filter: blur(80px); animation: auraRotate 20s infinite linear; opacity: 0.6;
+        }
+        @keyframes auraRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .wrapper {
+            width: 90%; max-width: 1000px; height: 88vh;
+            background: rgba(2, 4, 10, 0.6);
+            backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px; /* 鋭利で神聖な印象 */
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,1), 0 0 20px var(--border-glow);
+            position: relative;
+        }
+
+        header {
+            padding: 45px; text-align: center; border-bottom: 1px solid var(--border-glow);
+        }
+        header h1 {
+            margin: 0; font-family: 'Cinzel', serif; font-weight: 700;
+            letter-spacing: 12px; font-size: 1.3rem;
+            background: linear-gradient(to bottom, #fff 0%, var(--star-gold) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px rgba(249, 217, 118, 0.5));
+        }
+
+        #chatBox {
+            flex-grow: 1; padding: 50px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 40px;
+        }
+
+        #chatBox::-webkit-scrollbar { width: 2px; }
+        #chatBox::-webkit-scrollbar-thumb { background: var(--star-gold); }
+
+        .message { max-width: 80%; position: relative; }
+        .user-message { align-self: flex-end; }
+        .ai-message { align-self: flex-start; }
+
+        .bubble {
+            padding: 20px 30px; line-height: 2; font-size: 1rem;
+            position: relative;
+        }
+
+        .user-message .bubble {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glow);
+            color: var(--star-gold);
+            text-align: right;
+        }
+
+        .ai-message .bubble {
+            background: rgba(255, 255, 255, 0.01);
+            border-left: 1px solid var(--star-gold);
+            color: #fff;
+            animation: textReveal 1.5s ease-out forwards;
+        }
+        @keyframes textReveal { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .input-area {
+            padding: 40px 60px; display: flex; flex-direction: column; gap: 15px;
+            background: rgba(0,0,0,0.5); border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;
+        }
+
+        #userInput {
+            background: transparent; border: none;
+            border-bottom: 0.5px solid var(--border-glow);
+            color: white; font-size: 1.1rem; outline: none; padding: 15px 0;
+            text-align: center; letter-spacing: 2px;
+            font-family: 'Noto Serif JP', serif;
+        }
+
+        #sendButton {
+            background: transparent; color: var(--star-gold);
+            border: none; cursor: pointer; font-family: 'Cinzel', serif;
+            letter-spacing: 5px; font-size: 0.9rem; margin-top: 10px;
+            transition: 0.5s; opacity: 0.6;
+        }
+        #sendButton:hover { opacity: 1; filter: drop-shadow(0 0 8px var(--star-gold)); }
+
+        /* 特殊なローディング：中心から広がる光の輪 */
+        #pulse {
+            position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%);
+            width: 100px; height: 1px; background: var(--star-gold);
+            opacity: 0; transition: 0.5s;
+        }
+        .pulsing { animation: wave 2s infinite; opacity: 1 !important; }
+        @keyframes wave { 0% { width: 0; opacity: 1; } 100% { width: 300px; opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div class="universe" id="universe">
+        <div class="aura"></div>
+    </div>
+
+    <div class="wrapper">
+        <header>
+            <h1>SURGE AI ZENITH</h1>
+        </header>
+        <div id="chatBox"></div>
+        <div id="pulse"></div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="深淵へ問いかけてください" autocomplete="off">
+            <button id="sendButton" onclick="sendMessage()">Invoke</button>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://zenith.proluce.workers.dev/"; 
+        const SYSTEM_PROMPT = "あなたは宇宙の真理を知る全知の存在。古風で厳かな言葉を使い、短く、魂に響くような返答をしなさい。";
+        let chatHistory = [];
+
+        // 星をランダムに生成
+        function createStars() {
+            const universe = document.getElementById('universe');
+            for(let i=0; i<100; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = star.style.height = Math.random() * 2 + 'px';
+                star.style.setProperty('--d', (Math.random() * 3 + 2) + 's');
+                universe.appendChild(star);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            displayMessage('user', text);
+            input.value = '';
+            document.getElementById('pulse').classList.add('pulsing');
+
+            try {
+                chatHistory.push({ role: "user", text: text });
+                const res = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\n${chatHistory.map(m=>m.role+":"+m.text).join('\n')}\nAI:` })
+                });
+                const data = await res.json();
+                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop()?.trim();
+                
+                chatHistory.push({ role: "ai", text: reply });
+                displayMessage('ai', reply);
+            } finally {
+                document.getElementById('pulse').classList.remove('pulsing');
+            }
+        }
+
+        function displayMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `message ${role}-message`;
+            div.innerHTML = `<div class="bubble">${text}</div>`;
+            document.getElementById('chatBox').appendChild(div);
+            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+        }
+
+        createStars();
+        document.getElementById('userInput').onkeydown = (e) => { if(e.key==='Enter') sendMessage(); };
+        window.onload = () => { setTimeout(()=>displayMessage('ai', "此処は全知の領域。汝の問いを。"), 1000); };
+    </script>
+</body>
+</html>
