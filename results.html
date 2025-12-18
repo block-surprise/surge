@@ -18,10 +18,18 @@
     body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; padding: 20px; }
 
     /* レスポンシブ対応 */
-    .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer { max-width: 1000px; margin-left: 100px; }
+    .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer {
+      max-width: 1000px;
+      margin-left: 100px;
+    }
+
     @media (max-width: 768px) {
-      .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer { margin-left: 0 !important; width: 100%; }
+      .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer {
+        margin-left: 0 !important;
+        width: 100%;
+      }
       body { padding: 10px; }
+      #searchInput { font-size: 16px !important; }
     }
 
     #searchInput { width: 100%; padding: 14px 20px; font-size: 18px; border-radius: 32px; border: 1px solid #ccc; box-shadow: 0 2px 6px rgba(0,0,0,0.1); outline: none; box-sizing: border-box; }
@@ -31,20 +39,24 @@
     .tab { cursor: pointer; padding-bottom: 5px; border-bottom: 3px solid transparent; transition: 0.2s; flex-shrink: 0; }
     .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); font-weight: bold; }
     .tab-ai { color: #8e44ad; }
+    
+    #aiSummaryBox {
+      display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .ai-badge { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
 
-    #aiSummaryBox { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-    .ai-badge { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-
+    /* AIチャットUI */
     #aiModeContainer { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; }
-    #aiChatHistory { max-height: 500px; overflow-y: auto; margin-bottom: 15px; }
-    .ai-bubble { background: #f3f4f6; padding: 12px 16px; border-radius: 12px; line-height: 1.6; margin-bottom: 10px; border-bottom-left-radius: 2px; }
-    .user-bubble { background: #e0e7ff; padding: 10px 14px; border-radius: 12px; margin-bottom: 10px; text-align: right; margin-left: auto; width: fit-content; border-bottom-right-radius: 2px; }
-
+    #aiChatHistory { max-height: 500px; overflow-y: auto; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .ai-bubble { background: #f3f4f6; padding: 12px 16px; border-radius: 18px; line-height: 1.6; border-bottom-left-radius: 4px; align-self: flex-start; max-width: 85%; }
+    .user-bubble { background: #e0e7ff; padding: 12px 16px; border-radius: 18px; line-height: 1.6; border-bottom-right-radius: 4px; align-self: flex-end; max-width: 85%; }
+    
     .ai-input-wrapper { display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
-    #aiFollowUpInput { flex-grow: 1; padding: 10px 15px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
+    #aiFollowUpInput { flex-grow: 1; padding: 10px 15px; border-radius: 24px; border: 1px solid #ddd; outline: none; }
     #aiSendBtn { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
-    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container { display: none !important; }
+    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
+    .gsc-control-cse { padding: 0 !important; }
   </style>
 </head>
 <body>
@@ -64,15 +76,15 @@
   </div>
 
   <div id="aiSummaryBox">
-    <span class="ai-badge">SURGE QUICK SUMMARY</span>
-    <div id="aiSummaryContent">要約を生成中...</div>
+    <span class="ai-badge">SURGE AI 要約</span>
+    <div id="aiSummaryContent">思考中...</div>
   </div>
 
   <div id="aiModeContainer">
     <div id="aiChatHistory"></div>
-    <div id="aiStatus" style="font-size: 11px; color: #999; margin-bottom: 10px; display:none;">SURGE AIが入力中...</div>
+    <div id="aiStatus" style="font-size: 12px; color: #888; margin-bottom: 8px; display: none;">SURGE AIが入力中...</div>
     <div class="ai-input-wrapper">
-      <input type="text" id="aiFollowUpInput" placeholder="AIにさらに質問する..." onkeydown="if(event.key==='Enter') sendAIFollowUp()">
+      <input type="text" id="aiFollowUpInput" placeholder="さらに質問する..." onkeydown="if(event.key==='Enter') sendAIFollowUp()">
       <button id="aiSendBtn" onclick="sendAIFollowUp()">送信</button>
     </div>
   </div>
@@ -83,7 +95,7 @@
 
   <script>
     const WORKER_SUMMARY = "https://surgehome.proluce.workers.dev/"; 
-    const WORKER_CHAT = "https://surge.proluce.workers.dev/";       
+    const WORKER_CHAT = "https://surge.proluce.workers.dev/"; 
 
     async function fetchAI(workerUrl, prompt) {
       const res = await fetch(workerUrl, {
@@ -96,14 +108,16 @@
       return raw.split("AI:").pop()?.trim() || "応答を取得できませんでした。";
     }
 
-    async function runSummary(q) {
+    // すべてタブ用の要約
+    async function getSummary(q) {
       const target = document.getElementById('aiSummaryContent');
       try {
-        const reply = await fetchAI(WORKER_SUMMARY, `検索ワード「${q}」の概要を短く教えて。`);
+        const reply = await fetchAI(WORKER_SUMMARY, `検索ワード「${q}」について簡潔に教えて。`);
         target.innerText = reply;
-      } catch (e) { target.innerText = "エラーが発生しました。"; }
+      } catch (e) { target.innerText = "要約の取得に失敗しました。"; }
     }
 
+    // AIタブ用のチャット返信機能
     async function sendAIFollowUp() {
       const input = document.getElementById('aiFollowUpInput');
       const text = input.value.trim();
@@ -112,20 +126,23 @@
       const historyDiv = document.getElementById('aiChatHistory');
       const status = document.getElementById('aiStatus');
 
-      const userBubble = document.createElement('div');
-      userBubble.className = 'user-bubble';
-      userBubble.innerText = text;
-      historyDiv.appendChild(userBubble);
+      // ユーザーのバブル追加
+      const userDiv = document.createElement('div');
+      userDiv.className = 'user-bubble';
+      userDiv.innerText = text;
+      historyDiv.appendChild(userDiv);
       input.value = '';
       status.style.display = 'block';
       historyDiv.scrollTop = historyDiv.scrollHeight;
 
       try {
-        const reply = await fetchAI(WORKER_CHAT, `対話中。ユーザー: ${text}\nAI:`);
-        const aiBubble = document.createElement('div');
-        aiBubble.className = 'ai-bubble';
-        aiBubble.innerText = reply;
-        historyDiv.appendChild(aiBubble);
+        const reply = await fetchAI(WORKER_CHAT, `対話中。ユーザーの追加質問: ${text}\nAI:`);
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'ai-bubble';
+        aiDiv.innerText = reply;
+        historyDiv.appendChild(aiDiv);
+      } catch (e) {
+        console.error(e);
       } finally {
         status.style.display = 'none';
         historyDiv.scrollTop = historyDiv.scrollHeight;
@@ -146,38 +163,44 @@
       if (type === 'ai') {
         webArea.style.display = 'none'; summaryBox.style.display = 'none'; aiModeArea.style.display = 'block';
         if (q && !document.getElementById('aiChatHistory').hasChildNodes()) {
-          sendAIFollowUpDirect(q);
+          // 初期メッセージとして検索ワードを投げる
+          const initUser = document.createElement('div');
+          initUser.className = 'user-bubble';
+          initUser.innerText = q;
+          document.getElementById('aiChatHistory').appendChild(initUser);
+          getInitialChat(q);
         }
       } else {
         aiModeArea.style.display = 'none'; webArea.style.display = 'block';
         summaryBox.style.display = (type === 'web') ? 'block' : 'none';
+        
         if (q && element) {
           if (type === 'image') {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=1");
+            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=1&gsc.q=" + encodeURIComponent(q));
             element.execute(q, 1, {searchType: 'image'});
           } else if (type === 'news') {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0");
+            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0&gsc.q=" + encodeURIComponent(q));
             element.execute(q + " ニュース");
           } else if (type === 'video') {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0");
+            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0&gsc.q=" + encodeURIComponent(q));
             element.execute(q + " site:youtube.com");
           } else {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0");
+            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0&gsc.q=" + encodeURIComponent(q));
             element.execute(q, 1, {searchType: ''});
           }
         }
       }
     }
 
-    async function sendAIFollowUpDirect(q) {
+    async function getInitialChat(q) {
       const historyDiv = document.getElementById('aiChatHistory');
       document.getElementById('aiStatus').style.display = 'block';
       try {
-        const reply = await fetchAI(WORKER_CHAT, `${q}について解説して。`);
-        const aiBubble = document.createElement('div');
-        aiBubble.className = 'ai-bubble';
-        aiBubble.innerText = reply;
-        historyDiv.appendChild(aiBubble);
+        const reply = await fetchAI(WORKER_CHAT, `「${q}」について詳しく解説して。`);
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'ai-bubble';
+        aiDiv.innerText = reply;
+        historyDiv.appendChild(aiDiv);
       } finally {
         document.getElementById('aiStatus').style.display = 'none';
       }
@@ -185,21 +208,27 @@
 
     window.__gcse = {
       callback: function() {
-        const q = new URLSearchParams(location.search).get('q');
+        const params = new URLSearchParams(location.search);
+        const q = params.get('q');
+        const input = document.getElementById('searchInput');
+        
         if (q) {
-          document.getElementById('searchInput').value = q;
+          input.value = q;
+          const element = google.search.cse.element.getElement("searchresults-only");
+
           if (location.hash.includes('gsc.tab=1')) {
-            clickTab(document.getElementById('tab-image'));
+            const imgTab = document.getElementById('tab-image');
+            clickTab(imgTab);
           } else {
             document.getElementById('aiSummaryBox').style.display = 'block';
-            runSummary(q);
-            google.search.cse.element.getElement("searchresults-only").execute(q);
+            getSummary(q);
+            if (element) element.execute(q);
           }
         }
+
         document.getElementById('searchForm').addEventListener('submit', (e) => {
           e.preventDefault();
-          const val = document.getElementById('searchInput').value.trim();
-          if (val) location.href = "?q=" + encodeURIComponent(val);
+          if (input.value.trim()) location.href = "?q=" + encodeURIComponent(input.value.trim());
         });
       }
     };
