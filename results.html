@@ -37,8 +37,18 @@
       display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .ai-badge { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
-    #aiModeContainer { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; }
-    .ai-bubble { background: #f3f4f6; padding: 15px; border-radius: 12px; line-height: 1.7; margin-bottom: 15px; }
+    
+    /* AIモードコンテナ */
+    #aiModeContainer { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    #aiChatHistory { max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+    .ai-bubble { background: #f3f4f6; padding: 12px 16px; border-radius: 18px; line-height: 1.6; align-self: flex-start; max-width: 85%; }
+    .user-bubble { background: #e0e7ff; padding: 12px 16px; border-radius: 18px; line-height: 1.6; align-self: flex-end; max-width: 85%; }
+    
+    /* 返信フォーム */
+    .ai-reply-form { display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+    #aiReplyInput { flex-grow: 1; padding: 10px 15px; border-radius: 24px; border: 1px solid #ddd; outline: none; }
+    #aiReplyBtn { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+
     .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
     .gsc-control-cse { padding: 0 !important; }
   </style>
@@ -61,55 +71,105 @@
   </div>
   <div id="aiModeContainer">
     <div id="aiChatHistory"></div>
-    <div id="aiStatus" style="font-size: 12px; color: #888;">回答を生成中...</div>
+    <div id="aiStatus" style="font-size: 12px; color: #888; margin-bottom: 10px; display: none;">回答を生成中...</div>
+    <div class="ai-reply-form">
+      <input type="text" id="aiReplyInput" placeholder="AIにメッセージを送る..." onkeydown="if(event.key==='Enter') sendAIFollowUp()">
+      <button id="aiReplyBtn" onclick="sendAIFollowUp()">送信</button>
+    </div>
   </div>
   <div id="webResultsArea">
     <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
   </div>
   <script>
     const WORKER_URL = "https://surge.proluce.workers.dev/"; 
-    async function getAIResponse(query, targetId) {
+    
+    async function getAIResponse(query, targetId, isFollowUp = false) {
       const target = document.getElementById(targetId);
+      const status = document.getElementById('aiStatus');
+      if (isFollowUp) status.style.display = 'block';
+
       try {
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: `あなたはSURGE의 AI。${query}について簡潔に答えて。` })
+          body: JSON.stringify({ inputs: `あなたはSURGEのAI。${query}について簡潔に答えて。` })
         });
         const data = await res.json();
         const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
         const reply = raw.split("AI:").pop()?.trim() || "応答なし";
+        
         if (targetId === 'aiChatHistory') {
           const div = document.createElement('div');
           div.className = 'ai-bubble';
           div.innerText = reply;
           target.appendChild(div);
+          target.scrollTop = target.scrollHeight;
         } else {
           target.innerText = reply;
         }
-      } catch (e) { target.innerText = "AIエラー"; }
+      } catch (e) { 
+        if(isFollowUp) {
+          const errDiv = document.createElement('div');
+          errDiv.className = 'ai-bubble';
+          errDiv.innerText = "エラーが発生しました。";
+          target.appendChild(errDiv);
+        } else {
+          target.innerText = "AIエラー";
+        }
+      } finally {
+        status.style.display = 'none';
+      }
     }
+
+    async function sendAIFollowUp() {
+      const input = document.getElementById('aiReplyInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const history = document.getElementById('aiChatHistory');
+      const userDiv = document.createElement('div');
+      userDiv.className = 'user-bubble';
+      userDiv.innerText = text;
+      history.appendChild(userDiv);
+      
+      input.value = '';
+      history.scrollTop = history.scrollHeight;
+      
+      await getAIResponse(text, 'aiChatHistory', true);
+    }
+
     function clickTab(el) {
       const type = el.getAttribute('data-type');
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
       const q = document.getElementById('searchInput').value.trim();
-      if (!q) return;
-
+      const summaryBox = document.getElementById('aiSummaryBox');
+      const aiModeArea = document.getElementById('aiModeContainer');
+      const webArea = document.getElementById('webResultsArea');
+      const element = google.search.cse.element.getElement("searchresults-only");
       if (type === 'ai') {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        document.getElementById('webResultsArea').style.display = 'none'; 
-        document.getElementById('aiSummaryBox').style.display = 'none'; 
-        document.getElementById('aiModeContainer').style.display = 'block';
-        if (!document.getElementById('aiChatHistory').hasChildNodes()) getAIResponse(q, 'aiChatHistory');
-      } else if (type === 'image') {
-        // 画像タブ：ハッシュを付けて強制的にリロード
-        location.href = location.pathname + "?q=" + encodeURIComponent(q) + "#gsc.tab=1";
-        location.reload();
+        webArea.style.display = 'none'; summaryBox.style.display = 'none'; aiModeArea.style.display = 'block';
+        if (q && !document.getElementById('aiChatHistory').hasChildNodes()) {
+          const history = document.getElementById('aiChatHistory');
+          const firstUserMsg = document.createElement('div');
+          firstUserMsg.className = 'user-bubble';
+          firstUserMsg.innerText = q;
+          history.appendChild(firstUserMsg);
+          getAIResponse(q, 'aiChatHistory', true);
+        }
       } else {
-        // 通常・動画タブ：ハッシュを付けて強制的にリロード
-        const targetQ = (type === 'video') ? q + " site:youtube.com" : q;
-        location.href = location.pathname + "?q=" + encodeURIComponent(targetQ) + "#gsc.tab=0";
-        location.reload();
+        aiModeArea.style.display = 'none'; webArea.style.display = 'block';
+        summaryBox.style.display = (type === 'web') ? 'block' : 'none';
+        if (q && element) {
+          if (type === 'image') {
+            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=1&gsc.q=" + encodeURIComponent(q));
+            element.execute(q, 1, {searchType: 'image'});
+          } else {
+            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0&gsc.q=" + encodeURIComponent(q));
+            if (type === 'video') element.execute(q + " site:youtube.com");
+            else element.execute(q, 1, {searchType: ''});
+          }
+        }
       }
     }
     window.__gcse = {
@@ -121,13 +181,13 @@
           input.value = q;
           const element = google.search.cse.element.getElement("searchresults-only");
           if (location.hash.includes('gsc.tab=1')) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-image').classList.add('active');
+            const imgTab = document.getElementById('tab-image');
+            clickTab(imgTab);
           } else {
             document.getElementById('aiSummaryBox').style.display = 'block';
             getAIResponse(q, 'aiSummaryContent');
+            if (element) element.execute(q);
           }
-          if (element) element.execute(q);
         }
         document.getElementById('searchForm').addEventListener('submit', (e) => {
           e.preventDefault();
