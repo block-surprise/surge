@@ -3,142 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>学習支援ポータル</title>
+    <title>Google</title>
     <style>
+        /* Googleのクリーンなデザインを再現 */
         body {
-            background-color: #f0f2f5;
-            color: #333;
-            font-family: "MS PGothic", "Hiragino Kaku Gothic ProN", sans-serif;
+            background-color: #fff;
+            color: #202124;
+            font-family: arial, sans-serif;
             margin: 0; padding: 0;
         }
 
+        /* ヘッダーの擬態 */
         header {
-            background-color: #003366; /* お堅いネイビー */
-            color: white; padding: 10px 20px;
-            font-size: 0.9rem; font-weight: bold;
-            display: flex; justify-content: space-between;
+            display: flex; justify-content: flex-end; padding: 15px 20px;
+            font-size: 13px; gap: 15px; color: #000;
         }
 
-        .breadcrumb {
-            background: #fff; padding: 5px 20px;
-            font-size: 0.7rem; color: #666;
-            border-bottom: 1px solid #ccc;
+        .search-container {
+            display: flex; flex-direction: column; align-items: center;
+            margin-top: 10vh;
         }
 
-        .main-container {
-            max-width: 900px; margin: 20px auto;
-            background: white; border: 1px solid #ccc;
-            min-height: 80vh; display: flex; flex-direction: column;
+        .logo {
+            font-size: 90px; font-weight: bold; margin-bottom: 30px;
+            letter-spacing: -5px;
         }
+        .logo span:nth-child(1) { color: #4285F4; }
+        .logo span:nth-child(2) { color: #EA4335; }
+        .logo span:nth-child(3) { color: #FBBC05; }
+        .logo span:nth-child(4) { color: #4285F4; }
+        .logo span:nth-child(5) { color: #34A853; }
+        .logo span:nth-child(6) { color: #EA4335; }
 
-        #chatBox {
-            flex-grow: 1; padding: 20px; overflow-y: auto;
-            font-size: 0.9rem; line-height: 1.6;
+        .search-bar-wrap {
+            width: 100%; max-width: 584px; position: relative;
         }
-
-        /* 吹き出しを廃止し、掲示板風にする */
-        .message {
-            margin-bottom: 15px; border-bottom: 1px dotted #ccc; padding-bottom: 10px;
-        }
-        .user-label { color: #d9534f; font-weight: bold; font-size: 0.75rem; }
-        .ai-label { color: #003366; font-weight: bold; font-size: 0.75rem; }
-        .content { margin-top: 5px; }
-
-        .input-area {
-            background: #f9f9f9; padding: 20px;
-            border-top: 1px solid #ccc;
-        }
-
-        .input-label { font-size: 0.75rem; color: #666; margin-bottom: 5px; }
 
         #userInput {
-            width: 100%; padding: 8px; box-sizing: border-box;
-            border: 1px solid #ccc; font-size: 0.9rem;
+            width: 100%; padding: 12px 20px; padding-left: 45px;
+            font-size: 16px; border: 1px solid #dfe1e5;
+            border-radius: 24px; outline: none; transition: box-shadow 0.2s;
+        }
+        #userInput:focus, #userInput:hover {
+            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+            border-color: rgba(223,225,229,0);
         }
 
-        #sendButton {
-            margin-top: 10px; padding: 5px 15px;
-            background: #eee; border: 1px solid #999;
-            cursor: pointer; font-size: 0.8rem;
+        /* 検索結果（AIの回答）の表示エリア */
+        #resultArea {
+            max-width: 652px; margin: 30px auto; display: none;
+            padding: 0 20px;
         }
-        #sendButton:hover { background: #ddd; }
 
-        .footer-info {
-            font-size: 0.7rem; color: #999; text-align: center; padding: 10px;
+        /* 強調スニペット（AI回答）のスタイル */
+        .snippet {
+            border: 1px solid #dfe1e5; border-radius: 8px;
+            padding: 20px; margin-bottom: 20px; line-height: 1.58;
         }
+        .snippet-header { font-size: 14px; color: #70757a; margin-bottom: 10px; }
+        .snippet-content { font-size: 18px; color: #202124; }
+        
+        /* 緊急避難用の本物へのリンク */
+        .real-link { color: #1a0dab; text-decoration: none; font-size: 14px; display: block; margin-top: 15px; }
+
+        .status { font-size: 12px; color: #70757a; margin-top: 5px; height: 15px; }
     </style>
 </head>
 <body>
 
     <header>
-        <div>教育情報基盤ネットワークシステム</div>
-        <div>ログイン：一般ユーザー（2025/12/18）</div>
+        <div>Gmail</div>
+        <div>画像</div>
+        <div style="background: #4285F4; color: white; padding: 7px 15px; border-radius: 4px; font-weight: bold;">ログイン</div>
     </header>
 
-    <div class="breadcrumb">
-        ホーム ＞ 学習リソース ＞ 文献検索アーカイブ ＞ 検索結果
+    <div class="search-container">
+        <div class="logo">
+            <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+        </div>
+        
+        <div class="search-bar-wrap">
+            <input type="text" id="userInput" placeholder="Google で検索、または URL を入力" autocomplete="off">
+            <div id="status" class="status"></div>
+        </div>
     </div>
 
-    <div class="main-container">
-        <div id="chatBox">
-            <div class="message">
-                <div class="ai-label">【システムメッセージ】</div>
-                <div class="content">本システムは学習支援を目的としています。調べたい語句や文章を入力してください。</div>
-            </div>
-        </div>
-
-        <div class="input-area">
-            <div class="input-label">検索キーワード・クエリ入力領域</div>
-            <input type="text" id="userInput" placeholder="検索ワードを入力してください..." autocomplete="off">
-            <button id="sendButton" onclick="sendMessage()">実行</button>
-        </div>
-
-        <div class="footer-info">
-            ※本システムは教育用です。利用規約を遵守してください。
+    <div id="resultArea">
+        <div class="snippet">
+            <div class="snippet-header">強調スニペット・AI による概要</div>
+            <div id="aiResponse" class="snippet-content"></div>
+            <a href="https://www.google.com" class="real-link">さらに詳しく見る...</a>
         </div>
     </div>
 
     <script>
-        const WORKER_URL = "https://annex.proluce.workers.dev/"; 
-        const SYSTEM_PROMPT = "あなたは教育用学習支援ツールとして振る舞ってください。回答は常に客観的で、百科事典のような文体で答えてください。";
-        let chatHistory = [];
+        const WORKER_URL = "https://surgehome.proluce.workers.dev/"; 
+        const SYSTEM_PROMPT = "あなたはGoogle検索の結果として表示される有益な要約ボットです。解説は簡潔かつ百科事典のように、事実に基づいたトーンで答えてください。";
 
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const text = input.value.trim();
             if (!text) return;
 
-            displayMessage('user', text);
-            input.value = '';
-
+            document.getElementById('status').innerText = "読み込んでいます...";
+            
             try {
-                chatHistory.push({ role: "user", text: text });
                 const res = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\n${chatHistory.map(m=>m.role+":"+m.text).join('\n')}\nAI:` })
+                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\nユーザーの検索クエリ:${text}\n要約:` })
                 });
                 const data = await res.json();
-                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop()?.trim();
+                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("要約:").pop()?.trim();
                 
-                chatHistory.push({ role: "ai", text: reply });
-                displayMessage('ai', reply);
+                // 結果を表示
+                document.getElementById('resultArea').style.display = 'block';
+                document.getElementById('aiResponse').innerText = reply;
+                
+                // 検索バーを上に移動させる（検索後の画面っぽくする）
+                document.querySelector('.search-container').style.marginTop = '20px';
+                document.querySelector('.logo').style.fontSize = '30px';
+                document.querySelector('.logo').style.marginBottom = '10px';
+
             } catch(e) {
-                console.error(e);
+                document.getElementById('aiResponse').innerText = "ネットワークエラーが発生しました。再試行してください。";
+            } finally {
+                document.getElementById('status').innerText = "";
             }
         }
 
-        function displayMessage(role, text) {
-            const div = document.createElement('div');
-            div.className = 'message';
-            const label = role === 'user' ? '【検索クエリ】' : '【解析結果】';
-            const labelClass = role === 'user' ? 'user-label' : 'ai-label';
-            div.innerHTML = `<div class="${labelClass}">${label}</div><div class="content">${text}</div>`;
-            document.getElementById('chatBox').appendChild(div);
-            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
-        }
-
-        document.getElementById('userInput').onkeydown = (e) => { if(e.key==='Enter') sendMessage(); };
+        document.getElementById('userInput').onkeydown = (e) => { 
+            if(e.key==='Enter') sendMessage();
+            // Escキーを押したら即座に本物のGoogleに飛ばす（緊急回避）
+            if(e.key==='Escape') window.location.href = "https://www.google.com";
+        };
     </script>
 </body>
 </html>
