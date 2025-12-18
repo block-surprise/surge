@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surge AI Void</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400&family=Noto+Serif+JP:wght@200&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void-color: #ffffff;
+            --accent: #ff3e3e; /* 警告のような赤 */
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: #000;
+            color: var(--void-color);
+            font-family: 'Noto Serif JP', serif;
+            height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        /* 中央のブラックホール（イベントホライゾン） */
+        .black-hole {
+            position: absolute;
+            width: 300px; height: 300px;
+            background: #000;
+            border-radius: 50%;
+            box-shadow: 0 0 60px 20px rgba(255, 255, 255, 0.1),
+                        0 0 100px 40px rgba(255, 255, 255, 0.05);
+            z-index: 1;
+        }
+
+        /* 周囲を回る光の粒子 */
+        .orbit {
+            position: absolute;
+            width: 500px; height: 500px;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%; max-width: 800px;
+            text-align: center;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        #chatBox {
+            height: 200px;
+            margin-bottom: 50px;
+            display: flex; flex-direction: column; justify-content: center;
+            pointer-events: none;
+        }
+
+        .message {
+            font-size: 1.5rem;
+            letter-spacing: 8px;
+            opacity: 0;
+            animation: driftIn 3s ease-out forwards;
+        }
+
+        @keyframes driftIn {
+            0% { opacity: 0; transform: scale(1.2); filter: blur(10px); }
+            50% { opacity: 1; transform: scale(1); filter: blur(0px); }
+            100% { opacity: 0.3; transform: scale(0.9); filter: blur(2px); }
+        }
+
+        .input-area {
+            position: fixed;
+            bottom: 10%;
+            width: 100%;
+            display: flex; justify-content: center;
+        }
+
+        #userInput {
+            background: transparent; border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            color: #fff; text-align: center;
+            width: 300px; padding: 10px; font-size: 1rem;
+            outline: none; letter-spacing: 4px;
+            transition: 0.5s;
+        }
+
+        #userInput:focus {
+            border-bottom: 1px solid #fff;
+            width: 500px;
+        }
+
+        #status {
+            position: absolute; bottom: -30px;
+            font-size: 0.6rem; letter-spacing: 2px; color: var(--accent);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="black-hole"></div>
+    <div class="orbit"></div>
+
+    <div class="container">
+        <div id="chatBox">
+            </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="WHAT DO YOU SEEK?" autocomplete="off">
+        <div id="status"></div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://surgehome.proluce.workers.dev/"; 
+        const SYSTEM_PROMPT = "あなたは『虚無』の化身。哲学的な問いに対し、一言だけ、重く短い言葉で返しなさい。";
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            // 以前のメッセージを消去
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+
+            input.value = '';
+            document.getElementById('status').innerText = "OBSERVING...";
+
+            try {
+                const res = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\nユーザー:${text}\nAI:` })
+                });
+                const data = await res.json();
+                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop()?.trim();
+                
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.innerText = reply;
+                chatBox.appendChild(div);
+
+            } catch (e) {
+                console.error(e);
+            } finally {
+                document.getElementById('status').innerText = "";
+            }
+        }
+
+        document.getElementById('userInput').onkeydown = (e) => { if(e.key==='Enter') sendMessage(); };
+    </script>
+</body>
+</html>
