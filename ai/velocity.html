@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surge AI Velocity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,300;1,700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --v-orange: #ff5f1f; /* 高視認性のエレクトリックオレンジ */
+            --v-black: #0a0a0a;
+            --v-dark-gray: #161616;
+            --v-border: #222;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--v-black);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        /* スピード感を出す背景の流動ライン */
+        .speed-lines {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent 49%, rgba(255,95,31,0.02) 50%, transparent 51%);
+            background-size: 80px 100%;
+            z-index: -1;
+            transform: skewX(-20deg);
+        }
+
+        .wrapper {
+            width: 92%; max-width: 900px; height: 85vh;
+            background: var(--v-dark-gray);
+            border: 1px solid var(--v-border);
+            display: flex; flex-direction: column;
+            position: relative;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+        }
+
+        /* 左側に走るオレンジのアクセントライン */
+        .wrapper::before {
+            content: ""; position: absolute; left: 0; top: 0; width: 4px; height: 100%;
+            background: var(--v-orange);
+        }
+
+        header {
+            padding: 20px 40px; border-bottom: 1px solid var(--v-border);
+            display: flex; justify-content: space-between; align-items: center;
+            background: #0d0d0d;
+        }
+        header h1 {
+            font-family: 'Exo 2', sans-serif; font-style: italic; font-weight: 700;
+            margin: 0; font-size: 1.2rem; letter-spacing: 2px; color: var(--v-orange);
+        }
+        .header-meta { font-size: 0.65rem; color: #444; letter-spacing: 2px; }
+
+        #chatBox {
+            flex-grow: 1; padding: 30px 40px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        /* 無駄を省いたメッセージデザイン */
+        .message { max-width: 85%; position: relative; }
+        .user-message { align-self: flex-end; }
+        .ai-message { align-self: flex-start; }
+
+        .bubble {
+            padding: 12px 20px; font-size: 0.95rem; line-height: 1.6;
+            background: #111; border: 1px solid #222;
+        }
+
+        .user-message .bubble {
+            background: var(--v-orange);
+            color: #000; font-weight: 700;
+            border: none;
+            clip-path: polygon(0 0, 100% 0, 100% 70%, 95% 100%, 0 100%);
+        }
+
+        .ai-message .bubble {
+            border-left: 2px solid var(--v-orange);
+            clip-path: polygon(5% 0, 100% 0, 100% 100%, 0 100%, 0 30%);
+        }
+
+        .input-area {
+            padding: 25px 40px; display: flex; gap: 15px;
+            background: #0d0d0d; border-top: 1px solid var(--v-border);
+        }
+
+        #userInput {
+            flex-grow: 1; background: transparent; border: none;
+            border-bottom: 1px solid #333; color: #fff;
+            padding: 10px 0; font-size: 1rem; outline: none;
+            font-family: 'Inter', sans-serif;
+        }
+        #userInput:focus { border-bottom-color: var(--v-orange); }
+
+        #sendButton {
+            background: var(--v-orange); color: #000;
+            border: none; padding: 0 30px; font-family: 'Exo 2', sans-serif;
+            font-style: italic; font-weight: 700; cursor: pointer;
+            transition: 0.2s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        #sendButton:hover {
+            transform: skewX(-10deg);
+            filter: brightness(1.2);
+        }
+
+        #status {
+            padding: 5px 40px; font-size: 0.6rem; color: var(--v-orange);
+            font-family: 'Exo 2', sans-serif; font-style: italic; opacity: 0.8;
+        }
+
+        #chatBox::-webkit-scrollbar { width: 3px; }
+        #chatBox::-webkit-scrollbar-thumb { background: #333; }
+    </style>
+</head>
+<body>
+
+    <div class="speed-lines"></div>
+
+    <div class="wrapper">
+        <header>
+            <h1>VELOCITY / INTERFACE</h1>
+            <div class="header-meta">CORE: ACTIVE / LATENCY: LOW</div>
+        </header>
+
+        <div id="chatBox"></div>
+        <div id="status"></div>
+
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="RUN COMMAND..." autocomplete="off">
+            <button id="sendButton" onclick="sendMessage()">EXE</button>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://surgehome.proluce.workers.dev/"; 
+        const SYSTEM_PROMPT = "あなたは『Velocity』。無駄な挨拶や情緒的な表現を排除し、結論から、最短かつ論理的な回答を高速で出しなさい。";
+        let chatHistory = [];
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            displayMessage('user', text);
+            input.value = '';
+            document.getElementById('status').innerText = "CALCULATING...";
+
+            try {
+                chatHistory.push({ role: "user", text: text });
+                const res = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\n${chatHistory.map(m=>m.role+":"+m.text).join('\n')}\nAI:` })
+                });
+                const data = await res.json();
+                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop()?.trim();
+                
+                chatHistory.push({ role: "ai", text: reply });
+                displayMessage('ai', reply);
+            } finally {
+                document.getElementById('status').innerText = "";
+            }
+        }
+
+        function displayMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `message ${role}-message`;
+            div.innerHTML = `<div class="bubble">${text}</div>`;
+            document.getElementById('chatBox').appendChild(div);
+            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+        }
+
+        document.getElementById('userInput').onkeydown = (e) => { if(e.key==='Enter') sendMessage(); };
+        window.onload = () => { displayMessage('ai', "SYSTEM READY. INPUT QUERY."); };
+    </script>
+</body>
+</html>
