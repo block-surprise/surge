@@ -2,119 +2,111 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>SURGE SCAN</title>
+  <title>SURGE SCAN - 画像スキャン検索</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <style>
     :root { --accent: #4f46e5; --bg: #fdfdfd; }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; overflow-x: hidden; }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
 
-    /* スキャン画面全体 */
-    .scan-page { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; transition: 0.5s; }
-    .scan-container { text-align: center; width: 90%; max-width: 450px; }
-
-    /* スキャナーの外観 */
-    .scanner-window {
-      width: 280px; height: 280px; margin: 0 auto 40px; border: 4px solid #eee; border-radius: 40px; position: relative;
-      background: #fff; overflow: hidden; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.05);
-    }
-    #preview { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .scan-container { text-align: center; width: 90%; max-width: 500px; padding: 40px; background: white; border-radius: 32px; box-shadow: 0 15px 40px rgba(0,0,0,0.05); }
     
-    /* スキャンライン */
+    /* スキャン窓の演出 */
+    .scan-window {
+      width: 240px; height: 240px; margin: 0 auto 30px; border: 3px solid #eee; border-radius: 40px; position: relative;
+      display: flex; align-items: center; justify-content: center; background: #fafafa; overflow: hidden;
+      cursor: pointer; transition: 0.3s;
+    }
+    .scan-window:hover { border-color: var(--accent); background: #f5f7ff; }
+    
+    /* スキャンアニメーション（実行時） */
     .scan-line {
       position: absolute; width: 100%; height: 4px; background: var(--accent); top: 0; left: 0;
-      box-shadow: 0 0 20px var(--accent); display: none; z-index: 10;
+      box-shadow: 0 0 15px var(--accent); display: none; z-index: 10;
     }
-    @keyframes scanAnimation { 0% { top: 0; } 100% { top: 100%; } }
+    @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
 
-    /* ボタン類 */
-    .ui-group { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-    .btn { padding: 16px 32px; border-radius: 30px; font-weight: bold; cursor: pointer; border: none; transition: 0.3s; font-size: 16px; }
-    .btn-main { background: var(--accent); color: white; }
-    .btn-sub { background: #eee; color: #666; text-decoration: none; text-align: center; }
+    .btn-scan {
+      background: var(--accent); color: white; padding: 16px 40px; border-radius: 30px; font-weight: bold; border: none; cursor: pointer; font-size: 16px; transition: 0.3s;
+    }
+    .btn-scan:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3); }
 
-    /* 結果表示エリア（最初は隠す） */
-    #resultArea { display: none; width: 100%; max-width: 800px; margin: 40px auto; padding: 20px; }
-    .result-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-    .result-item { background: #eee; border-radius: 12px; aspect-ratio: 1; overflow: hidden; animation: fadeIn 0.5s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    /* Google CSEの標準要素を「機能だけ」使うために隠す */
+    #hidden-cse-area {
+      position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0;
+    }
+
+    .status-text { margin-top: 20px; font-size: 14px; color: #888; }
+    .back-btn { margin-top: 25px; display: block; color: #999; text-decoration: none; font-size: 14px; }
   </style>
 </head>
 <body>
 
-  <div id="scanPage" class="scan-page">
-    <div class="scan-container">
-      <h1 style="font-size: 32px; letter-spacing: -1px;">SURGE <span style="color:var(--accent)">SCAN</span></h1>
-      <p style="color:#888; margin-bottom: 40px;">画像を解析して情報を特定します</p>
+  <div class="scan-container">
+    <h1 style="font-size: 28px; margin-bottom: 10px;">SURGE <span style="color:var(--accent)">SCAN</span></h1>
+    <p style="color:#666; margin-bottom: 30px;">画像をアップロードして似ているものを検索</p>
 
-      <div class="scanner-window" id="window">
-        <div class="scan-line" id="line"></div>
-        <img id="preview" src="#" alt="Preview">
-        <div id="icon" style="font-size: 60px; color: #ddd;">📷</div>
+    <div class="scan-window" id="dropArea" onclick="startGoogleScan()">
+      <div class="scan-line" id="scanLine"></div>
+      <div id="prompt" style="text-align:center;">
+        <span style="font-size: 50px;">📷</span><br>
+        <span style="font-size: 14px; color:#aaa;">クリックして画像を選択</span>
       </div>
-
-      <div class="ui-group">
-        <label class="btn btn-main">
-          画像を選択・撮影
-          <input type="file" id="fileInput" accept="image/*" style="display:none;">
-        </label>
-        <a href="/" class="btn btn-sub">戻る</a>
-      </div>
+      <img id="preview" src="#" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:36px;">
     </div>
+
+    <button class="btn-scan" onclick="startGoogleScan()">スキャンを開始</button>
+    <div id="status" class="status-text">Googleビジュアル検索エンジンを使用します</div>
+
+    <a href="/" class="back-btn">← 検索に戻る</a>
   </div>
 
-  <div id="resultArea">
-    <h2 style="border-bottom: 2px solid #eee; padding-bottom: 10px;">解析結果</h2>
-    <p id="aiThought" style="color: var(--accent); font-weight: bold; margin-bottom: 30px;"></p>
-    
-    <div class="result-grid" id="grid">
-      <div class="result-item" style="background: #eef2ff;"></div>
-      <div class="result-item" style="background: #e0e7ff;"></div>
-      <div class="result-item" style="background: #c7d2fe;"></div>
-      <div class="result-item" style="background: #a5b4fc;"></div>
-    </div>
+  <div id="hidden-cse-area">
+    <div class="gcse-search"></div>
   </div>
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const line = document.getElementById('line');
-    const icon = document.getElementById('icon');
-    const scanPage = document.getElementById('scanPage');
-    const resultArea = document.getElementById('resultArea');
-    const aiThought = document.getElementById('aiThought');
-
-    fileInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        // 1. プレビュー表示
-        preview.src = event.target.result;
-        preview.style.display = 'block';
-        icon.style.display = 'none';
+    // Google CSEが読み込まれた後にカメラボタンを探す
+    function startGoogleScan() {
+      // CSE標準の「画像で検索」ボタン（カメラアイコン）のクラス名
+      const googleCameraButton = document.querySelector('.gsst_a');
+      
+      if (googleCameraButton) {
+        googleCameraButton.click(); // 本物のカメラボタンを擬似クリック
         
-        // 2. スキャン演出開始
-        line.style.display = 'block';
-        line.style.animation = "scanAnimation 1.5s infinite ease-in-out";
-
-        // 3. SURGE内での解析演出
-        setTimeout(() => {
-          // 画面を上にスライドさせて結果を表示する
-          scanPage.style.minHeight = "40vh";
-          line.style.display = 'none';
-          resultArea.style.display = 'block';
-          
-          aiThought.innerText = "SURGE AI: 画像内のオブジェクトを抽出しています... 特徴的なパターンを検出しました。";
-          
-          // スクロールさせる
-          window.scrollTo({ top: 500, behavior: 'smooth' });
-        }, 3000);
+        // アップロードが始まったらスキャン演出を入れる（任意）
+        const observer = new MutationObserver(() => {
+          const previewImg = document.getElementById('preview');
+          const scanLine = document.getElementById('scanLine');
+          // ファイルが選択されたら演出を開始
+          scanLine.style.display = 'block';
+          scanLine.style.animation = 'scanMove 2s infinite ease-in-out';
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      } else {
+        alert("Google CSEの『画像による検索』設定がOFFになっているか、読み込み中です。");
       }
-      reader.readAsDataURL(file);
-    });
+    }
+
+    // 画像プレビュー処理（もし必要なら）
+    window.addEventListener('change', (e) => {
+      if (e.target.type === 'file') {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const preview = document.getElementById('preview');
+            preview.src = event.target.result;
+            preview.style.display = 'block';
+            document.getElementById('prompt').style.display = 'none';
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+    }, true);
   </script>
+
+  <script async src="https://cse.google.com/cse.js?cx=818be131768c247f3"></script>
 
 </body>
 </html>
