@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>SURGE - 画像スキャン検索</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root { --accent: #4f46e5; --bg: #fdfdfd; }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+
+    .scan-container { text-align: center; width: 90%; max-width: 500px; padding: 40px; background: white; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    h1 { font-size: 24px; color: #333; margin-bottom: 10px; }
+    p { color: #666; margin-bottom: 30px; }
+
+    /* スキャン枠の演出 */
+    .viewfinder {
+      width: 200px; height: 200px; margin: 0 auto 30px; border: 2px solid #ddd; border-radius: 20px; position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; background: #fafafa;
+    }
+    .viewfinder.scanning::after {
+      content: ""; position: absolute; width: 100%; height: 4px; background: var(--accent); top: 0; left: 0;
+      box-shadow: 0 0 15px var(--accent); animation: scanMove 2s infinite ease-in-out;
+    }
+    @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+
+    #preview { max-width: 100%; max-height: 100%; display: none; border-radius: 15px; }
+
+    .upload-btn {
+      background: var(--accent); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; display: inline-block; transition: 0.3s;
+    }
+    .upload-btn:hover { opacity: 0.9; transform: scale(1.05); }
+    #fileInput { display: none; }
+
+    .status-text { margin-top: 20px; font-size: 14px; color: var(--accent); display: none; }
+
+    .back-link { margin-top: 20px; display: block; color: #999; text-decoration: none; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="scan-container">
+    <h1>SURGE SCAN</h1>
+    <p>画像をスキャンして、似ているものを探します</p>
+
+    <div class="viewfinder" id="viewfinder">
+      <img id="preview" src="#" alt="Preview">
+      <span id="placeholder" style="color:#ccc; font-size: 40px;">📷</span>
+    </div>
+
+    <label class="upload-btn">
+      画像を選択・撮影
+      <input type="file" id="fileInput" accept="image/*">
+    </label>
+
+    <div id="status" class="status-text">AIが画像を解析中...</div>
+
+    <a href="javascript:history.back()" class="back-link">← 検索に戻る</a>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const viewfinder = document.getElementById('viewfinder');
+    const status = document.getElementById('status');
+    const placeholder = document.getElementById('placeholder');
+
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      // 1. プレビュー表示
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        preview.src = event.target.result;
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+        
+        // 2. スキャン演出開始
+        viewfinder.classList.add('scanning');
+        status.style.display = 'block';
+
+        // 3. 2秒後にGoogleレンズの結果ページへ飛ばす
+        setTimeout(() => {
+          // 本来はファイルをサーバーに送ってURLを発行する必要がありますが、
+          // 今回は最も確実な「Google画像検索への転送」を使用します
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = 'https://www.google.com/searchbyimage/upload';
+          form.enctype = 'multipart/form-data';
+          form.target = '_self';
+
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = 'encoded_image';
+          
+          // ファイルをフォームに追加
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          const newFileInput = document.createElement('input');
+          newFileInput.type = 'file';
+          newFileInput.name = 'encoded_image';
+          newFileInput.files = dataTransfer.files;
+
+          form.appendChild(newFileInput);
+          document.body.appendChild(form);
+          form.submit();
+        }, 2000);
+      }
+      reader.readAsDataURL(file);
+    });
+  </script>
+
+</body>
+</html>
