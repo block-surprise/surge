@@ -2,108 +2,74 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>SURGE SCAN - 画像スキャン検索</title>
+  <title>SURGE SCAN</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="/favicon.png">
   <style>
     :root { --accent: #4f46e5; --bg: #fdfdfd; }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
 
     .scan-container { text-align: center; width: 90%; max-width: 500px; padding: 40px; background: white; border-radius: 32px; box-shadow: 0 15px 40px rgba(0,0,0,0.05); }
     
-    /* スキャン窓の演出 */
     .scan-window {
       width: 240px; height: 240px; margin: 0 auto 30px; border: 3px solid #eee; border-radius: 40px; position: relative;
-      display: flex; align-items: center; justify-content: center; background: #fafafa; overflow: hidden;
-      cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center; background: #fafafa; cursor: pointer; overflow: hidden;
     }
-    .scan-window:hover { border-color: var(--accent); background: #f5f7ff; }
     
-    /* スキャンアニメーション（実行時） */
-    .scan-line {
-      position: absolute; width: 100%; height: 4px; background: var(--accent); top: 0; left: 0;
-      box-shadow: 0 0 15px var(--accent); display: none; z-index: 10;
-    }
-    @keyframes scanMove { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+    /* 検索結果が出るエリア（ここが重要） */
+    #results-area { width: 100%; margin-top: 30px; }
 
-    .btn-scan {
-      background: var(--accent); color: white; padding: 16px 40px; border-radius: 30px; font-weight: bold; border: none; cursor: pointer; font-size: 16px; transition: 0.3s;
-    }
-    .btn-scan:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3); }
-
-    /* Google CSEの標準要素を「機能だけ」使うために隠す */
-    #hidden-cse-area {
-      position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0;
+    /* Googleの標準入力欄を「透明」にして、SURGEのボタンの上に重ねる */
+    #hidden-cse-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; z-index: 100; cursor: pointer;
     }
 
-    .status-text { margin-top: 20px; font-size: 14px; color: #888; }
-    .back-btn { margin-top: 25px; display: block; color: #999; text-decoration: none; font-size: 14px; }
+    .btn-scan { background: var(--accent); color: white; padding: 16px 40px; border-radius: 30px; font-weight: bold; border: none; font-size: 16px; }
+    
+    /* 読み込み待ちの表示 */
+    #loading-msg { font-size: 12px; color: #aaa; margin-top: 10px; }
   </style>
 </head>
 <body>
 
   <div class="scan-container">
-    <h1 style="font-size: 28px; margin-bottom: 10px;">SURGE <span style="color:var(--accent)">SCAN</span></h1>
-    <p style="color:#666; margin-bottom: 30px;">画像をアップロードして似ているものを検索</p>
+    <h1>SURGE <span style="color:var(--accent)">SCAN</span></h1>
+    <p>画像をアップロードして検索</p>
 
-    <div class="scan-window" id="dropArea" onclick="startGoogleScan()">
-      <div class="scan-line" id="scanLine"></div>
-      <div id="prompt" style="text-align:center;">
-        <span style="font-size: 50px;">📷</span><br>
-        <span style="font-size: 14px; color:#aaa;">クリックして画像を選択</span>
+    <div class="scan-window">
+      <div id="hidden-cse-overlay">
+        <div class="gcse-search"></div>
       </div>
-      <img id="preview" src="#" style="display:none; width:100%; height:100%; object-fit:cover; border-radius:36px;">
+      
+      <div style="text-align:center;">
+        <span style="font-size: 50px;">📷</span><br>
+        <span style="font-size: 12px; color:#aaa;">ここをクリックして開始</span>
+      </div>
     </div>
 
-    <button class="btn-scan" onclick="startGoogleScan()">スキャンを開始</button>
-    <div id="status" class="status-text">Googleビジュアル検索エンジンを使用します</div>
-
-    <a href="/" class="back-btn">← 検索に戻る</a>
+    <div id="loading-msg">Googleエンジンを読み込み中...</div>
+    <a href="/" style="display:block; margin-top:20px; color:#999; text-decoration:none; font-size:14px;">← 戻る</a>
   </div>
 
-  <div id="hidden-cse-area">
-    <div class="gcse-search"></div>
+  <div id="results-area">
+    <div class="gcse-searchresults-only" data-imageSearch="true"></div>
   </div>
 
   <script>
-    // Google CSEが読み込まれた後にカメラボタンを探す
-    function startGoogleScan() {
-      // CSE標準の「画像で検索」ボタン（カメラアイコン）のクラス名
-      const googleCameraButton = document.querySelector('.gsst_a');
-      
-      if (googleCameraButton) {
-        googleCameraButton.click(); // 本物のカメラボタンを擬似クリック
+    // Google CSEの読み込みを監視
+    window.__gcse = {
+      callback: function() {
+        document.getElementById('loading-msg').innerText = "準備完了";
         
-        // アップロードが始まったらスキャン演出を入れる（任意）
-        const observer = new MutationObserver(() => {
-          const previewImg = document.getElementById('preview');
-          const scanLine = document.getElementById('scanLine');
-          // ファイルが選択されたら演出を開始
-          scanLine.style.display = 'block';
-          scanLine.style.animation = 'scanMove 2s infinite ease-in-out';
-        });
-        observer.observe(document.body, { childList: true, subtree: true });
-      } else {
-        alert("Google CSEの『画像による検索』設定がOFFになっているか、読み込み中です。");
+        // Googleの入力欄からカメラボタンを探し、押しやすく調整
+        const interval = setInterval(() => {
+          const cameraBtn = document.querySelector('.gsst_a');
+          if (cameraBtn) {
+            document.getElementById('loading-msg').innerText = "スキャン機能 利用可能";
+            clearInterval(interval);
+          }
+        }, 500);
       }
-    }
-
-    // 画像プレビュー処理（もし必要なら）
-    window.addEventListener('change', (e) => {
-      if (e.target.type === 'file') {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const preview = document.getElementById('preview');
-            preview.src = event.target.result;
-            preview.style.display = 'block';
-            document.getElementById('prompt').style.display = 'none';
-          };
-          reader.readAsDataURL(file);
-        }
-      }
-    }, true);
+    };
   </script>
 
   <script async src="https://cse.google.com/cse.js?cx=818be131768c247f3"></script>
