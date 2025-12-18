@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surge AI Select</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #0f172a;
+            --select-accent: #a5b4fc; /* 上品なパープルブルー */
+            --glass-card: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #f1f5f9;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-main);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 背景の精密グリッド演出 */
+        body::before {
+            content: ""; position: absolute; width: 100%; height: 100%;
+            background-image: linear-gradient(var(--border) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px; z-index: -1;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
+        }
+
+        .wrapper {
+            width: 85%; max-width: 850px; height: 82vh;
+            background: var(--glass-card);
+            backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        header {
+            padding: 25px 40px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header h1 {
+            margin: 0; font-size: 0.85rem; letter-spacing: 4px; font-weight: 600;
+            color: var(--select-accent); text-transform: uppercase;
+        }
+        .rank-label { font-size: 0.65rem; color: var(--border); border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; }
+
+        #chatBox {
+            flex-grow: 1; padding: 40px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 25px;
+            scroll-behavior: smooth;
+        }
+
+        /* スクロールバーのスリム化 */
+        #chatBox::-webkit-scrollbar { width: 4px; }
+        #chatBox::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .message { max-width: 75%; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .user-message { align-self: flex-end; }
+        .ai-message { align-self: flex-start; }
+
+        .bubble {
+            padding: 14px 22px; border-radius: 8px; /* 知的な印象の角丸 */
+            font-size: 0.95rem; line-height: 1.7;
+            position: relative;
+        }
+
+        .user-message .bubble {
+            background: var(--select-accent);
+            color: var(--bg-deep);
+            font-weight: 500;
+        }
+
+        .ai-message .bubble {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .input-area {
+            padding: 30px 40px; display: flex; gap: 15px;
+            background: rgba(0,0,0,0.2);
+            border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+        }
+
+        #userInput {
+            flex-grow: 1; background: transparent;
+            border: none; border-bottom: 1px solid var(--border);
+            color: white; font-size: 1rem; outline: none; padding: 10px 0;
+            transition: 0.3s;
+        }
+        #userInput:focus { border-color: var(--select-accent); }
+
+        #sendButton {
+            background: transparent; color: var(--select-accent);
+            border: 1px solid var(--select-accent);
+            padding: 0 25px; border-radius: 4px; cursor: pointer;
+            transition: 0.3s; font-size: 0.8rem; letter-spacing: 2px;
+        }
+        #sendButton:hover {
+            background: var(--select-accent); color: var(--bg-deep);
+        }
+
+        #status {
+            position: absolute; bottom: 100px; right: 40px;
+            font-size: 0.7rem; color: var(--select-accent); opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <header>
+            <h1>Surge AI Select</h1>
+            <span class="rank-label">RANK 02</span>
+        </header>
+        <div id="chatBox"></div>
+        <div id="status"></div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="要望を入力してください..." autocomplete="off">
+            <button id="sendButton" onclick="sendMessage()">SELECT</button>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://surgehome.proluce.workers.dev/"; 
+        const SYSTEM_PROMPT = "あなたは『Select』ランクのAI。知的で冷静、かつ無駄のないスマートな返答を心がけなさい。敬語を使い、相手の意図を正確に汲み取ること。";
+        let chatHistory = [];
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            displayMessage('user', text);
+            input.value = '';
+            document.getElementById('status').innerText = "Analyzing...";
+
+            try {
+                chatHistory.push({ role: "user", text: text });
+                const res = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\n${chatHistory.map(m=>m.role+":"+m.text).join('\n')}\nAI:` })
+                });
+                const data = await res.json();
+                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop()?.trim();
+                
+                chatHistory.push({ role: "ai", text: reply });
+                displayMessage('ai', reply);
+            } finally {
+                document.getElementById('status').innerText = "";
+            }
+        }
+
+        function displayMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `message ${role}-message`;
+            div.innerHTML = `<div class="bubble">${text}</div>`;
+            document.getElementById('chatBox').appendChild(div);
+            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+        }
+
+        document.getElementById('userInput').onkeydown = (e) => { if(e.key==='Enter') sendMessage(); };
+        window.onload = () => { displayMessage('ai', "Surge AI Selectを起動しました。最適化された対話を始めましょう。"); };
+    </script>
+</body>
+</html>
