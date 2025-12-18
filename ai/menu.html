@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SURGE AI // Portal Hub</title>
+    <title>SURGE AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;600&family=Cinzel:wght@700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #050505;
+            --bg: #030303;
             --text: #ffffff;
+            --entry-c: #3b82f6;
+            --standard-c: #1e40af;
+            --select-c: #a5b4fc;
+            --premium-c: #ffffff;
+            --ultra-c: #c5a059;
+            --zenith-c: #f9d976;
         }
 
         body {
@@ -22,63 +28,79 @@
 
         .bg-gradient {
             position: fixed; top: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% -20%, #1a1f35 0%, #050505 80%);
+            background: radial-gradient(circle at 50% -20%, #1a1f35 0%, #030303 80%);
             z-index: -1;
         }
 
-        header { text-align: center; padding: 80px 20px 40px; }
-        header h1 { font-size: 3rem; font-weight: 200; letter-spacing: 15px; margin: 0; text-transform: uppercase; }
-        header p { color: rgba(255,255,255,0.5); letter-spacing: 3px; font-size: 0.8rem; margin-top: 10px; }
+        header { text-align: center; padding: 100px 20px 40px; }
+        header h1 { font-size: 3.2rem; font-weight: 200; letter-spacing: 18px; margin: 0; text-transform: uppercase; }
+        header p { color: rgba(255,255,255,0.4); letter-spacing: 4px; font-size: 0.75rem; margin-top: 15px; }
 
         .container {
             display: flex; flex-wrap: wrap; justify-content: center;
-            gap: 30px; padding: 40px; max-width: 1300px;
+            gap: 25px; padding: 40px; max-width: 1400px;
         }
 
         .card {
-            position: relative; width: 220px; height: 380px;
-            border-radius: 20px; overflow: hidden;
-            cursor: pointer; transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-            border: 1px solid rgba(255,255,255,0.1);
+            position: relative; width: 210px; height: 380px;
+            border-radius: 24px; overflow: hidden;
+            cursor: pointer; transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.08);
             display: flex; flex-direction: column; justify-content: space-between;
-            padding: 30px 20px; text-decoration: none; box-sizing: border-box;
+            padding: 40px 25px; text-decoration: none; box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.02);
         }
 
         .card:hover {
-            width: 280px; transform: translateY(-15px);
-            border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            transform: translateY(-15px) scale(1.02);
+            border-color: currentColor; /* 各クラスで指定した色になる */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.1);
         }
 
-        /* ボックス上部のアイコンエリア */
+        /* アイコンと光の輪 */
         .card-icon {
-            font-size: 3rem; text-align: center; transition: 0.5s; opacity: 0.7;
-            margin-top: 20px;
+            font-size: 2.8rem; text-align: center; transition: 0.5s; 
+            z-index: 2; position: relative;
         }
-        .card:hover .card-icon { transform: scale(1.2); opacity: 1; }
+        .icon-halo {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+            width: 80px; height: 80px; border-radius: 50%;
+            background: currentColor; filter: blur(25px); opacity: 0.3; transition: 0.5s;
+        }
+        .card:hover .icon-halo { transform: translate(-50%, -50%) scale(1.5); }
 
-        /* 背景に薄く浮かぶ巨大なアルファベット */
         .bg-letter {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 12rem; font-weight: 900; opacity: 0.03; pointer-events: none;
-            transition: 0.5s;
+            position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 14rem; font-weight: 900; opacity: 0.02; pointer-events: none;
+            transition: 0.5s; color: #fff;
         }
-        .card:hover .bg-letter { opacity: 0.08; transform: translate(-50%, -60%); }
+        .card:hover .bg-letter { opacity: 0.05; transform: translate(-50%, -55%); }
 
         .card-info { position: relative; z-index: 2; }
-        .card h2 { margin: 0; font-size: 1.3rem; letter-spacing: 3px; font-weight: 600; }
-        .card p { margin: 8px 0 0; font-size: 0.75rem; opacity: 0.5; letter-spacing: 1px; }
+        .card h2 { margin: 0; font-size: 1.1rem; letter-spacing: 3px; font-weight: 600; }
+        .card p { margin: 10px 0 0; font-size: 0.65rem; opacity: 0.4; letter-spacing: 1px; text-transform: uppercase; }
 
-        /* 個別カラー設定 */
-        .entry { background: linear-gradient(180deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.5)); }
-        .standard { background: linear-gradient(180deg, rgba(30, 64, 175, 0.1), rgba(30, 64, 175, 0.5)); }
-        .premium { background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.8)); color: #fff; }
-        .premium h2, .premium p, .premium .card-icon { color: #fff; }
-        .ultra { background: linear-gradient(180deg, rgba(197, 160, 89, 0.1), rgba(197, 160, 89, 0.6)); }
-        .zenith { background: linear-gradient(180deg, rgba(249, 217, 118, 0.1), rgba(249, 217, 118, 0.7)); border: 1px solid rgba(249, 217, 118, 0.3); }
-        .zenith h2 { font-family: 'Cinzel', serif; text-shadow: 0 0 15px rgba(249, 217, 118, 0.5); }
+        /* --- 各ランクの個別スタイル --- */
+        .entry { color: var(--entry-c); }
+        .entry:hover { background: linear-gradient(180deg, rgba(59,130,246,0.05), rgba(59,130,246,0.2)); }
 
-        .footer { margin-top: auto; padding: 40px; color: rgba(255,255,255,0.2); font-size: 0.7rem; letter-spacing: 2px; }
+        .standard { color: var(--standard-c); }
+        .standard:hover { background: linear-gradient(180deg, rgba(30,64,175,0.05), rgba(30,64,175,0.2)); }
+
+        .select { color: var(--select-c); }
+        .select:hover { background: linear-gradient(180deg, rgba(165,180,252,0.05), rgba(165,180,252,0.2)); }
+
+        .premium { color: var(--premium-c); }
+        .premium:hover { background: rgba(255,255,255,0.15); }
+
+        .ultra { color: var(--ultra-c); }
+        .ultra:hover { background: linear-gradient(180deg, rgba(197,160,89,0.05), rgba(197,160,89,0.2)); }
+
+        .zenith { color: var(--zenith-c); }
+        .zenith:hover { background: linear-gradient(180deg, rgba(249,217,118,0.05), rgba(249,217,118,0.2)); }
+        .zenith h2 { font-family: 'Cinzel', serif; }
+
+        .footer { margin-top: auto; padding: 60px; color: rgba(255,255,255,0.1); font-size: 0.65rem; letter-spacing: 3px; }
     </style>
 </head>
 <body>
@@ -87,31 +109,52 @@
 
     <header>
         <h1>SURGE AI</h1>
-        <p>SELECT YOUR INTERFACE</p>
+        <p>THE EVOLUTION OF COGNITION</p>
     </header>
 
     <div class="container">
         <a href="entry" class="card entry">
             <div class="bg-letter">E</div>
-            <div class="card-icon">💬</div>
+            <div class="card-icon">
+                <div class="icon-halo"></div>
+                💬
+            </div>
             <div class="card-info">
                 <h2>ENTRY</h2>
                 <p>Casual & Friendly</p>
             </div>
         </a>
 
-        <a href="/" class="card standard">
+        <a href="/ai" class="card standard">
             <div class="bg-letter">S</div>
-            <div class="card-icon">⚙️</div>
+            <div class="card-icon">
+                <div class="icon-halo"></div>
+                ⚙️
+            </div>
             <div class="card-info">
                 <h2>STANDARD</h2>
                 <p>Reliable & Modern</p>
             </div>
         </a>
 
+        <a href="select" class="card select">
+            <div class="bg-letter">S</div>
+            <div class="card-icon">
+                <div class="icon-halo"></div>
+                💼
+            </div>
+            <div class="card-info">
+                <h2>SELECT</h2>
+                <p>Smart & Professional</p>
+            </div>
+        </a>
+
         <a href="premium" class="card premium">
             <div class="bg-letter">P</div>
-            <div class="card-icon">💎</div>
+            <div class="card-icon">
+                <div class="icon-halo"></div>
+                💎
+            </div>
             <div class="card-info">
                 <h2>PREMIUM</h2>
                 <p>Pure & Minimal</p>
@@ -120,25 +163,31 @@
 
         <a href="ultra" class="card ultra">
             <div class="bg-letter">U</div>
-            <div class="card-icon">👑</div>
+            <div class="card-icon">
+                <div class="icon-halo"></div>
+                👑
+            </div>
             <div class="card-info">
                 <h2>ULTRA</h2>
-                <p>Luxury & Deep</p>
+                <p>Luxury & Depth</p>
             </div>
         </a>
 
         <a href="zenith" class="card zenith">
             <div class="bg-letter">Z</div>
-            <div class="card-icon">✨</div>
+            <div class="card-icon">
+                <div class="icon-halo"></div>
+                ✨
+            </div>
             <div class="card-info">
                 <h2>ZENITH</h2>
-                <p>Final知性</p>
+                <p>Universal Cognition</p>
             </div>
         </a>
     </div>
 
     <div class="footer">
-        © 2025 SURGE SYSTEMS // ALL RIGHTS RESERVED
+        © 2025 SURGE
     </div>
 
 </body>
