@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SURGE AI // The Archive</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@100;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --text: #ffffff;
+            --entry-c: #3b82f6;
+            --standard-c: #6366f1;
+            --premium-c: #ffffff;
+            --ultra-c: #c5a059;
+            --zenith-c: #f9d976;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        /* 画面全体の動的な背景光 */
+        .bg-glow {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 80vw; height: 80vw; background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            z-index: -1; transition: 1s ease; filter: blur(100px);
+        }
+
+        header { text-align: center; padding: 100px 20px 60px; z-index: 10; }
+        header h1 { font-size: 3.5rem; font-weight: 100; letter-spacing: 20px; margin: 0; color: #fff; }
+        header p { color: rgba(255,255,255,0.4); letter-spacing: 5px; font-size: 0.7rem; margin-top: 15px; }
+
+        .container {
+            display: flex; justify-content: center; align-items: center;
+            gap: 30px; padding: 50px; max-width: 1400px; height: 500px;
+        }
+
+        /* カードデザイン */
+        .card {
+            position: relative; width: 140px; height: 420px;
+            border-radius: 100px; /* スティック状のモダンな形状 */
+            overflow: hidden; cursor: pointer;
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.02);
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: space-between; padding: 40px 0;
+            text-decoration: none;
+        }
+
+        /* ホバーで広がる */
+        .card:hover {
+            width: 320px; border: 1px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.05);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* カード内の光るリング（ボックス上部を埋める） */
+        .ring-decor {
+            position: absolute; top: 40px; width: 80px; height: 80px;
+            border-radius: 50%; border: 1px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.5s;
+        }
+        .ring-decor::after {
+            content: ""; width: 10px; height: 10px; border-radius: 50%;
+            background: #fff; box-shadow: 0 0 15px #fff;
+        }
+        .card:hover .ring-decor { transform: scale(1.5); border-color: currentColor; }
+
+        /* カード情報のテキスト */
+        .card-info {
+            text-align: center; opacity: 0.3; transition: 0.5s;
+            transform: translateY(20px);
+        }
+        .card:hover .card-info { opacity: 1; transform: translateY(0); }
+
+        .card h2 {
+            margin: 0; font-size: 1.2rem; font-weight: 600; letter-spacing: 4px;
+            color: #fff; text-transform: uppercase;
+        }
+        .card p {
+            margin: 10px 0 0; font-size: 0.6rem; letter-spacing: 2px;
+            text-transform: uppercase; color: rgba(255,255,255,0.6);
+        }
+
+        /* 各ランクのホバー演出：背景の色を変える */
+        .entry:hover ~ .bg-glow { background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%); }
+        .standard:hover ~ .bg-glow { background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%); }
+        .premium:hover ~ .bg-glow { background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); }
+        .ultra:hover ~ .bg-glow { background: radial-gradient(circle, rgba(197,160,89,0.15) 0%, transparent 70%); }
+        .zenith:hover ~ .bg-glow { background: radial-gradient(circle, rgba(249,217,118,0.2) 0%, transparent 70%); }
+
+        /* 個別アクセント */
+        .entry { color: var(--entry-c); }
+        .standard { color: var(--standard-c); }
+        .premium { color: var(--premium-c); }
+        .ultra { color: var(--ultra-c); }
+        .zenith { color: var(--zenith-c); }
+        .zenith h2 { font-family: 'Cinzel', serif; }
+
+        .footer { margin-top: auto; padding: 60px; color: rgba(255,255,255,0.1); font-size: 0.6rem; letter-spacing: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SURGE AI</h1>
+        <p>CHOOSE YOUR DESTINATION</p>
+    </header>
+
+    <div class="container">
+        <a href="surge_entry.html" class="card entry">
+            <div class="ring-decor"></div>
+            <div class="card-info">
+                <h2>Entry</h2>
+                <p>Casual Interface</p>
+            </div>
+        </a>
+
+        <a href="surge_standard.html" class="card standard">
+            <div class="ring-decor"></div>
+            <div class="card-info">
+                <h2>Standard</h2>
+                <p>Advanced Logic</p>
+            </div>
+        </a>
+
+        <a href="surge_premium.html" class="card premium">
+            <div class="ring-decor"></div>
+            <div class="card-info">
+                <h2>Premium</h2>
+                <p>Frosted Minimal</p>
+            </div>
+        </a>
+
+        <a href="surge_ultra.html" class="card ultra">
+            <div class="ring-decor"></div>
+            <div class="card-info">
+                <h2>Ultra</h2>
+                <p>Luxury Core</p>
+            </div>
+        </a>
+
+        <a href="surge_zenith.html" class="card zenith">
+            <div class="ring-decor"></div>
+            <div class="card-info">
+                <h2>Zenith</h2>
+                <p>Final Cognition</p>
+            </div>
+        </a>
+
+        <div class="bg-glow"></div>
+    </div>
+
+    <div class="footer">
+        PROTOCOL // SURGE.ARCHIVE.2025
+    </div>
+
+</body>
+</html>
