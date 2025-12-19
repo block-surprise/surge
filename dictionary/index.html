@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SURGE // Knowledge Portal</title>
+    <title>SURGE // Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Noto+Sans+JP:wght@300;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f5f7fa;
+            --bg: #f8fafc;
             --sidebar-bg: #ffffff;
-            --accent: #007aff; /* 爽やかなブルー */
-            --text-main: #2c3e50;
-            --text-sub: #7f8c8d;
-            --card-bg: #ffffff;
-            --header-h: 60px;
-            --sidebar-w: 240px;
+            --accent: #007aff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --header-h: 64px;
+            --sidebar-w: 260px;
         }
 
         body {
@@ -26,156 +26,194 @@
         /* --- サイドバー --- */
         aside {
             width: var(--sidebar-w); background: var(--sidebar-bg);
-            border-right: 1px solid #e1e8ed; display: flex; flex-direction: column;
-            z-index: 100; transition: 0.3s;
+            border-right: 1px solid var(--border); display: flex; flex-direction: column;
+            z-index: 100;
         }
 
         .sidebar-logo {
             height: var(--header-h); display: flex; align-items: center;
             padding: 0 25px; font-weight: 700; color: var(--accent);
-            letter-spacing: 2px; border-bottom: 1px solid #f0f0f0;
+            letter-spacing: 1px; border-bottom: 1px solid var(--border);
         }
 
         .menu-list { padding: 20px 0; flex-grow: 1; }
         .menu-item {
             padding: 12px 25px; color: var(--text-sub); cursor: pointer;
-            font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 10px;
+            font-size: 0.95rem; transition: 0.2s; display: flex; align-items: center; gap: 12px;
         }
-        .menu-item:hover { background: #f0f7ff; color: var(--accent); }
-        .menu-item.active { background: #eef6ff; color: var(--accent); border-right: 3px solid var(--accent); }
+        .menu-item:hover { background: #f1f5f9; color: var(--accent); }
+        .menu-item.active { background: #eff6ff; color: var(--accent); font-weight: 600; }
+
+        /* 今日のピックアップ（履歴の代わり） */
+        .pickup-box {
+            margin: 20px; padding: 15px; background: #f8fafc;
+            border-radius: 12px; border: 1px solid var(--border);
+        }
+        .pickup-label { font-size: 0.7rem; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
+        .pickup-content { font-size: 0.8rem; color: var(--text-sub); line-height: 1.4; }
 
         /* --- メインコンテンツ --- */
-        main { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
+        main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* ヘッダー */
         header {
-            height: var(--header-h); background: #fff; border-bottom: 1px solid #e1e8ed;
+            height: var(--header-h); background: #fff; border-bottom: 1px solid var(--border);
             display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
         }
 
-        .user-profile { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-sub); }
-        .avatar { width: 30px; height: 30px; background: #ddd; border-radius: 50%; }
+        .page-content { flex-grow: 1; overflow-y: auto; padding: 40px; display: none; }
+        .page-content.active { display: block; }
 
-        /* 検索・表示エリア */
-        .viewport {
-            flex-grow: 1; overflow-y: auto; padding: 40px;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        /* ホーム画面の状態 */
-        .search-hero {
-            margin-top: 10vh; text-align: center; width: 100%; max-width: 600px;
-            transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .search-hero h2 { font-weight: 300; font-size: 2rem; margin-bottom: 30px; color: #34495e; }
-
+        /* 検索ホーム */
+        .search-hero { margin-top: 10vh; text-align: center; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; }
         .search-bar {
-            background: #fff; border: 1px solid #dcdde1; border-radius: 30px;
-            padding: 15px 30px; display: flex; align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s;
+            background: #fff; border: 1px solid var(--border); border-radius: 12px;
+            padding: 15px 25px; display: flex; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
-        .search-bar:focus-within { box-shadow: 0 8px 20px rgba(0,122,255,0.15); border-color: var(--accent); }
+        #mainInput { flex-grow: 1; border: none; outline: none; font-size: 1.1rem; }
 
-        #mainInput {
-            flex-grow: 1; border: none; outline: none; font-size: 1.1rem; color: var(--text-main);
-        }
+        /* 結果表示 */
+        #resultView { background: #fff; border-radius: 16px; padding: 40px; border: 1px solid var(--border); margin-top: 20px; display: none; }
+        #resultView h1 { margin: 0 0 20px; font-size: 2.5rem; }
+        .wiki-text { line-height: 1.8; color: #334155; }
 
-        /* 結果画面の状態 */
-        .result-view {
-            width: 100%; max-width: 850px; display: none;
-            animation: fadeIn 0.6s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* ノートページ */
+        .note-area { width: 100%; height: 70vh; border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: inherit; font-size: 1rem; resize: none; outline: none; }
 
-        .result-card {
-            background: #fff; border-radius: 12px; padding: 40px;
-            border: 1px solid #e1e8ed; box-shadow: 0 2px 15px rgba(0,0,0,0.03);
-        }
+        /* 設定ページ */
+        .settings-row { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--border); }
 
-        .result-card h1 { margin-top: 0; font-size: 2.5rem; color: var(--text-main); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; }
-        .meaning-content { font-size: 1.1rem; line-height: 1.8; color: #444; margin-top: 30px; white-space: pre-wrap; }
-
-        .searching .search-hero { margin-top: 0; opacity: 0; height: 0; overflow: hidden; }
-        .searching .result-view { display: block; }
+        .loading { display: none; color: var(--accent); margin-top: 10px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
     <aside>
-        <div class="sidebar-logo">SURGE // ID</div>
+        <div class="sidebar-logo">SURGE HUB</div>
         <div class="menu-list">
-            <div class="menu-item active"><span>🔍</span> 辞書検索</div>
-            <div class="menu-item"><span>📚</span> 学習履歴</div>
-            <div class="menu-item"><span>📝</span> ノート</div>
-            <div class="menu-item"><span>⚙️</span> 設定</div>
+            <div class="menu-item active" onclick="showPage('home')"><span>🔍</span> 辞書検索</div>
+            <div class="menu-item" onclick="showPage('note')"><span>📝</span> マイノート</div>
+            <div class="menu-item" onclick="showPage('settings')"><span>⚙️</span> システム設定</div>
         </div>
-        <div style="padding: 20px; font-size: 0.7rem; color: #ccc;">Version 4.2.0</div>
+        
+        <div class="pickup-box">
+            <div class="pickup-label">RANDOM PICKUP</div>
+            <div class="pickup-content" id="pickupText">読み込み中...</div>
+        </div>
     </aside>
 
     <main>
         <header>
-            <div style="font-weight: 500; font-size: 0.9rem;">ナレッジ・ダッシュボード</div>
-            <div class="user-profile">
-                <span>Guest User</span>
-                <div class="avatar"></div>
-            </div>
+            <div id="headerTitle" style="font-weight: 600;">辞書検索</div>
+            <div style="font-size: 0.8rem; color: var(--text-sub);" id="currentTime"></div>
         </header>
 
-        <div class="viewport">
-            <div class="search-hero" id="hero">
-                <h2>知を、加速させる。</h2>
+        <div id="page-home" class="page-content active">
+            <div class="search-hero">
+                <h2 style="font-weight: 300; font-size: 1.8rem;">何を知りたいですか？</h2>
                 <div class="search-bar">
-                    <input type="text" id="mainInput" placeholder="言葉の意味を調べる..." autocomplete="off">
+                    <input type="text" id="mainInput" placeholder="キーワードを入力..." autocomplete="off">
                 </div>
-                <p style="color: var(--text-sub); margin-top: 15px; font-size: 0.8rem;">Enterで検索を開始します</p>
+                <div id="loader" class="loading">データベースにアクセス中...</div>
             </div>
+            <div id="resultView">
+                <h1 id="dispWord"></h1>
+                <div id="dispMeaning" class="wiki-text"></div>
+                <div style="margin-top: 20px; font-size: 0.7rem; color: #94a3b8;">出典: Wikipedia</div>
+            </div>
+        </div>
 
-            <div class="result-view" id="resultView">
-                <button onclick="resetSearch()" style="background:none; border:none; color:var(--accent); cursor:pointer; margin-bottom:20px; font-size:0.9rem;">← 検索に戻る</button>
-                <div class="result-card">
-                    <h1 id="dispWord"></h1>
-                    <div class="meaning-content" id="dispMeaning"></div>
+        <div id="page-note" class="page-content">
+            <h2 style="margin-top: 0;">マイノート</h2>
+            <p style="color: var(--text-sub); font-size: 0.9rem;">考えたことや検索のメモを自由に残せます（自動保存）。</p>
+            <textarea id="noteArea" class="note-area" placeholder="ここに自由に書き込んでください..."></textarea>
+        </div>
+
+        <div id="page-settings" class="page-content">
+            <h2 style="margin-top: 0;">システム設定</h2>
+            <div class="settings-row">
+                <div>
+                    <div style="font-weight: 600;">ダークモード</div>
+                    <div style="font-size: 0.8rem; color: var(--text-sub);">画面の配色を暗くします（開発中）</div>
                 </div>
+                <input type="checkbox" disabled>
+            </div>
+            <div class="settings-row">
+                <div>
+                    <div style="font-weight: 600;">フォントサイズ</div>
+                    <div style="font-size: 0.8rem; color: var(--text-sub);">文字の大きさを調整します</div>
+                </div>
+                <select><option>標準</option><option>大</option></select>
+            </div>
+            <div class="settings-row" style="border: none;">
+                <button onclick="localStorage.clear(); location.reload();" style="color: #ef4444; border: 1px solid #fecaca; background: #fef2f2; padding: 8px 15px; border-radius: 6px; cursor: pointer;">データを初期化</button>
             </div>
         </div>
     </main>
 
     <script>
-        const WORKER_URL = "https://surgehome.proluce.workers.dev/"; 
-        const SYSTEM_PROMPT = "あなたは誠実で明るい教育系AIです。入力された日本語について、小学生でもわかるような丁寧な『意味』と、少し詳しい『背景知識』を教えてください。";
-
-        const input = document.getElementById('mainInput');
-
-        async function performSearch() {
-            const word = input.value.trim();
+        // Wikipedia APIを使った検索
+        async function searchWikipedia() {
+            const word = document.getElementById('mainInput').value.trim();
             if (!word) return;
 
+            const loader = document.getElementById('loader');
+            const resultView = document.getElementById('resultView');
+            loader.style.display = 'block';
+
             try {
-                const res = await fetch(WORKER_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\n【言葉】: ${word}\n解説:` })
-                });
-                const data = await res.json();
-                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("解説:").pop()?.trim();
+                const url = `https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word)}`;
+                const response = await fetch(url);
+                const data = await response.json();
 
-                document.getElementById('dispWord').innerText = word;
-                document.getElementById('dispMeaning').innerText = reply;
-
-                document.body.classList.add('searching');
+                if (data.title && data.extract) {
+                    document.getElementById('dispWord').innerText = data.title;
+                    document.getElementById('dispMeaning').innerHTML = data.extract;
+                    resultView.style.display = 'block';
+                } else {
+                    alert("該当する項目が見つかりませんでした。");
+                }
             } catch (e) {
-                alert("接続に失敗しました。");
+                alert("データの取得に失敗しました。");
+            } finally {
+                loader.style.display = 'none';
             }
         }
 
-        function resetSearch() {
-            document.body.classList.remove('searching');
-            input.value = '';
-            input.focus();
+        // ページ切り替え機能
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            const titles = { home: '辞書検索', note: 'マイノート', settings: 'システム設定' };
+            document.getElementById('headerTitle').innerText = titles[pageId];
         }
 
-        input.onkeydown = (e) => { if (e.key === 'Enter') performSearch(); };
+        // ノートの保存機能
+        const noteArea = document.getElementById('noteArea');
+        noteArea.value = localStorage.getItem('surge_note') || "";
+        noteArea.addEventListener('input', () => {
+            localStorage.setItem('surge_note', noteArea.value);
+        });
+
+        // 今日のピックアップ（ダミーデータ）
+        const pickups = [
+            "【黄金比】最も美しいとされる比率。1:1.618。",
+            "【シュレーディンガーの猫】量子力学の思考実験。",
+            "【パレートの法則】全体の8割は2割の要素で作られる。",
+            "【UXデザイン】ユーザーの体験を設計すること。"
+        ];
+        document.getElementById('pickupText').innerText = pickups[Math.floor(Math.random() * pickups.length)];
+
+        // 時計表示
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('currentTime').innerText = now.toLocaleString();
+        }, 1000);
+
+        document.getElementById('mainInput').onkeydown = (e) => { if (e.key === 'Enter') searchWikipedia(); };
     </script>
 </body>
 </html>
