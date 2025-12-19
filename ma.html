@@ -2,15 +2,15 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>SURGE // Markdown Hub</title>
+    <title>SURGE // Hybrid Markdown Engine</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
     <style>
         :root {
             --bg: #0a0a0c;
             --panel: #16161e;
             --accent: #10b981;
             --text: #c0caf5;
-            --sub-text: #787c99;
             --border: #292e42;
         }
 
@@ -18,32 +18,35 @@
 
         header { padding: 15px 25px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 
-        /* メインコンテナ */
+        /* モード切り替えスイッチ */
+        .mode-switcher {
+            display: flex; background: #000; padding: 5px; border-radius: 30px; border: 1px solid var(--border);
+        }
+        .mode-btn {
+            padding: 8px 20px; border-radius: 25px; cursor: pointer; font-size: 0.75rem; font-weight: bold;
+            transition: 0.3s; border: none; background: none; color: var(--sub-text);
+        }
+        .mode-btn.active { background: var(--accent); color: #000; }
+
         .app-container { display: flex; flex-grow: 1; overflow: hidden; }
 
-        /* 左側：ガイドパネル */
-        .guide { width: 220px; background: var(--bg); border-right: 1px solid var(--border); padding: 20px; font-size: 0.8rem; line-height: 2; color: var(--sub-text); }
-        .guide b { color: var(--accent); display: block; margin-top: 10px; }
-
-        /* 中央：エディタ */
+        /* 左側：エディタ */
+        .editor-side { flex: 1; display: flex; flex-direction: column; border-right: 1px solid var(--border); }
+        .side-label { padding: 10px 25px; font-size: 0.7rem; font-weight: bold; color: var(--accent); background: #00000033; }
+        
         textarea {
             flex: 1; background: var(--panel); color: #fff; border: none; padding: 25px;
             font-family: 'Fira Code', monospace; font-size: 0.95rem; resize: none; outline: none; line-height: 1.6;
         }
 
-        /* 右側：プレビュー/HTML切替エリア */
-        .output-container { width: 40%; background: var(--bg); display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+        /* 右側：出力エリア */
+        .output-side { width: 45%; display: flex; flex-direction: column; background: var(--bg); }
         
-        .tab-bar { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
-        .tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: bold; opacity: 0.5; transition: 0.3s; }
-        .tab.active { opacity: 1; border-bottom: 2px solid var(--accent); color: var(--accent); }
+        #preview, #raw-output { flex: 1; padding: 25px; overflow-y: auto; }
+        #raw-output { display: none; font-family: monospace; white-space: pre-wrap; background: #000; font-size: 0.85rem; }
 
-        #preview, #html-code { flex-grow: 1; padding: 25px; overflow-y: auto; }
-        #html-code { display: none; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; color: var(--sub-text); background: #000; }
-
-        /* Markdown装飾 */
-        #preview h1 { border-bottom: 1px solid var(--border); padding-bottom: 10px; }
-        #preview ul { padding-left: 20px; }
+        /* プレビュー内のMarkdown装飾 */
+        #preview h1, #preview h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
         #preview strong { color: var(--accent); }
 
         .btn { background: var(--accent); color: #000; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -52,68 +55,69 @@
 <body>
 
 <header>
-    <div style="font-weight: bold; letter-spacing: 2px; font-size: 0.9rem;">SURGE // MD CONVERTER</div>
-    <div style="display: flex; gap: 10px;">
-        <button class="btn" onclick="copyContent()">COPY RESULT</button>
-        <button class="btn" style="background:#333; color:white;" onclick="location.reload()">RESET</button>
+    <div style="font-weight: bold; letter-spacing: 2px; font-size: 0.9rem;">SURGE // HYBRID ENGINE</div>
+    
+    <div class="mode-switcher">
+        <button id="mode-md2html" class="mode-btn active" onclick="setMode('md2html')">MD → HTML</button>
+        <button id="mode-html2md" class="mode-btn" onclick="setMode('html2md')">HTML → MD</button>
     </div>
+
+    <button class="btn" onclick="copyResult()">COPY RESULT</button>
 </header>
 
 <div class="app-container">
-    <div class="guide">
-        <p style="margin:0; font-weight:bold; color:white;">QUICK GUIDE</p>
-        <b>見出し</b>
-        <code># タイトル</code>
-        <b>強調</b>
-        <code>**太字**</code>
-        <b>リスト</b>
-        <code>- 項目1</code>
-        <code>* 項目2</code>
-        <p style="margin-top:40px; font-size:0.7rem;">※ 入力は即座に反映されます</p>
+    <div class="editor-side">
+        <div id="input-label" class="side-label">SOURCE: MARKDOWN</div>
+        <textarea id="editor" placeholder="ここに入力..." oninput="process()"></textarea>
     </div>
 
-    <textarea id="editor" placeholder="Markdownを入力..." oninput="convert()"></textarea>
-
-    <div class="output-container">
-        <div class="tab-bar">
-            <div id="tab-preview" class="tab active" onclick="switchTab('preview')">PREVIEW</div>
-            <div id="tab-html" class="tab" onclick="switchTab('html')">RAW HTML</div>
-        </div>
+    <div class="output-side">
+        <div id="output-label" class="side-label">RESULT: PREVIEW</div>
         <div id="preview"></div>
-        <div id="html-code"></div>
+        <div id="raw-output"></div>
     </div>
 </div>
 
 <script>
-    let currentTab = 'preview';
+    let mode = 'md2html'; // 'md2html' または 'html2md'
+    const turndownService = new TurndownService({ headingStyle: 'atx' });
 
-    function convert() {
-        const mdText = document.getElementById('editor').value;
-        const htmlContent = marked.parse(mdText);
+    function setMode(newMode) {
+        mode = newMode;
+        // UIの更新
+        document.getElementById('mode-md2html').classList.toggle('active', mode === 'md2html');
+        document.getElementById('mode-html2md').classList.toggle('active', mode === 'html2md');
         
-        // プレビュー（見た目）に反映
-        document.getElementById('preview').innerHTML = htmlContent;
-        // HTMLコード（生テキスト）に反映
-        document.getElementById('html-code').textContent = htmlContent;
+        document.getElementById('input-label').innerText = mode === 'md2html' ? 'SOURCE: MARKDOWN' : 'SOURCE: HTML CODE';
+        document.getElementById('output-label').innerText = mode === 'md2html' ? 'RESULT: PREVIEW' : 'RESULT: MARKDOWN';
+        
+        document.getElementById('preview').style.display = mode === 'md2html' ? 'block' : 'none';
+        document.getElementById('raw-output').style.display = mode === 'md2html' ? 'none' : 'block';
+        
+        document.getElementById('editor').value = '';
+        document.getElementById('preview').innerHTML = '';
+        document.getElementById('raw-output').textContent = '';
     }
 
-    function switchTab(type) {
-        currentTab = type;
-        document.getElementById('preview').style.display = type === 'preview' ? 'block' : 'none';
-        document.getElementById('html-code').style.display = type === 'html' ? 'block' : 'none';
-        
-        document.getElementById('tab-preview').classList.toggle('active', type === 'preview');
-        document.getElementById('tab-html').classList.toggle('active', type === 'html');
+    function process() {
+        const input = document.getElementById('editor').value;
+        const preview = document.getElementById('preview');
+        const raw = document.getElementById('raw-output');
+
+        if (mode === 'md2html') {
+            // MarkdownをHTMLに変換してプレビュー
+            const html = marked.parse(input);
+            preview.innerHTML = html;
+        } else {
+            // HTMLコードをMarkdownに変換
+            const markdown = turndownService.turndown(input);
+            raw.textContent = markdown;
+        }
     }
 
-    function copyContent() {
-        const textToCopy = currentTab === 'preview' 
-            ? document.getElementById('preview').innerText 
-            : document.getElementById('html-code').textContent;
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            alert(currentTab.toUpperCase() + " をコピーしました");
-        });
+    function copyResult() {
+        const text = mode === 'md2html' ? document.getElementById('preview').innerHTML : document.getElementById('raw-output').textContent;
+        navigator.clipboard.writeText(text).then(() => alert("結果をコピーしました"));
     }
 </script>
 
