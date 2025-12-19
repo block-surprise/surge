@@ -3,129 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <title>異世界の境界線 // SURGE Novel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@300;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #ffffff;
-            --text: #2d3436;
-            --accent: #4a90e2; /* 小説用の爽やかな青 */
-            --sub-bg: #f8f9fa;
+            --text: #1a1a1a;
+            --accent: #4a90e2;
+            --sub-bg: #fbfbfb;
+            --line-height: 2.3;
+            --font-size: 1.15rem;
         }
 
         body {
             margin: 0; background-color: var(--bg); color: var(--text);
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            line-height: 2.1;
+            line-height: var(--line-height); transition: 0.3s;
         }
 
-        /* --- ナビゲーションヘッダー --- */
+        /* --- ヘッダー & 設定パネル --- */
         header {
             position: fixed; top: 0; width: 100%; height: 60px;
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px);
             border-bottom: 1px solid #eee; display: flex;
             align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 1000; box-sizing: border-box;
+            padding: 0 24px; z-index: 1000; box-sizing: border-box;
         }
-        .back-btn { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.8rem; }
-        .novel-info { font-size: 0.9rem; font-weight: 500; color: #636e72; }
+        .back-btn { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.8rem; letter-spacing: 1px; }
+        
+        .settings-trigger {
+            cursor: pointer; font-size: 0.75rem; font-weight: bold; border: 1px solid #eee;
+            padding: 5px 12px; border-radius: 20px; color: #666; transition: 0.2s;
+        }
+        .settings-trigger:hover { background: #f0f0f0; }
 
-        /* --- メインビジュアル（小説の雰囲気を出す） --- */
+        #settings-panel {
+            position: fixed; top: 70px; right: 24px; width: 200px;
+            background: #fff; border: 1px solid #eee; border-radius: 12px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none; z-index: 1001;
+        }
+        .set-row { margin-bottom: 15px; }
+        .set-label { font-size: 0.7rem; font-weight: bold; color: #aaa; margin-bottom: 5px; display: block; }
+        .set-btns { display: flex; gap: 5px; }
+        .set-btn { 
+            flex: 1; padding: 5px; font-size: 0.7rem; border: 1px solid #eee; 
+            background: #fff; cursor: pointer; border-radius: 4px;
+        }
+        .set-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        /* --- コンテンツ --- */
         .hero-banner {
-            width: 100%; height: 300px; background: linear-gradient(135deg, #4a90e2, #a29bfe);
+            width: 100%; height: 320px; 
+            background: linear-gradient(145deg, #1e3a8a, #4a90e2, #a29bfe);
             margin-top: 60px; display: flex; align-items: center; justify-content: center;
-            color: white; flex-direction: column; text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            color: white; flex-direction: column; text-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        .hero-banner h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
-        .hero-banner p { font-size: 1rem; opacity: 0.9; letter-spacing: 2px; }
+        .hero-banner h1 { font-size: 2.6rem; margin: 0; font-weight: 700; letter-spacing: 4px; }
 
-        /* --- 読書エリア --- */
-        main {
-            max-width: 720px; margin: 60px auto; padding: 0 25px;
-        }
-
+        main { max-width: 760px; margin: 0 auto; padding: 60px 25px 120px; min-height: 80vh; }
         .chapter-title {
-            font-size: 1.5rem; color: var(--accent); font-weight: 700;
-            margin-bottom: 50px; border-left: 5px solid var(--accent);
-            padding-left: 15px;
+            font-size: 1.6rem; color: var(--accent); font-weight: 700;
+            margin-bottom: 80px; border-left: 6px solid var(--accent); padding-left: 24px;
         }
 
-        /* 小説特有の文章スタイル */
-        article p {
-            margin-bottom: 1.8em; /* 行間ではなく、段落間を広げて読みやすく */
-            font-size: 1.1rem;
-            letter-spacing: 0.02em;
+        article p { 
+            margin-bottom: 2.4em; 
+            font-size: var(--font-size); 
+            letter-spacing: 0.04em;
         }
+        .thought { color: #576574; font-style: normal; border-left: 2px solid #eee; padding-left: 15px; }
 
-        /* 会話文（カギカッコ）の装飾 */
-        .dialogue {
-            color: #000;
-            font-weight: 500;
-        }
+        /* フォント切り替え用クラス */
+        .font-serif { font-family: 'Noto Serif JP', serif; }
 
-        /* フッターナビ */
         .page-nav {
             display: flex; justify-content: space-between;
-            margin: 80px 0; border-top: 1px solid #eee; padding-top: 30px;
+            margin-top: 100px; border-top: 1px solid #eee; padding-top: 50px;
         }
         .nav-btn {
-            text-decoration: none; color: #636e72; font-size: 0.9rem;
-            padding: 10px 20px; border: 1px solid #eee; border-radius: 30px;
-            transition: 0.3s;
+            text-decoration: none; color: #636e72; font-size: 0.85rem; font-weight: 600;
+            padding: 12px 28px; border: 1px solid #ddd; border-radius: 50px; transition: 0.3s;
         }
-        .nav-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+        .nav-btn.next { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* 右サイドバー（おすすめ） */
-        .side-recommends {
-            position: fixed; right: 20px; top: 100px; width: 200px;
-            display: none; /* デフォルトは非表示、画面幅が広い時だけ出す */
-        }
-        @media (min-width: 1200px) { .side-recommends { display: block; } }
-        .side-card {
-            background: var(--sub-bg); padding: 15px; border-radius: 12px; margin-bottom: 15px;
-            font-size: 0.8rem; border: 1px solid #eee;
-        }
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <header>
         <a href="index.html" class="back-btn">← LIBRARY</a>
-        <div class="novel-info">異世界の境界線 - 第一章</div>
-        <div style="width: 60px;"></div> </header>
+        <div id="header-chapter" class="novel-info">LOADING...</div>
+        <div class="settings-trigger" onclick="toggleSettings()">DISPLAY SETTINGS</div>
+    </header>
+
+    <div id="settings-panel">
+        <div class="set-row">
+            <span class="set-label">FONT STYLE</span>
+            <div class="set-btns">
+                <button class="set-btn active" id="btn-sans" onclick="setFont('sans')">ゴシック</button>
+                <button class="set-btn" id="btn-serif" onclick="setFont('serif')">明朝体</button>
+            </div>
+        </div>
+        <div class="set-row">
+            <span class="set-label">TEXT SIZE</span>
+            <div class="set-btns">
+                <button class="set-btn" onclick="setSize(0.9)">小</button>
+                <button class="set-btn active" id="btn-size-m" onclick="setSize(1.15)">中</button>
+                <button class="set-btn" onclick="setSize(1.4)">大</button>
+            </div>
+        </div>
+        <button onclick="toggleSettings()" style="width:100%; border:none; background:#eee; padding:5px; border-radius:4px; font-size:0.6rem; cursor:pointer;">CLOSE</button>
+    </div>
 
     <div class="hero-banner">
         <h1>異世界の境界線</h1>
-        <p>EPISODE: 01 - BLUE NOISE</p>
+        <p id="sub-title">ARCHIVE</p>
     </div>
 
-    <main>
-        <div class="chapter-title">第一章：青いノイズ</div>
+    <main id="content-area" class="fade-in">
+        </main>
 
-        <article>
-            <p>「ねえ、聞こえる？」</p>
-            <p>少女の声は、雨音に混じって不自然なほどクリアに響いた。それはまるで、耳元で直接囁かれているような錯覚を覚えるほどだった。</p>
-            <p>俺は視線を端末から上げ、窓の外を見た。そこには灰色の空がどこまでも広がっているだけで、特別な何かがあるようには見えなかった。少なくとも、彼女が言うような『ノイズ』なんてものは。</p>
-            <p>「……何も聞こえないけど。ただの雨の音だろ」</p>
-            <p>「そう。なら、まだ大丈夫ね。あなたの境界線は、まだ壊れていない」</p>
-            <p>彼女はどこか寂しげに笑うと、屋上のフェンスに手をかけた。その指先が触れた瞬間、空の色がわずかに歪んだのを、俺は見逃さなかった。</p>
-            <p>これは、俺たちが知る日常が終わる、その前兆だったのかもしれない。</p>
-        </article>
+    <script>
+        const chapters = {
+            "ch1": {
+                title: "第一章：青いノイズ",
+                sub: "EPISODE: 01 - BLUE NOISE",
+                content: `
+                    <p>「ねえ、聞こえる？」</p>
+                    <p>不意にかけられたその声は、降り続く雨の音を鋭く切り裂いて、俺の鼓膜に届いた。まるで耳元で直接囁かれているような、奇妙なほどクリアな響き。</p>
+                    <p>放課後の屋上。立ち入り禁止のフェンスを背にして立っていたのは、見たこともない制服を着た少女だった。彼女の髪は雨に濡れているはずなのに、なぜか一滴の水滴も弾いているように見える。</p>
+                    <p>「……何も聞こえないけど。ただの雨の音だろ、これ」</p>
+                    <p>「そう。なら、まだ大丈夫ね。あなたの『境界線』は、まだ壊れていない」</p>
+                    <p>少女はくすりと、どこか寂しげに笑った。その瞬間、彼女が触れていた金網のフェンスが、水面に石を投じた時のように、空間ごと波打ったのを俺は見逃さなかった。</p>
+                `,
+                next: "#ch2", prev: null
+            },
+            "ch2": {
+                title: "第二章：歪んだ日常",
+                sub: "EPISODE: 02 - DISTORTED DAYS",
+                content: `
+                    <p>翌朝、目が覚めたとき、最初に感じたのは身体を包む奇妙な重圧感だった。まるで、濃度の高い液体の中に沈められているような、微かな息苦しさ。</p>
+                    <p>液晶画面に表示された『07:15』という数字。それが、わずかに滲んで見える。寝ぼけて視界がぼやけているのかと思い、何度も瞬きを繰り返したが、その『ノイズ』は消えなかった。</p>
+                    <p>学校へ向かう通学路は、いつもと変わらないはずだった。しかし、俺の目には、そのすべてが『作り物』のように映った。ふと見上げた信号機の青が、昨日彼女の瞳に宿っていた色と同じ、不気味なほど鮮烈な色彩を放っていた。</p>
+                `,
+                next: "#ch3", prev: "#ch1"
+            },
+            "ch3": {
+                title: "第三章：亀裂の深淵",
+                sub: "EPISODE: 03 - INTO THE ABYSS",
+                content: `
+                    <p>午後の授業は、もはや背景音に過ぎなかった。黒板を叩くチョークの音も、教師の単調な説明も、すべてが磨りガラスの向こう側で起きている出来事のように感じられる。</p>
+                    <p>俺は机の下で、自分の右手をじっと見つめていた。指先が、時折わずかに震える。それは武者震いなどではなく、世界の『同期』が外れかけているような、正体不明の焦燥感からくるものだった。</p>
+                    <p>「……おい、和樹。放課後、例の屋上に来いよ」</p>
+                    <p>不意に、隣の席の佐藤からメモが回ってきた。だが、その文字もまた、紙の上でミミズのようにのたうっている。俺は返事を書こうとしたが、ペンを握る感覚がひどく頼りない。</p>
+                    <p class="thought">（佐藤まで、あの子のことを知っているのか……？）</p>
+                    <p>いや、そんなはずはない。佐藤はただの一般人だ。このノイズに気づいているのは、この街で俺だけのはずだ。窓の外では、昨日よりもさらに深い、群青色の空が広がり始めていた。境界線は、確実に、そして急速に崩落を始めている。</p>
+                `,
+                next: null, prev: "#ch2"
+            }
+        };
 
-        <div class="page-nav">
-            <a href="#" class="nav-btn">← 前の章へ</a>
-            <a href="#" class="nav-btn" style="background: var(--accent); color:white;">次の章へ →</a>
-        </div>
-    </main>
+        function renderChapter() {
+            const hash = window.location.hash.replace('#', '') || 'ch1';
+            const data = chapters[hash];
+            const area = document.getElementById('content-area');
+            if (!data) return;
 
-    <div class="side-recommends">
-        <div style="font-size: 0.7rem; color: #aaa; margin-bottom: 10px; font-weight: bold;">RECOMMENDED</div>
-        <div class="side-card">
-            <strong>放課後のアルゴリズム</strong><br>理系女子との奇妙な日々。
-        </div>
-        <div class="side-card">
-            <strong>真夜中のアーカイブ</strong><br>消えた本を探す冒険譚。
-        </div>
-    </div>
+            document.getElementById('header-chapter').innerText = `異世界の境界線 - ${data.title.split('：')[0]}`;
+            document.getElementById('sub-title').innerText = data.sub;
+            
+            let html = `<div class="chapter-title">${data.title}</div><article>${data.content}</article>`;
+            html += `<div class="page-nav">`;
+            html += data.prev ? `<a href="${data.prev}" class="nav-btn">← PREVIOUS</a>` : `<div></div>`;
+            html += data.next ? `<a href="${data.next}" class="nav-btn next">NEXT CHAPTER →</a>` : `<div class="nav-btn" style="opacity:0.3;">TO BE CONTINUED...</div>`;
+            html += `</div>`;
 
+            area.innerHTML = html;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 設定用関数
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setFont(style) {
+            document.body.classList.toggle('font-serif', style === 'serif');
+            document.getElementById('btn-sans').classList.toggle('active', style === 'sans');
+            document.getElementById('btn-serif').classList.toggle('active', style === 'serif');
+        }
+
+        function setSize(size) {
+            document.documentElement.style.setProperty('--font-size', size + 'rem');
+        }
+
+        window.onhashchange = renderChapter;
+        window.onload = renderChapter;
+    </script>
 </body>
 </html>
