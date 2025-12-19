@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>異世界の境界線 // SURGE Novel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@300;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --accent: #4a90e2;
+            --sub-bg: #fbfbfb;
+            --line-height: 2.3;
+            --font-size: 1.15rem;
+        }
+
+        body {
+            margin: 0; background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            line-height: var(--line-height); transition: 0.3s;
+        }
+
+        /* --- ヘッダー & 設定パネル --- */
+        header {
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #eee; display: flex;
+            align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 1000; box-sizing: border-box;
+        }
+        .back-btn { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.8rem; letter-spacing: 1px; }
+        
+        .settings-trigger {
+            cursor: pointer; font-size: 0.75rem; font-weight: bold; border: 1px solid #eee;
+            padding: 5px 12px; border-radius: 20px; color: #666; transition: 0.2s;
+        }
+        .settings-trigger:hover { background: #f0f0f0; }
+
+        #settings-panel {
+            position: fixed; top: 70px; right: 24px; width: 200px;
+            background: #fff; border: 1px solid #eee; border-radius: 12px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none; z-index: 1001;
+        }
+        .set-row { margin-bottom: 15px; }
+        .set-label { font-size: 0.7rem; font-weight: bold; color: #aaa; margin-bottom: 5px; display: block; }
+        .set-btns { display: flex; gap: 5px; }
+        .set-btn { 
+            flex: 1; padding: 5px; font-size: 0.7rem; border: 1px solid #eee; 
+            background: #fff; cursor: pointer; border-radius: 4px;
+        }
+        .set-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        /* --- コンテンツ --- */
+        .hero-banner {
+            width: 100%; height: 320px; 
+            background: linear-gradient(145deg, #1e3a8a, #4a90e2, #a29bfe);
+            margin-top: 60px; display: flex; align-items: center; justify-content: center;
+            color: white; flex-direction: column; text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .hero-banner h1 { font-size: 2.6rem; margin: 0; font-weight: 700; letter-spacing: 4px; }
+
+        main { max-width: 760px; margin: 0 auto; padding: 60px 25px 120px; min-height: 80vh; }
+        .chapter-title {
+            font-size: 1.6rem; color: var(--accent); font-weight: 700;
+            margin-bottom: 80px; border-left: 6px solid var(--accent); padding-left: 24px;
+        }
+
+        article p { 
+            margin-bottom: 2.4em; 
+            font-size: var(--font-size); 
+            letter-spacing: 0.04em;
+        }
+        .thought { color: #576574; font-style: normal; border-left: 2px solid #eee; padding-left: 15px; }
+
+        /* フォント切り替え用クラス */
+        .font-serif { font-family: 'Noto Serif JP', serif; }
+
+        .page-nav {
+            display: flex; justify-content: space-between;
+            margin-top: 100px; border-top: 1px solid #eee; padding-top: 50px;
+        }
+        .nav-btn {
+            text-decoration: none; color: #636e72; font-size: 0.85rem; font-weight: 600;
+            padding: 12px 28px; border: 1px solid #ddd; border-radius: 50px; transition: 0.3s;
+        }
+        .nav-btn.next { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">← LIBRARY</a>
+        <div id="header-chapter" class="novel-info">LOADING...</div>
+        <div class="settings-trigger" onclick="toggleSettings()">DISPLAY SETTINGS</div>
+    </header>
+
+    <div id="settings-panel">
+        <div class="set-row">
+            <span class="set-label">FONT STYLE</span>
+            <div class="set-btns">
+                <button class="set-btn active" id="btn-sans" onclick="setFont('sans')">ゴシック</button>
+                <button class="set-btn" id="btn-serif" onclick="setFont('serif')">明朝体</button>
+            </div>
+        </div>
+        <div class="set-row">
+            <span class="set-label">TEXT SIZE</span>
+            <div class="set-btns">
+                <button class="set-btn" onclick="setSize(0.9)">小</button>
+                <button class="set-btn active" id="btn-size-m" onclick="setSize(1.15)">中</button>
+                <button class="set-btn" onclick="setSize(1.4)">大</button>
+            </div>
+        </div>
+        <button onclick="toggleSettings()" style="width:100%; border:none; background:#eee; padding:5px; border-radius:4px; font-size:0.6rem; cursor:pointer;">CLOSE</button>
+    </div>
+
+    <div class="hero-banner">
+        <h1>異世界の境界線</h1>
+        <p id="sub-title">ARCHIVE</p>
+    </div>
+
+    <main id="content-area" class="fade-in">
+        </main>
+
+    <script>
+        const chapters = {
+            "ch1": {
+                title: "第一章：青いノイズ",
+                sub: "EPISODE: 01 - BLUE NOISE",
+                content: `
+                    <p>「ねえ、聞こえる？」</p>
+                    <p>不意にかけられたその声は、降り続く雨の音を鋭く切り裂いて、俺の鼓膜に届いた。まるで耳元で直接囁かれているような、奇妙なほどクリアな響き。</p>
+                    <p>放課後の屋上。立ち入り禁止のフェンスを背にして立っていたのは、見たこともない制服を着た少女だった。彼女の髪は雨に濡れているはずなのに、なぜか一滴の水滴も弾いているように見える。</p>
+                    <p>「……何も聞こえないけど。ただの雨の音だろ、これ」</p>
+                    <p>「そう。なら、まだ大丈夫ね。あなたの『境界線』は、まだ壊れていない」</p>
+                    <p>少女はくすりと、どこか寂しげに笑った。その瞬間、彼女が触れていた金網のフェンスが、水面に石を投じた時のように、空間ごと波打ったのを俺は見逃さなかった。</p>
+                `,
+                next: "#ch2", prev: null
+            },
+            "ch2": {
+                title: "第二章：歪んだ日常",
+                sub: "EPISODE: 02 - DISTORTED DAYS",
+                content: `
+                    <p>翌朝、目が覚めたとき、最初に感じたのは身体を包む奇妙な重圧感だった。まるで、濃度の高い液体の中に沈められているような、微かな息苦しさ。</p>
+                    <p>液晶画面に表示された『07:15』という数字。それが、わずかに滲んで見える。寝ぼけて視界がぼやけているのかと思い、何度も瞬きを繰り返したが、その『ノイズ』は消えなかった。</p>
+                    <p>学校へ向かう通学路は、いつもと変わらないはずだった。しかし、俺の目には、そのすべてが『作り物』のように映った。ふと見上げた信号機の青が、昨日彼女の瞳に宿っていた色と同じ、不気味なほど鮮烈な色彩を放っていた。</p>
+                `,
+                next: "#ch3", prev: "#ch1"
+            },
+            "ch3": {
+                title: "第三章：亀裂の深淵",
+                sub: "EPISODE: 03 - INTO THE ABYSS",
+                content: `
+                    <p>午後の授業は、もはや背景音に過ぎなかった。黒板を叩くチョークの音も、教師の単調な説明も、すべてが磨りガラスの向こう側で起きている出来事のように感じられる。</p>
+                    <p>俺は机の下で、自分の右手をじっと見つめていた。指先が、時折わずかに震える。それは武者震いなどではなく、世界の『同期』が外れかけているような、正体不明の焦燥感からくるものだった。</p>
+                    <p>「……おい、和樹。放課後、例の屋上に来いよ」</p>
+                    <p>不意に、隣の席の佐藤からメモが回ってきた。だが、その文字もまた、紙の上でミミズのようにのたうっている。俺は返事を書こうとしたが、ペンを握る感覚がひどく頼りない。</p>
+                    <p class="thought">（佐藤まで、あの子のことを知っているのか……？）</p>
+                    <p>いや、そんなはずはない。佐藤はただの一般人だ。このノイズに気づいているのは、この街で俺だけのはずだ。窓の外では、昨日よりもさらに深い、群青色の空が広がり始めていた。境界線は、確実に、そして急速に崩落を始めている。</p>
+                `,
+                next: null, prev: "#ch2"
+"ch4": {
+                title: "第四章：境界線の少女",
+                sub: "EPISODE: 04 - THE OBSERVER",
+                content: `
+                    <p>放課後の屋上。錆びついた扉を押し開けると、そこにはあの日と同じように彼女がいた。だが、今日の彼女はフェンスの上に危ういバランスで座り、赤く染まり始めた空を見つめていた。</p>
+                    <p>「……来たのね。世界の『同期』がズレ始めて、怖くなった？」</p>
+                    <p>彼女が振り返る。その瞳は、夕焼けの赤を反射して、まるで燃えているように見えた。俺は震える足で彼女に近づき、核心を問いかけた。</p>
+                    <p>「お前は、誰なんだ。このノイズは何なんだ。どうして俺にだけ見える？」</p>
+                    <p>「私は『観測者』。そして、あなたが今見ているのは、この世界の『バグ』よ。この世界はね、誰かの強い記憶によって維持されている不安定なシミュレーションに過ぎないの」</p>
+                    <p>彼女はフェンスから飛び降り、俺の目の前に立った。彼女が歩くたび、足元のアスファルトがデジタルの砂のように崩れ、消えていく。世界が、剥がれ落ちている。</p>
+                    <p class="thought">（シミュレーション……？ 何を言っているんだ。俺たちが生きてきたこの時間は、全部偽物だって言うのか？）</p>
+                `,
+                next: "#ch5", prev: "#ch3"
+            },
+            "ch5": {
+                title: "第五章：崩壊する空",
+                sub: "EPISODE: 05 - FALLING SKY",
+                content: `
+                    <p>突如、空に巨大な亀裂が走った。雷鳴のような轟音ではなく、ガラスが割れるような、ひどく冷たい音が街全体に響き渡る。空の『壁紙』が剥がれ、その向こう側に広がる漆黒の虚無が姿を現した。</p>
+                    <p>「時間切れね。あなたの記憶が、この世界を繋ぎ止められなくなった」</p>
+                    <p>彼女の言葉に、心臓が凍りつく。記憶？ 俺の記憶が世界を？ その瞬間、断片的な映像が脳内に溢れ出した。激しい事故の音、白い病院の天井、そして……隣で笑っていた、彼女の本当の姿。</p>
+                    <p>「思い出したか。和樹。あの日、死んだのは世界じゃない。……私だったんだよ」</p>
+                    <p>佐藤も、学校も、この街も。彼女を失った悲しみに耐えきれなかった俺が、自分の脳内に作り上げた『彼女が生きている世界』。ノイズは、俺の精神が限界を迎えた証拠だった。</p>
+                    <p class="thought">（全部、俺が……。俺が彼女を忘れたくなくて、世界を止めていたのか……？）</p>
+                `,
+                next: "#ch6", prev: "#ch4"
+            },
+            "ch6": {
+                title: "最終章：青いノイズの向こう側",
+                sub: "EPISODE: FINAL - BEYOND THE BLUE",
+                content: `
+                    <p>世界は急速に色を失い、粒子となって消えていく。目の前の彼女の体も、指先から透き通り始めていた。俺は必死にその手を掴もうとしたが、感覚はもはや希薄で、空気をつかんでいるのと変わらなかった。</p>
+                    <p>「もういいんだよ、和樹。あなたは、あなたの時間を進めて」</p>
+                    <p>彼女は微笑んだ。その笑顔は、ノイズのない、記憶の中にある一番綺麗な彼女の顔だった。空の亀裂から光が差し込み、俺の意識を白く塗りつぶしていく。</p>
+                    <p>「……さよなら。ノイズのない世界で、また会おうね」</p>
+                    <p>次に目を開けたとき、鼻をついたのは消毒液の匂いだった。窓の外からは、本物の、騒がしくて、美しくない、けれど確かな雨の音が聞こえていた。頬を伝う涙だけが、あの境界線で起きたことが幻ではなかったことを教えていた。</p>
+                    <p>俺は震える手で窓を開けた。そこにはもう、青いノイズは走っていない。俺は一歩、新しい日常へと足を踏み出した。</p>
+                    <p style="text-align:center; margin-top:100px; font-weight:bold; letter-spacing:10px;">- FIN -</p>
+                `,
+                next: null, prev: "#ch5"
+            }
+        };
+
+        function renderChapter() {
+            const hash = window.location.hash.replace('#', '') || 'ch1';
+            const data = chapters[hash];
+            const area = document.getElementById('content-area');
+            if (!data) return;
+
+            document.getElementById('header-chapter').innerText = `異世界の境界線 - ${data.title.split('：')[0]}`;
+            document.getElementById('sub-title').innerText = data.sub;
+            
+            let html = `<div class="chapter-title">${data.title}</div><article>${data.content}</article>`;
+            html += `<div class="page-nav">`;
+            html += data.prev ? `<a href="${data.prev}" class="nav-btn">← 前の章へ</a>` : `<div></div>`;
+            html += data.next ? `<a href="${data.next}" class="nav-btn next">次の章へ →</a>` : `<div class="nav-btn" style="opacity:0.3;">TO BE CONTINUED...</div>`;
+            html += `</div>`;
+
+            area.innerHTML = html;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 設定用関数
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setFont(style) {
+            document.body.classList.toggle('font-serif', style === 'serif');
+            document.getElementById('btn-sans').classList.toggle('active', style === 'sans');
+            document.getElementById('btn-serif').classList.toggle('active', style === 'serif');
+        }
+
+        function setSize(size) {
+            document.documentElement.style.setProperty('--font-size', size + 'rem');
+        }
+
+        window.onhashchange = renderChapter;
+        window.onload = renderChapter;
+    </script>
+</body>
+</html>
