@@ -6,147 +6,73 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600&family=Inter:wght@300;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lib-bg: #fdfdfd;      /* わずかに紙のような白 */
-            --lib-text: #1a1a1a;
-            --lib-accent: #8e7d5d;  /* 古い本の背表紙のような色 */
+            --lib-bg: #fdfdfd;
+            --lib-accent: #8e7d5d;
             --lib-border: #e0e0e0;
         }
+        body { margin: 0; background: var(--lib-bg); display: flex; font-family: 'Inter', serif; }
 
-        body {
-            margin: 0; background: var(--lib-bg); color: var(--lib-text);
-            font-family: 'Inter', 'Noto Serif JP', serif; display: flex;
-        }
-
-        /* --- サイドバー（書架ナビゲーション） --- */
+        /* サイドバー：リンクでページ移動 */
         nav {
-            width: 280px; height: 100vh; background: #f4f4f4;
-            border-right: 1px solid var(--lib-border);
-            display: flex; flex-direction: column; position: fixed;
+            width: 260px; height: 100vh; background: #f4f4f4;
+            border-right: 1px solid var(--lib-border); position: fixed;
         }
-
-        .lib-logo {
-            padding: 40px 30px; font-weight: 600; letter-spacing: 3px;
-            font-size: 1.2rem; color: var(--lib-accent); border-bottom: 1px solid var(--lib-border);
+        .lib-logo { padding: 40px 25px; font-weight: 600; color: var(--lib-accent); letter-spacing: 2px; }
+        .menu { padding: 20px; }
+        .menu a {
+            display: block; padding: 12px 15px; color: #666; text-decoration: none;
+            font-size: 0.9rem; margin-bottom: 5px; border-radius: 4px; transition: 0.2s;
         }
+        .menu a:hover { background: #fff; color: var(--lib-accent); }
+        .menu a.active { background: #fff; color: var(--lib-accent); font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-        .categories { padding: 20px; flex-grow: 1; }
-        .cat-item {
-            padding: 12px 15px; font-size: 0.9rem; cursor: pointer; color: #666;
-            transition: 0.3s; border-radius: 4px;
-        }
-        .cat-item:hover { color: var(--lib-text); background: #ebebeb; }
-        .cat-item.active { color: var(--lib-accent); font-weight: 600; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        /* 本棚エリア */
+        main { margin-left: 260px; padding: 60px; width: 100%; }
+        .shelf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 40px; }
 
-        /* --- メインエリア --- */
-        main {
-            margin-left: 280px; width: calc(100% - 280px);
-            min-height: 100vh; padding: 60px; box-sizing: border-box;
-        }
-
-        .shelf-title { font-size: 0.8rem; letter-spacing: 5px; color: var(--lib-accent); margin-bottom: 40px; }
-
-        /* 本棚のグリッド */
-        .shelf-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 50px 30px;
-        }
-
-        .book-card {
-            cursor: pointer; transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
+        /* 本のカード：aタグで別ページへ飛ばす */
+        .book-link { text-decoration: none; color: inherit; }
+        .book-card { cursor: pointer; transition: 0.3s; }
         .book-card:hover { transform: translateY(-10px); }
-
         .book-cover {
-            aspect-ratio: 2 / 3; background: #fff;
-            border: 1px solid var(--lib-border);
-            box-shadow: 5px 10px 20px rgba(0,0,0,0.08);
-            margin-bottom: 15px; display: flex; align-items: center; justify-content: center;
-            padding: 20px; box-sizing: border-box; text-align: center;
-            font-family: 'Noto Serif JP', serif; font-weight: 600; font-size: 1rem;
+            aspect-ratio: 2/3; background: #fff; border: 1px solid var(--lib-border);
+            box-shadow: 5px 10px 20px rgba(0,0,0,0.05); margin-bottom: 15px;
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+            text-align: center; font-family: 'Noto Serif JP', serif; font-weight: 600;
+            border-top: 4px solid var(--lib-accent);
         }
-
-        .book-info .title { font-weight: 600; font-size: 0.95rem; margin-bottom: 5px; }
-        .book-info .author { font-size: 0.8rem; color: #888; }
-
-        /* --- 読書オーバーレイ --- */
-        #reader {
-            position: fixed; inset: 0; background: var(--lib-bg); z-index: 1000;
-            display: none; flex-direction: column; align-items: center;
-            overflow-y: auto; padding: 100px 20px;
-        }
-        .reader-content {
-            max-width: 650px; width: 100%; font-family: 'Noto Serif JP', serif;
-            line-height: 2.4; font-size: 1.15rem; text-align: justify;
-        }
-        .close-btn {
-            position: fixed; top: 40px; right: 40px; background: none; border: 1px solid var(--lib-border);
-            padding: 10px 20px; cursor: pointer; font-size: 0.8rem; letter-spacing: 2px;
-        }
+        .title { font-weight: 600; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <nav>
         <div class="lib-logo">SURGE LIBRARY</div>
-        <div class="categories">
-            <div class="cat-item active">全ての蔵書</div>
-            <div class="cat-item">日本文学</div>
-            <div class="cat-item">哲学・思想</div>
-            <div class="cat-item">科学アーカイブ</div>
-            <div class="cat-item">お気に入り</div>
+        <div class="menu">
+            <a href="index.html" class="active">蔵書一覧</a>
+            <a href="bungaku.html">日本文学</a> <a href="kagaku.html">科学・哲学</a> <a href="fav.html">お気に入り</a>
         </div>
-        <div style="padding: 30px; font-size: 0.7rem; color: #ccc;">アーカイブ総数: 1,024</div>
     </nav>
 
     <main>
-        <div class="shelf-title">COLLECTION / 日本文学</div>
-        <div class="shelf-grid" id="shelf">
-            </div>
+        <div style="font-size: 0.7rem; letter-spacing: 3px; color: #999; margin-bottom: 30px;">COLLECTION / ALL</div>
+        <div class="shelf-grid">
+            <a href="book1.html" class="book-link">
+                <div class="book-card">
+                    <div class="book-cover">吾輩は猫である</div>
+                    <div class="title">吾輩は猫である</div>
+                    <div style="font-size: 0.7rem; color: #888;">夏目漱石</div>
+                </div>
+            </a>
+            <a href="book2.html" class="book-link">
+                <div class="book-card">
+                    <div class="book-cover">人間失格</div>
+                    <div class="title">人間失格</div>
+                    <div style="font-size: 0.7rem; color: #888;">太宰治</div>
+                </div>
+            </a>
+        </div>
     </main>
 
-    <div id="reader">
-        <button class="close-btn" onclick="closeBook()">CLOSE ARCHIVE</button>
-        <div class="reader-content">
-            <h1 id="r-title" style="font-size: 2.5rem; margin-bottom: 50px;"></h1>
-            <div id="r-text"></div>
-        </div>
-    </div>
-
-    <script>
-        const BOOKS = [
-            { title: "吾輩は猫である", author: "夏目漱石", text: "吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。吾輩はここで始めて人間というものを見た。..." },
-            { title: "人間失格", author: "太宰治", text: "恥の多い生涯を送って来ました。自分には、人間の生活というものが、見当つかないのです。自分は東北の田舎に生れましたので、汽車をはじめて見たのは、よほど大きくなってからでした。..." },
-            { title: "銀河鉄道の夜", author: "宮沢賢治", text: "「ではみなさんは、そういうふうに川だと言われたり、乳の流れたあとだと言われたりしていたこのぼんやりした白いものがほんとうは何かご承知ですか」先生は、星座の図を指しながら問いかけました。..." }
-        ];
-
-        function initShelf() {
-            const shelf = document.getElementById('shelf');
-            BOOKS.forEach((book, i) => {
-                const card = document.createElement('div');
-                card.className = 'book-card';
-                card.onclick = () => openBook(i);
-                card.innerHTML = `
-                    <div class="book-cover" style="border-top: 5px solid var(--lib-accent)">${book.title}</div>
-                    <div class="book-info">
-                        <div class="title">${book.title}</div>
-                        <div class="author">${book.author}</div>
-                    </div>
-                `;
-                shelf.appendChild(card);
-            });
-        }
-
-        function openBook(i) {
-            document.getElementById('r-title').innerText = BOOKS[i].title;
-            document.getElementById('r-text').innerText = BOOKS[i].text;
-            document.getElementById('reader').style.display = 'flex';
-        }
-
-        function closeBook() {
-            document.getElementById('reader').style.display = 'none';
-        }
-
-        initShelf();
-    </script>
 </body>
 </html>
