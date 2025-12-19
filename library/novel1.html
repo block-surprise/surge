@@ -216,8 +216,8 @@
             
             let html = `<div class="chapter-title">${data.title}</div><article>${data.content}</article>`;
             html += `<div class="page-nav">`;
-            html += data.prev ? `<a href="${data.prev}" class="nav-btn">← PREVIOUS</a>` : `<div></div>`;
-            html += data.next ? `<a href="${data.next}" class="nav-btn next">NEXT CHAPTER →</a>` : `<div class="nav-btn" style="opacity:0.3;">TO BE CONTINUED...</div>`;
+            html += data.prev ? `<a href="${data.prev}" class="nav-btn">← 前の章へ</a>` : `<div></div>`;
+            html += data.next ? `<a href="${data.next}" class="nav-btn next">次の章へ →</a>`;
             html += `</div>`;
 
             area.innerHTML = html;
