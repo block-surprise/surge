@@ -2,27 +2,173 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>吾輩は猫である - SURGE Library</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&display=swap" rel="stylesheet">
+    <title>読書モード // SURGE Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body { background: #fdfdfd; color: #1a1a1a; margin: 0; font-family: 'Noto Serif JP', serif; }
-        .container { max-width: 700px; margin: 0 auto; padding: 100px 20px; line-height: 2.5; font-size: 1.2rem; }
-        .back-nav { position: fixed; top: 30px; left: 30px; }
-        .back-nav a { text-decoration: none; color: #8e7d5d; font-size: 0.9rem; border: 1px solid #e0e0e0; padding: 10px 20px; border-radius: 5px; }
-        h1 { font-size: 2.5rem; border-bottom: 1px solid #eee; padding-bottom: 30px; margin-bottom: 50px; }
+        :root {
+            --paper: #fdfdfd;
+            --text: #1a1a1a;
+            --accent: #8e7d5d;
+            --header-h: 64px;
+            --sidebar-w: 280px;
+            --border: rgba(0,0,0,0.08);
+        }
+
+        body {
+            margin: 0; background-color: var(--paper); color: var(--text);
+            font-family: 'Noto Serif JP', serif; transition: 0.3s;
+            display: flex; flex-direction: column; height: 100vh;
+        }
+
+        /* --- ヘッダー（ナビゲーションバー） --- */
+        header {
+            height: var(--header-h); background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 1000; flex-shrink: 0;
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 30px; }
+        .logo { font-family: 'Inter'; font-weight: 700; letter-spacing: 2px; color: var(--accent); }
+        
+        .nav-links { display: flex; gap: 20px; font-family: 'Inter'; font-size: 0.85rem; }
+        .nav-links a { text-decoration: none; color: #666; transition: 0.2s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        .nav-right { display: flex; gap: 10px; }
+
+        /* --- メインレイアウト --- */
+        .main-container {
+            display: flex; flex-grow: 1; overflow: hidden; position: relative;
+        }
+
+        /* 読書エリア */
+        #contentWrapper {
+            flex-grow: 1; overflow-y: auto; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--paper);
+        }
+
+        .mode-horizontal { max-width: 800px; margin: 0 auto; padding: 60px 40px; }
+        .mode-vertical {
+            writing-mode: vertical-rl; -webkit-writing-mode: vertical-rl;
+            height: 100%; width: 100%; padding: 60px 100px; box-sizing: border-box;
+            overflow-x: auto; overflow-y: hidden; display: flex; flex-direction: row-reverse;
+        }
+
+        /* 右サイドバー（おすすめ本） */
+        #sidebar {
+            width: var(--sidebar-w); background: #f9f9f9;
+            border-left: 1px solid var(--border); padding: 30px 20px;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto; flex-shrink: 0;
+        }
+        #sidebar.hidden { margin-right: calc(var(--sidebar-w) * -1); opacity: 0; }
+
+        .sidebar-title { font-size: 0.8rem; font-family: 'Inter'; color: var(--accent); letter-spacing: 2px; margin-bottom: 20px; }
+        .recommend-card {
+            background: #fff; border: 1px solid var(--border); padding: 15px;
+            border-radius: 8px; margin-bottom: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .recommend-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .rec-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; }
+        .rec-author { font-size: 0.75rem; color: #888; }
+
+        /* ツールボタン */
+        .btn {
+            padding: 6px 14px; font-size: 0.75rem; border: 1px solid #ddd;
+            background: #fff; cursor: pointer; border-radius: 5px; font-family: 'Inter';
+        }
+        .btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        h1 { font-size: 2.5rem; margin-bottom: 40px; }
+        .article-body { line-height: 2.4; font-size: 1.2rem; text-align: justify; }
+
+        /* 夜間モード調整 */
+        body.night { background: #1a1a1b; color: #ccc; --paper: #1a1a1b; }
+        body.night header, body.night #sidebar { background: #222; border-color: #333; }
+        body.night .recommend-card { background: #2a2a2a; border-color: #444; }
     </style>
 </head>
-<body>
+<body id="readerBody">
 
-    <div class="back-nav">
-        <a href="index.html">← LIBRARYに戻る</a>
+    <header>
+        <div class="nav-left">
+            <div class="logo">SURGE LIBRARY</div>
+            <nav class="nav-links">
+                <a href="index.html">HOME</a>
+                <a href="bungaku.html">LITERATURE</a>
+                <a href="philosophy.html">PHILOSOPHY</a>
+                <a href="archive.html">ARCHIVE</a>
+            </nav>
+        </div>
+        
+        <div class="nav-right">
+            <button class="btn" onclick="toggleDirection()" id="dirBtn">縦書き</button>
+            <button class="btn" onclick="toggleSidebar()" id="sideBtn">サイドバー隠す</button>
+            <button class="btn" onclick="setMode('night')">夜間モード</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div id="contentWrapper" class="mode-horizontal">
+            <div class="article-body">
+                <h1>吾輩は猫である</h1>
+                <p>吾輩は猫である。名前はまだ無い。</p>
+                <p>どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。吾輩はここで始めて人間というものを見た。しかもあとで聞くとそれは書生という人間中で一番獰悪な種族であったそうだ。この書生というのは時々我々を捕えて煮て食うという話である。</p>
+                <p>（本文が延々と続く...）</p>
+            </div>
+        </div>
+
+        <div id="sidebar">
+            <div class="sidebar-title">RECOMMENDED</div>
+            
+            <div class="recommend-card">
+                <div class="rec-title">こころ</div>
+                <div class="rec-author">夏目漱石</div>
+            </div>
+
+            <div class="recommend-card">
+                <div class="rec-title">走れメロス</div>
+                <div class="rec-author">太宰治</div>
+            </div>
+
+            <div class="recommend-card">
+                <div class="rec-title">羅生門</div>
+                <div class="rec-author">芥川龍之介</div>
+            </div>
+        </div>
     </div>
 
-    <article class="container">
-        <h1>吾輩は猫である</h1>
-        <p>吾輩は猫である。名前はまだ無い。</p>
-        <p>どこで生れたかとんと見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。吾輩はここで始めて人間というものを見た。...</p>
-        </article>
+    <script>
+        function toggleSidebar() {
+            const side = document.getElementById('sidebar');
+            const btn = document.getElementById('sideBtn');
+            side.classList.toggle('hidden');
+            btn.innerText = side.classList.contains('hidden') ? "サイドバー出す" : "サイドバー隠す";
+        }
 
+        function toggleDirection() {
+            const wrapper = document.getElementById('contentWrapper');
+            const btn = document.getElementById('dirBtn');
+            if (wrapper.classList.contains('mode-horizontal')) {
+                wrapper.classList.remove('mode-horizontal');
+                wrapper.classList.add('mode-vertical');
+                btn.innerText = "横書き";
+            } else {
+                wrapper.classList.remove('mode-vertical');
+                wrapper.classList.add('mode-horizontal');
+                btn.innerText = "縦書き";
+            }
+        }
+
+        function setMode(mode) {
+            const body = document.getElementById('readerBody');
+            if(body.classList.contains('night')) {
+                body.classList.remove('night');
+            } else {
+                body.classList.add('night');
+            }
+        }
+    </script>
 </body>
 </html>
