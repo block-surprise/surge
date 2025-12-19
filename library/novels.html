@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>MODERN NOVELS - SURGE Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8f9fa;
+            --text: #2d3436;
+            --accent: #4a90e2; /* 小説セクションは爽やかなブルー */
+            --header-h: 64px;
+            --border: rgba(0,0,0,0.06);
+        }
+
+        body {
+            margin: 0; background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        }
+
+        /* --- 共通ヘッダー --- */
+        header {
+            position: fixed; top: 0; width: 100%; height: var(--header-h);
+            background: #fff; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 1000; box-sizing: border-box;
+        }
+        .logo { font-weight: 700; letter-spacing: 2px; color: var(--accent); text-decoration: none; }
+        .nav-links { display: flex; gap: 25px; font-size: 0.85rem; }
+        .nav-links a { text-decoration: none; color: #666; font-weight: 600; transition: 0.2s; }
+        .nav-links a:hover, .nav-links a.active { color: var(--accent); }
+
+        /* --- メインコンテンツ --- */
+        main {
+            margin-top: var(--header-h);
+            padding: 60px 40px;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .category-info {
+            margin-bottom: 50px;
+            display: flex;
+            align-items: baseline;
+            gap: 20px;
+        }
+        .category-info h1 { font-size: 2.2rem; margin: 0; color: #1a1a1a; }
+        .category-info p { color: var(--accent); font-weight: 700; letter-spacing: 3px; margin: 0; }
+
+        /* --- 本棚：モダン・グリッド --- */
+        .novel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .novel-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid var(--border);
+            transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            flex-direction: column;
+        }
+        .novel-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            border-color: var(--accent);
+        }
+
+        /* サムネイル部分（イラストが入る想定） */
+        .novel-thumb {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .novel-thumb::after {
+            content: "NO IMAGE";
+            font-size: 0.7rem;
+            color: rgba(0,0,0,0.2);
+            font-weight: bold;
+        }
+
+        .novel-body {
+            padding: 20px;
+            flex-grow: 1;
+        }
+        .tag {
+            display: inline-block;
+            background: #f0f7ff;
+            color: var(--accent);
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .novel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .novel-excerpt {
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .novel-author {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #636e72;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .novel-author::before {
+            content: ""; width: 12px; height: 12px; background: #ddd; border-radius: 50%; display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-left">
+            <a href="index.html" class="logo">SURGE LIBRARY</a>
+            <nav class="nav-links">
+                <a href="index.html">HOME</a>
+                <a href="literature.html">LITERATURE</a>
+                <a href="novels.html" class="active">NOVELS</a>
+                <a href="archive.html">ARCHIVE</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="category-info">
+            <h1>現代小説</h1>
+            <p>MODERN STORIES</p>
+        </div>
+
+        <div class="novel-grid">
+            <a href="novel1.html" class="novel-card">
+                <div class="novel-thumb" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);"></div>
+                <div class="novel-body">
+                    <span class="tag">FANTASY</span>
+                    <div class="novel-title">異世界の境界線</div>
+                    <div class="novel-excerpt">「ねえ、聞こえる？」少女の声は、雨音に混じって不自然なほどクリアに響いた……</div>
+                    <div class="novel-author">SURGE</div>
+                </div>
+            </a>
+
+            <a href="novel2.html" class="novel-card">
+                <div class="novel-thumb" style="background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);"></div>
+                <div class="novel-body">
+                    <span class="tag">SCHOOL</span>
+                    <div class="novel-title">放課後のアルゴリズム</div>
+                    <div class="novel-excerpt">理系女子との奇妙な日々。彼女が解こうとしていたのは、恋の数式だった。</div>
+                    <div class="novel-author">M. Tanaka</div>
+                </div>
+            </a>
+
+            <a href="novel3.html" class="novel-card">
+                <div class="novel-thumb" style="background: linear-gradient(135deg, #81ecec 0%, #00cec9 100%);"></div>
+                <div class="novel-body">
+                    <span class="tag">MYSTERY</span>
+                    <div class="novel-title">真夜中のアーカイブ</div>
+                    <div class="novel-excerpt">24時間営業の図書館。そこには、存在しないはずの本が並んでいた。</div>
+                    <div class="novel-author">K. Sato</div>
+                </div>
+            </a>
+
+            <a href="novel4.html" class="novel-card">
+                <div class="novel-thumb" style="background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);"></div>
+                <div class="novel-body">
+                    <span class="tag">SF</span>
+                    <div class="novel-title">コード：ネオン</div>
+                    <div class="novel-excerpt">電脳都市を駆け抜ける、名もなきハッカーたちの物語。</div>
+                    <div class="novel-author">SURGE SYSTEM</div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>
