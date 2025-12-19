@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>哲学・思想 // SURGE Library</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;600&family=Inter:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f2f4f7;
+            --text: #1a1c1e;
+            --accent: #2c3e50; /* 深いネイビーグレー */
+            --header-h: 64px;
+            --border: rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0; background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', 'Noto Serif JP', serif;
+        }
+
+        /* --- ヘッダー --- */
+        header {
+            position: fixed; top: 0; width: 100%; height: var(--header-h);
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 1000; box-sizing: border-box;
+        }
+        .logo { font-weight: 700; letter-spacing: 2px; color: var(--accent); text-decoration: none; }
+        .nav-links { display: flex; gap: 20px; font-size: 0.85rem; }
+        .nav-links a { text-decoration: none; color: #666; transition: 0.2s; }
+        .nav-links a.active { color: var(--accent); font-weight: 700; }
+
+        /* --- メインコンテンツ --- */
+        main {
+            margin-top: var(--header-h);
+            padding: 80px 40px;
+            max-width: 1000px; /* 哲学は少し幅を絞って集中力を高める */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .philosophy-header {
+            text-align: center;
+            margin-bottom: 100px;
+        }
+        .philosophy-header h1 { 
+            font-size: 2.8rem; 
+            font-family: 'Noto Serif JP'; 
+            font-weight: 300;
+            letter-spacing: 0.1em;
+            margin-bottom: 15px;
+        }
+        .philosophy-header p { 
+            color: #7f8c8d; 
+            letter-spacing: 5px; 
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        /* --- 哲学書リスト：リスト形式の美しいカード --- */
+        .philo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .philo-card {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            background: #fff;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: inherit;
+            transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .philo-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+            border-color: var(--accent);
+        }
+
+        .philo-cover {
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-family: 'Noto Serif JP';
+            font-size: 0.9rem;
+            writing-mode: vertical-rl;
+        }
+
+        .philo-body {
+            padding: 30px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .philo-category {
+            font-size: 0.65rem;
+            color: var(--accent);
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+        .philo-title {
+            font-size: 1.4rem;
+            font-family: 'Noto Serif JP';
+            margin-bottom: 10px;
+        }
+        .philo-desc {
+            font-size: 0.9rem;
+            color: #636e72;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        .philo-author {
+            font-size: 0.8rem;
+            font-style: italic;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-left">
+            <a href="index.html" class="logo">SURGE LIBRARY</a>
+            <nav class="nav-links">
+                <a href="index.html">HOME</a>
+                <a href="literature.html">LITERATURE</a>
+                <a href="novels.html">NOVELS</a>
+                <a href="philosophy.html" class="active">PHILOSOPHY</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="philosophy-header">
+            <h1>哲学・思想</h1>
+            <p>Thought & Philosophy</p>
+        </div>
+
+        <div class="philo-list">
+            <a href="philo1.html" class="philo-card">
+                <div class="philo-cover">善悪の彼岸</div>
+                <div class="philo-body">
+                    <span class="philo-category">実存主義</span>
+                    <div class="philo-title">善悪の彼岸</div>
+                    <div class="philo-desc">道徳という枠組みを超え、新しい価値の創造を説く。ニーチェ哲学の精髄。</div>
+                    <div class="philo-author">Friedrich Nietzsche</div>
+                </div>
+            </a>
+
+            <a href="philo2.html" class="philo-card">
+                <div class="philo-cover" style="background:#34495e;">純粋理性批判</div>
+                <div class="philo-body">
+                    <span class="philo-category">認識論</span>
+                    <div class="philo-title">純粋理性批判</div>
+                    <div class="philo-desc">人間は世界をどう捉えているのか。近代哲学の頂にそびえる認識の探求。</div>
+                    <div class="philo-author">Immanuel Kant</div>
+                </div>
+            </a>
+
+            <a href="philo3.html" class="philo-card" style="border-bottom: 4px solid var(--accent);">
+                <div class="philo-cover" style="background:#2c2c2c;">方法序説</div>
+                <div class="philo-body">
+                    <span class="philo-category">合理主義</span>
+                    <div class="philo-title">方法序説</div>
+                    <div class="philo-desc">「我思う、ゆえに我あり」。全てを疑い、確固たる真理を導き出す思考の旅。</div>
+                    <div class="philo-author">René Descartes</div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+</body>
+</html>
