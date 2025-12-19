@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>放課後のアルゴリズム // SURGE Novel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@300;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1a1a1a;
+            --accent: #10b981; /* 知的なエメラルドグリーン */
+            --sub-bg: #f9fbf9;
+            --line-height: 2.3;
+            --font-size: 1.15rem;
+        }
+
+        body {
+            margin: 0; background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            line-height: var(--line-height); transition: 0.3s;
+        }
+
+        header {
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #eee; display: flex;
+            align-items: center; justify-content: space-between;
+            padding: 0 24px; z-index: 1000; box-sizing: border-box;
+        }
+        .back-btn { text-decoration: none; color: var(--accent); font-weight: bold; font-size: 0.8rem; letter-spacing: 1px; }
+        .settings-trigger {
+            cursor: pointer; font-size: 0.75rem; font-weight: bold; border: 1px solid #eee;
+            padding: 5px 12px; border-radius: 20px; color: #666; transition: 0.2s;
+        }
+
+        #settings-panel {
+            position: fixed; top: 70px; right: 24px; width: 200px;
+            background: #fff; border: 1px solid #eee; border-radius: 12px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none; z-index: 1001;
+        }
+        .set-row { margin-bottom: 15px; }
+        .set-label { font-size: 0.7rem; font-weight: bold; color: #aaa; margin-bottom: 5px; display: block; }
+        .set-btns { display: flex; gap: 5px; }
+        .set-btn { flex: 1; padding: 5px; font-size: 0.7rem; border: 1px solid #eee; background: #fff; cursor: pointer; border-radius: 4px; }
+        .set-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        .hero-banner {
+            width: 100%; height: 320px; 
+            background: linear-gradient(145deg, #065f46, #10b981, #34d399);
+            margin-top: 60px; display: flex; align-items: center; justify-content: center;
+            color: white; flex-direction: column; text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .hero-banner h1 { font-size: 2.6rem; margin: 0; font-weight: 700; letter-spacing: 4px; }
+
+        main { max-width: 760px; margin: 0 auto; padding: 60px 25px 120px; min-height: 80vh; }
+        .chapter-title {
+            font-size: 1.6rem; color: var(--accent); font-weight: 700;
+            margin-bottom: 80px; border-left: 6px solid var(--accent); padding-left: 24px;
+        }
+
+        article p { margin-bottom: 2.4em; font-size: var(--font-size); letter-spacing: 0.04em; }
+        .thought { color: #576574; border-left: 2px solid #eee; padding-left: 15px; }
+        
+        .font-serif { font-family: 'Noto Serif JP', serif; }
+
+        .page-nav {
+            display: flex; justify-content: space-between;
+            margin-top: 100px; border-top: 1px solid #eee; padding-top: 50px;
+        }
+        .nav-btn {
+            text-decoration: none; color: #636e72; font-size: 0.85rem; font-weight: 600;
+            padding: 12px 28px; border: 1px solid #ddd; border-radius: 50px; transition: 0.3s;
+        }
+        .nav-btn.next { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .fade-in { animation: fadeIn 0.8s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="index.html" class="back-btn">← LIBRARY</a>
+        <div id="header-chapter" class="novel-info">LOADING...</div>
+        <div class="settings-trigger" onclick="toggleSettings()">DISPLAY SETTINGS</div>
+    </header>
+
+    <div id="settings-panel">
+        <div class="set-row">
+            <span class="set-label">FONT STYLE</span>
+            <div class="set-btns">
+                <button class="set-btn active" id="btn-sans" onclick="setFont('sans')">ゴシック</button>
+                <button class="set-btn" id="btn-serif" onclick="setFont('serif')">明朝体</button>
+            </div>
+        </div>
+        <div class="set-row">
+            <span class="set-label">TEXT SIZE</span>
+            <div class="set-btns">
+                <button class="set-btn" onclick="setSize(0.9)">小</button>
+                <button class="set-btn active" id="btn-size-m" onclick="setSize(1.15)">中</button>
+                <button class="set-btn" onclick="setSize(1.4)">大</button>
+            </div>
+        </div>
+        <button onclick="toggleSettings()" style="width:100%; border:none; background:#eee; padding:5px; border-radius:4px; font-size:0.6rem; cursor:pointer;">CLOSE</button>
+    </div>
+
+    <div class="hero-banner">
+        <h1>放課後のアルゴリズム</h1>
+        <p id="sub-title">MATHEMATICAL YOUTH</p>
+    </div>
+
+    <main id="content-area" class="fade-in">
+    </main>
+
+    <script>
+        const chapters = {
+            "ch1": {
+                title: "第一章：恋の定義",
+                sub: "EPISODE: 01 - DEFINITION OF LOVE",
+                content: `
+                    <p>「ねえ、和樹君。あなたにとって『恋』を数式で表すとどうなるかしら？」</p>
+                    <p>放課後の理科準備室。西日が差し込み、埃の粒子が黄金色に輝く空間で、彼女——白銀凛（しろがね・りん）は、黒板にチョークで複雑な関数を書き込みながら、突拍子もない質問を投げかけてきた。</p>
+                    <p>俺は丸椅子に座り、彼女の背中を見つめたまま言葉に詰まる。彼女は学年で一番の秀才であり、同時に『数学以外の言語を理解しない』と噂される変人でもあった。</p>
+                    <p>「数式？ いや、普通は心拍数とか、脳内物質の分泌量とか……そういう生物学的な話になるんじゃないか？」</p>
+                    <p>「それじゃあ情緒がないわね。私はもっと純粋な、論理的な証明を求めているの」</p>
+                    <p>彼女はチョークを置き、振り返った。眼鏡の奥にある知的な瞳が、まるで未知の解を探し当てるかのように俺を射抜く。</p>
+                    <p class="thought">（情緒がない、か。数学に情緒を求めている時点で、彼女も相当なロマンチストだと思うんだが）</p>
+                    <p>「二人の人間の距離が縮まる速度、共有する情報の質量、そして発生する感情の熱力学的な変化。これらを統合すれば、一つのアルゴリズムが導き出せるはずよ。私はそれを『恋のアルゴリズム』と呼んでいるわ」</p>
+                    <p>彼女は机の上のノートを開き、俺に手招きをした。そこには、俺が今までの人生で見たこともないほど美しく、そして難解な数式が並んでいた。これが、俺たちの奇妙な共同研究の始まりだった。</p>
+                `,
+                next: "#ch2", prev: null
+            },
+            "ch2": {
+                title: "第二章：未解決の変数",
+                sub: "EPISODE: 02 - UNKNOWN VARIABLES",
+                content: `
+                    <p>「まずは、この『視線の衝突回数』という変数を計測しましょう」</p>
+                    <p>凛はストップウォッチを手に取り、真顔で俺の顔を覗き込んできた。距離、およそ20センチ。シャンプーの微かな香りが、アルコールの匂いが漂う理科室に溶け出している。</p>
+                    <p>「ちょっ、近すぎないか？」</p>
+                    <p>「観測精度を上げるためには、ノイズを最小限に抑える必要があるわ。さあ、逸らさないで。私の瞳の中に、あなたの何が見えるかしら？」</p>
+                    <p class="thought">（見えるのは、顔を真っ赤にしている自分の情けない顔だけだ）</p>
+                    <p>彼女の合理的な態度は、時にどんな告白よりも俺の心拍数を跳ね上げた。彼女自身は、自分の鼓動の乱れをどう数式化しているのだろうか。俺には、彼女の瞳がわずかに揺れているように見えたのだが。</p>
+                `,
+                next: null, prev: "#ch1"
+            }
+        };
+
+        function renderChapter() {
+            const hash = window.location.hash.replace('#', '') || 'ch1';
+            const data = chapters[hash];
+            const area = document.getElementById('content-area');
+            if (!data) return;
+
+            document.getElementById('header-chapter').innerText = `放課後のアルゴリズム - ${data.title.split('：')[0]}`;
+            document.getElementById('sub-title').innerText = data.sub;
+            
+            let html = `<div class="chapter-title">${data.title}</div><article>${data.content}</article>`;
+            html += `<div class="page-nav">`;
+            html += data.prev ? `<a href="${data.prev}" class="nav-btn">← 前の章へS</a>` : `<div></div>`;
+            html += data.next ? `<a href="${data.next}" class="nav-btn next">次の章へ →</a>`;
+            html += `</div>`;
+
+            area.innerHTML = html;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function setFont(style) {
+            document.body.classList.toggle('font-serif', style === 'serif');
+            document.getElementById('btn-sans').classList.toggle('active', style === 'sans');
+            document.getElementById('btn-serif').classList.toggle('active', style === 'serif');
+        }
+
+        function setSize(size) {
+            document.documentElement.style.setProperty('--font-size', size + 'rem');
+        }
+
+        window.onhashchange = renderChapter;
+        window.onload = renderChapter;
+    </script>
+</body>
+</html>
