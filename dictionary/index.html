@@ -4,18 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SURGE // Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Noto+Sans+JP:wght@300;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f8fafc;
+            --bg: #f0f2f5;
             --sidebar-bg: #ffffff;
             --accent: #007aff;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-            --border: #e2e8f0;
-            --header-h: 64px;
-            --sidebar-w: 260px;
+            --text-main: #1c1c1e;
+            --text-sub: #8e8e93;
+            --white: #ffffff;
+            --radius: 20px; /* 角を丸く */
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0; background: var(--bg); color: var(--text-main);
@@ -23,66 +24,90 @@
             display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* --- サイドバー --- */
+        /* --- サイドバー（柔らかいデザイン） --- */
         aside {
-            width: var(--sidebar-w); background: var(--sidebar-bg);
-            border-right: 1px solid var(--border); display: flex; flex-direction: column;
+            width: 260px; background: var(--sidebar-bg);
+            margin: 15px; border-radius: var(--radius);
+            display: flex; flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             z-index: 100;
         }
 
         .sidebar-logo {
-            height: var(--header-h); display: flex; align-items: center;
-            padding: 0 25px; font-weight: 700; color: var(--accent);
-            letter-spacing: 1px; border-bottom: 1px solid var(--border);
+            padding: 30px 25px; font-weight: 700; color: var(--accent);
+            font-size: 1.2rem; letter-spacing: 1px;
         }
 
-        .menu-list { padding: 20px 0; flex-grow: 1; }
+        .menu-list { padding: 10px; flex-grow: 1; }
         .menu-item {
-            padding: 12px 25px; color: var(--text-sub); cursor: pointer;
-            font-size: 0.95rem; transition: 0.2s; display: flex; align-items: center; gap: 12px;
+            padding: 15px 20px; color: var(--text-sub); cursor: pointer;
+            font-size: 0.95rem; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 12px;
+            border-radius: 15px; margin-bottom: 5px;
         }
-        .menu-item:hover { background: #f1f5f9; color: var(--accent); }
-        .menu-item.active { background: #eff6ff; color: var(--accent); font-weight: 600; }
+        .menu-item:hover { background: #f2f2f7; color: var(--accent); }
+        .menu-item.active { background: #e5f1ff; color: var(--accent); font-weight: 600; }
 
-        /* 今日のピックアップ（履歴の代わり） */
         .pickup-box {
-            margin: 20px; padding: 15px; background: #f8fafc;
-            border-radius: 12px; border: 1px solid var(--border);
+            margin: 20px; padding: 20px; background: #f8f9ff;
+            border-radius: 18px; font-size: 0.8rem;
         }
-        .pickup-label { font-size: 0.7rem; color: var(--accent); font-weight: 700; margin-bottom: 8px; }
-        .pickup-content { font-size: 0.8rem; color: var(--text-sub); line-height: 1.4; }
 
         /* --- メインコンテンツ --- */
-        main { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        main {
+            flex-grow: 1; position: relative;
+            margin: 15px 15px 15px 0; /* サイドバーとの間に隙間 */
+            background: var(--white); border-radius: var(--radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
 
         header {
-            height: var(--header-h); background: #fff; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; padding: 0 30px;
+            height: 70px; padding: 0 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #f2f2f7;
         }
 
-        .page-content { flex-grow: 1; overflow-y: auto; padding: 40px; display: none; }
-        .page-content.active { display: block; }
+        /* ページ全体のフェードイン */
+        .page-content {
+            position: absolute; inset: 70px 0 0 0;
+            padding: 40px; overflow-y: auto;
+            opacity: 0; transform: translateY(10px); pointer-events: none;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .page-content.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        /* 検索ホーム */
-        .search-hero { margin-top: 10vh; text-align: center; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; }
+        /* --- 検索ホーム --- */
+        .search-hero {
+            max-width: 600px; margin: 15vh auto 0; text-align: center;
+        }
         .search-bar {
-            background: #fff; border: 1px solid var(--border); border-radius: 12px;
-            padding: 15px 25px; display: flex; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            background: #f2f2f7; border-radius: 25px;
+            padding: 15px 25px; display: flex; transition: 0.3s;
         }
-        #mainInput { flex-grow: 1; border: none; outline: none; font-size: 1.1rem; }
+        .search-bar:focus-within { background: #e5e5ea; box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
+        #mainInput { background: transparent; border: none; outline: none; flex-grow: 1; font-size: 1.1rem; }
 
-        /* 結果表示 */
-        #resultView { background: #fff; border-radius: 16px; padding: 40px; border: 1px solid var(--border); margin-top: 20px; display: none; }
-        #resultView h1 { margin: 0 0 20px; font-size: 2.5rem; }
-        .wiki-text { line-height: 1.8; color: #334155; }
+        /* --- 検索結果ページ --- */
+        .result-card {
+            max-width: 800px; margin: 0 auto;
+        }
+        .result-card h1 { font-size: 3rem; margin: 0 0 20px; }
+        .wiki-text { line-height: 1.8; font-size: 1.1rem; color: #3a3a3c; }
 
-        /* ノートページ */
-        .note-area { width: 100%; height: 70vh; border: 1px solid var(--border); border-radius: 12px; padding: 20px; font-family: inherit; font-size: 1rem; resize: none; outline: none; }
+        /* --- ノート --- */
+        .note-area {
+            width: 100%; height: 80%; border: none; background: #f9f9fb;
+            border-radius: 15px; padding: 30px; font-size: 1rem; outline: none; resize: none;
+        }
 
-        /* 設定ページ */
-        .settings-row { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--border); }
+        /* --- 設定 --- */
+        .settings-item {
+            background: #f9f9fb; padding: 20px; border-radius: 15px;
+            display: flex; justify-content: space-between; margin-bottom: 10px;
+        }
 
-        .loading { display: none; color: var(--accent); margin-top: 10px; font-size: 0.8rem; }
+        #loader { text-align: center; color: var(--accent); margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
@@ -90,130 +115,99 @@
     <aside>
         <div class="sidebar-logo">SURGE HUB</div>
         <div class="menu-list">
-            <div class="menu-item active" onclick="showPage('home')"><span>🔍</span> 辞書検索</div>
-            <div class="menu-item" onclick="showPage('note')"><span>📝</span> マイノート</div>
-            <div class="menu-item" onclick="showPage('settings')"><span>⚙️</span> システム設定</div>
+            <div id="m-home" class="menu-item active" onclick="showPage('home')"><span>🔍</span> 検索</div>
+            <div id="m-result" class="menu-item" onclick="showPage('result')" style="display:none;"><span>📄</span> 検索結果</div>
+            <div id="m-note" class="menu-item" onclick="showPage('note')"><span>📝</span> ノート</div>
+            <div id="m-settings" class="menu-item" onclick="showPage('settings')"><span>⚙️</span> 設定</div>
         </div>
-        
-        <div class="pickup-box">
-            <div class="pickup-label">RANDOM PICKUP</div>
-            <div class="pickup-content" id="pickupText">読み込み中...</div>
-        </div>
+        <div class="pickup-box" id="pickupText">今日のことわざ: 知恵は力なり</div>
     </aside>
 
     <main>
         <header>
-            <div id="headerTitle" style="font-weight: 600;">辞書検索</div>
-            <div style="font-size: 0.8rem; color: var(--text-sub);" id="currentTime"></div>
+            <div id="headerTitle" style="font-weight: 600; font-size: 1.1rem;">ホーム</div>
+            <div id="time" style="font-size: 0.8rem; color: var(--text-sub);"></div>
         </header>
 
         <div id="page-home" class="page-content active">
             <div class="search-hero">
-                <h2 style="font-weight: 300; font-size: 1.8rem;">何を知りたいですか？</h2>
+                <h2 style="font-weight: 600; font-size: 2rem;">Explore Knowledge</h2>
                 <div class="search-bar">
-                    <input type="text" id="mainInput" placeholder="キーワードを入力..." autocomplete="off">
+                    <input type="text" id="mainInput" placeholder="キーワードを入力してください..." autocomplete="off">
                 </div>
-                <div id="loader" class="loading">データベースにアクセス中...</div>
+                <div id="loader">読み込み中...</div>
             </div>
-            <div id="resultView">
+        </div>
+
+        <div id="page-result" class="page-content">
+            <div class="result-card">
+                <button onclick="showPage('home')" style="background:none; border:none; color:var(--accent); cursor:pointer; margin-bottom:20px;">← 検索に戻る</button>
                 <h1 id="dispWord"></h1>
                 <div id="dispMeaning" class="wiki-text"></div>
-                <div style="margin-top: 20px; font-size: 0.7rem; color: #94a3b8;">出典: Wikipedia</div>
             </div>
         </div>
 
         <div id="page-note" class="page-content">
-            <h2 style="margin-top: 0;">マイノート</h2>
-            <p style="color: var(--text-sub); font-size: 0.9rem;">考えたことや検索のメモを自由に残せます（自動保存）。</p>
-            <textarea id="noteArea" class="note-area" placeholder="ここに自由に書き込んでください..."></textarea>
+            <textarea id="noteArea" class="note-area" placeholder="ここに自由に書き残してください..."></textarea>
         </div>
 
         <div id="page-settings" class="page-content">
-            <h2 style="margin-top: 0;">システム設定</h2>
-            <div class="settings-row">
-                <div>
-                    <div style="font-weight: 600;">ダークモード</div>
-                    <div style="font-size: 0.8rem; color: var(--text-sub);">画面の配色を暗くします（開発中）</div>
-                </div>
+            <div class="settings-item">
+                <span>ダークモード（準備中）</span>
                 <input type="checkbox" disabled>
             </div>
-            <div class="settings-row">
-                <div>
-                    <div style="font-weight: 600;">フォントサイズ</div>
-                    <div style="font-size: 0.8rem; color: var(--text-sub);">文字の大きさを調整します</div>
-                </div>
-                <select><option>標準</option><option>大</option></select>
-            </div>
-            <div class="settings-row" style="border: none;">
-                <button onclick="localStorage.clear(); location.reload();" style="color: #ef4444; border: 1px solid #fecaca; background: #fef2f2; padding: 8px 15px; border-radius: 6px; cursor: pointer;">データを初期化</button>
+            <div class="settings-item">
+                <span>全てのデータをリセット</span>
+                <button onclick="localStorage.clear(); location.reload();" style="color:red; border:none; background:none; cursor:pointer;">実行</button>
             </div>
         </div>
     </main>
 
     <script>
-        // Wikipedia APIを使った検索
-        async function searchWikipedia() {
-            const word = document.getElementById('mainInput').value.trim();
-            if (!word) return;
-
-            const loader = document.getElementById('loader');
-            const resultView = document.getElementById('resultView');
-            loader.style.display = 'block';
-
-            try {
-                const url = `https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(word)}`;
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.title && data.extract) {
-                    document.getElementById('dispWord').innerText = data.title;
-                    document.getElementById('dispMeaning').innerHTML = data.extract;
-                    resultView.style.display = 'block';
-                } else {
-                    alert("該当する項目が見つかりませんでした。");
-                }
-            } catch (e) {
-                alert("データの取得に失敗しました。");
-            } finally {
-                loader.style.display = 'none';
-            }
-        }
-
-        // ページ切り替え機能
+        // ページ切り替え（アニメーション付き）
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
             
             document.getElementById(`page-${pageId}`).classList.add('active');
-            event.currentTarget.classList.add('active');
+            document.getElementById(`m-${pageId}`).classList.add('active');
             
-            const titles = { home: '辞書検索', note: 'マイノート', settings: 'システム設定' };
+            const titles = { home: 'ホーム', result: '検索結果', note: 'ノート', settings: '設定' };
             document.getElementById('headerTitle').innerText = titles[pageId];
         }
 
-        // ノートの保存機能
-        const noteArea = document.getElementById('noteArea');
-        noteArea.value = localStorage.getItem('surge_note') || "";
-        noteArea.addEventListener('input', () => {
-            localStorage.setItem('surge_note', noteArea.value);
-        });
+        // Wikipedia 検索
+        async function search() {
+            const q = document.getElementById('mainInput').value.trim();
+            if(!q) return;
+            
+            document.getElementById('loader').style.display = 'block';
+            try {
+                const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);
+                const data = await res.json();
+                
+                if(data.extract) {
+                    document.getElementById('dispWord').innerText = data.title;
+                    document.getElementById('dispMeaning').innerText = data.extract;
+                    document.getElementById('m-result').style.display = 'flex'; // 結果メニューを表示
+                    showPage('result');
+                } else {
+                    alert("見つかりませんでした");
+                }
+            } catch(e) { alert("エラーが発生しました"); }
+            document.getElementById('loader').style.display = 'none';
+        }
 
-        // 今日のピックアップ（ダミーデータ）
-        const pickups = [
-            "【黄金比】最も美しいとされる比率。1:1.618。",
-            "【シュレーディンガーの猫】量子力学の思考実験。",
-            "【パレートの法則】全体の8割は2割の要素で作られる。",
-            "【UXデザイン】ユーザーの体験を設計すること。"
-        ];
-        document.getElementById('pickupText').innerText = pickups[Math.floor(Math.random() * pickups.length)];
+        // ノート自動保存
+        const na = document.getElementById('noteArea');
+        na.value = localStorage.getItem('s_note') || "";
+        na.oninput = () => localStorage.setItem('s_note', na.value);
 
-        // 時計表示
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('currentTime').innerText = now.toLocaleString();
-        }, 1000);
+        // キー入力
+        document.getElementById('mainInput').onkeydown = (e) => { if(e.key==='Enter') search(); };
 
-        document.getElementById('mainInput').onkeydown = (e) => { if (e.key === 'Enter') searchWikipedia(); };
+        // 時計
+        setInterval(() => { document.getElementById('time').innerText = new Date().toLocaleTimeString(); }, 1000);
     </script>
 </body>
 </html>
