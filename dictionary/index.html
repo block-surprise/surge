@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SURGE // Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;600&family=Inter:wght@100;400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --text: #ffffff;
+            --accent: #d4af37;
+            --sub: #888;
+        }
+
+        body {
+            margin: 0; background: var(--bg); color: var(--text);
+            font-family: 'Inter', 'Noto Serif JP', serif;
+            overflow-x: hidden;
+        }
+
+        /* --- ホーム画面（初期状態） --- */
+        .home-layer {
+            height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s;
+        }
+
+        .logo {
+            font-size: 4rem; font-weight: 100; letter-spacing: 15px;
+            margin-bottom: 40px; text-transform: uppercase;
+        }
+
+        .search-wrapper {
+            width: 90%; max-width: 600px; position: relative;
+        }
+
+        #mainInput {
+            width: 100%; background: transparent; border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding: 15px 0; color: #fff; font-size: 1.5rem;
+            text-align: center; outline: none; transition: 0.3s;
+        }
+
+        #mainInput:focus { border-bottom-color: var(--accent); }
+
+        /* --- 検索結果レイヤー --- */
+        .result-layer {
+            position: absolute; top: 100vh; width: 100%;
+            min-height: 100vh; padding: 80px 20px; box-sizing: border-box;
+            background: #000; transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; justify-content: center;
+        }
+
+        .content-inner { max-width: 800px; width: 100%; }
+
+        .back-btn {
+            background: none; border: 1px solid #333; color: #666;
+            padding: 8px 20px; cursor: pointer; margin-bottom: 40px;
+        }
+
+        .result-title {
+            font-size: 3.5rem; margin: 0 0 10px; font-weight: 600;
+        }
+
+        .result-meta { color: var(--accent); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 40px; }
+
+        .meaning-box {
+            font-size: 1.2rem; line-height: 2; font-weight: 200;
+            border-left: 1px solid var(--accent); padding-left: 30px;
+            white-space: pre-wrap;
+        }
+
+        /* 画面遷移アニメーション用クラス */
+        .searching .home-layer { transform: translateY(-50vh); opacity: 0; pointer-events: none; }
+        .searching .result-layer { transform: translateY(-100vh); }
+
+        #status { font-size: 0.7rem; color: #444; margin-top: 20px; letter-spacing: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="home-layer" id="home">
+        <div class="logo">SURGE</div>
+        <div class="search-wrapper">
+            <input type="text" id="mainInput" placeholder="言葉を検索..." autocomplete="off">
+            <div id="status">PRESS ENTER TO EXPLORE</div>
+        </div>
+    </div>
+
+    <div class="result-layer" id="result">
+        <div class="content-inner">
+            <button class="back-btn" onclick="resetSearch()">← BACK TO HOME</button>
+            <h1 id="dispWord" class="result-title"></h1>
+            <div class="result-meta">SURGE LEXICON // JAPANESE ARCHIVE</div>
+            <div id="dispMeaning" class="meaning-box"></div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://surgehome.proluce.workers.dev/"; 
+        // 日本語の辞書として振る舞うためのプロンプト
+        const SYSTEM_PROMPT = "あなたは日本語の広辞苑のような重厚な辞書です。入力された言葉の定義を、1.語義、2.語源や背景、3.その言葉が持つ現代的なニュアンスの順で、美しく知的な日本語で解説してください。";
+
+        const input = document.getElementById('mainInput');
+        
+        async function performSearch() {
+            const word = input.value.trim();
+            if (!word) return;
+
+            document.getElementById('status').innerText = "ARCHIVING DATA...";
+
+            try {
+                // AIを辞書エンジンとして使用
+                const res = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ inputs: `${SYSTEM_PROMPT}\n【検索語】: ${word}\n解説:` })
+                });
+                const data = await res.json();
+                const reply = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("解説:").pop()?.trim();
+
+                // 画面表示の更新
+                document.getElementById('dispWord').innerText = word;
+                document.getElementById('dispMeaning').innerText = reply;
+
+                // 画面遷移アニメーション
+                document.body.classList.add('searching');
+                document.getElementById('status').innerText = "DONE.";
+
+            } catch (e) {
+                document.getElementById('status').innerText = "ERROR: CONNECTION FAILED.";
+            }
+        }
+
+        function resetSearch() {
+            document.body.classList.remove('searching');
+            input.value = '';
+            input.focus();
+            document.getElementById('status').innerText = "PRESS ENTER TO EXPLORE";
+        }
+
+        input.onkeydown = (e) => { if (e.key === 'Enter') performSearch(); };
+    </script>
+</body>
+</html>
