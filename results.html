@@ -140,16 +140,32 @@
 
     function clickTab(el) {
       const type = el.getAttribute('data-type');
+      const q = document.getElementById('searchInput').value.trim();
+      
+      // キーワードがない場合は何もしない
+      if (!q) return;
+
+      if (type === 'image') {
+        // 画像タブの場合は直接URLを構築して遷移
+        const targetUrl = `https://surge.ad-hub.f5.si/results?q=${encodeURIComponent(q)}#gsc.tab=1&gsc.q=${encodeURIComponent(q)}`;
+        location.href = targetUrl;
+        return;
+      }
+
+      // --- それ以外のタブの処理（従来通り） ---
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
-      const q = document.getElementById('searchInput').value.trim();
+      
       const summaryBox = document.getElementById('aiSummaryBox');
       const aiModeArea = document.getElementById('aiModeContainer');
       const webArea = document.getElementById('webResultsArea');
       const element = google.search.cse.element.getElement("searchresults-only");
+
       if (type === 'ai') {
-        webArea.style.display = 'none'; summaryBox.style.display = 'none'; aiModeArea.style.display = 'block';
-        if (q && !document.getElementById('aiChatHistory').hasChildNodes()) {
+        webArea.style.display = 'none'; 
+        summaryBox.style.display = 'none'; 
+        aiModeArea.style.display = 'block';
+        if (!document.getElementById('aiChatHistory').hasChildNodes()) {
           const history = document.getElementById('aiChatHistory');
           const firstUserMsg = document.createElement('div');
           firstUserMsg.className = 'user-bubble';
@@ -158,20 +174,19 @@
           getAIResponse(q, 'aiChatHistory', true);
         }
       } else {
-        aiModeArea.style.display = 'none'; webArea.style.display = 'block';
+        aiModeArea.style.display = 'none'; 
+        webArea.style.display = 'block';
         summaryBox.style.display = (type === 'web') ? 'block' : 'none';
-        if (q && element) {
-          if (type === 'image') {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=1&gsc.q=" + encodeURIComponent(q));
-            element.execute(q, 1, {searchType: 'image'});
+        if (element) {
+          if (type === 'video') {
+            element.execute(q + " site:youtube.com");
           } else {
-            history.replaceState(null, null, location.pathname + location.search + "#gsc.tab=0&gsc.q=" + encodeURIComponent(q));
-            if (type === 'video') element.execute(q + " site:youtube.com");
-            else element.execute(q, 1, {searchType: ''});
+            element.execute(q, 1, {searchType: ''});
           }
         }
       }
     }
+
     window.__gcse = {
       callback: function() {
         const params = new URLSearchParams(location.search);
@@ -182,7 +197,10 @@
           const element = google.search.cse.element.getElement("searchresults-only");
           if (location.hash.includes('gsc.tab=1')) {
             const imgTab = document.getElementById('tab-image');
-            clickTab(imgTab);
+            // 画像タブの状態を維持するためにアクティブ表示にする
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            imgTab.classList.add('active');
+            if (element) element.execute(q, 1, {searchType: 'image'});
           } else {
             document.getElementById('aiSummaryBox').style.display = 'block';
             getAIResponse(q, 'aiSummaryContent');
