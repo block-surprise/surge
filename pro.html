@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SURGE PRO</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #1a1a1a;
+      --muted: #666666;
+      --border: #e0e0e0;
+      --accent: #007aff;
+      --card-bg: #f5f5f7;
+      --shadow: 0 8px 30px rgba(0,0,0,0.08);
+      --glass: rgba(255, 255, 255, 0.8);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0a0a0a;
+        --text: #f5f5f7;
+        --muted: #a1a1a6;
+        --border: #333333;
+        --accent: #0a84ff;
+        --card-bg: #1c1c1e;
+        --shadow: 0 8px 30px rgba(0,0,0,0.3);
+        --glass: rgba(20, 20, 20, 0.8);
+      }
+    }
+
+    * { box-sizing: border-box; transition: all 0.2s ease; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+      backdrop-filter: blur(10px); background: var(--glass); z-index: 100;
+    }
+    .brand { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.5px; }
+    .brand span { color: var(--accent); }
+
+    /* Main Content */
+    main {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 2rem; overflow-y: auto;
+    }
+
+    .search-container {
+      width: min(100%, 720px); position: relative; margin-bottom: 2rem;
+    }
+
+    #query {
+      width: 100%; padding: 1.2rem 1.5rem; font-size: 1.25rem;
+      border: 1px solid var(--border); border-radius: 18px;
+      background: var(--card-bg); color: var(--text); outline: none;
+      box-shadow: var(--shadow);
+    }
+
+    #query:focus { border-color: var(--accent); transform: scale(1.01); }
+
+    /* Suggestion Box */
+    .suggestions {
+      position: absolute; top: 110%; left: 0; right: 0;
+      background: var(--glass); border-radius: 14px; border: 1px solid var(--border);
+      display: none; flex-direction: column; overflow: hidden; z-index: 1000;
+      backdrop-filter: blur(20px);
+    }
+    .suggestion-item {
+      padding: 0.8rem 1.2rem; cursor: pointer; border-bottom: 1px solid var(--border);
+    }
+    .suggestion-item:hover { background: var(--accent); color: white; }
+
+    /* Quick Links */
+    .quick-links {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 1.5rem; width: min(100%, 600px); margin-top: 1rem;
+    }
+    .link-item {
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      text-decoration: none; color: var(--muted); font-size: 0.8rem;
+    }
+    .link-icon {
+      width: 48px; height: 48px; border-radius: 12px; background: var(--card-bg);
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+      border: 1px solid var(--border);
+    }
+    .link-item:hover .link-icon { transform: translateY(-5px); background: var(--accent); color: white; }
+
+    /* Modal PRO styling */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .modal {
+      width: min(90vw, 500px); background: var(--bg); border-radius: 24px;
+      padding: 2rem; max-height: 80vh; overflow-y: auto;
+    }
+    .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
+    button {
+      padding: 0.6rem 1rem; border-radius: 10px; border: none; cursor: pointer;
+      font-weight: 500; background: var(--card-bg); color: var(--text);
+    }
+    button.primary { background: var(--accent); color: white; }
+
+    .pro-badge {
+      background: linear-gradient(45deg, #007aff, #00ff88);
+      color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 800;
+      margin-left: 5px; vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">SURGE<span>PRO</span><span class="pro-badge">EDITION</span></div>
+    <div class="nav-actions">
+      <select id="engine" style="padding: 5px; border-radius: 5px;"></select>
+      <button id="openSettings">⚙️</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="search-container">
+      <input id="query" type="text" placeholder="キーワードを入力、または ! でコマンド..." autocomplete="off">
+      <div id="suggestions" class="suggestions"></div>
+    </div>
+
+    <div class="quick-links" id="quickLinks">
+      </div>
+  </main>
+
+  <div class="modal-backdrop" id="settingsModal">
+    <div class="modal">
+      <h2>Settings</h2>
+      <div class="section">
+        <h3>コマンド設定 (!cmd)</h3>
+        <p class="muted" style="font-size: 0.8rem;">!yt = YouTube, !w = Wikipedia, !g = Google</p>
+      </div>
+      <div class="btn-group">
+        <button id="clearHistory" style="background: #ff3b30; color: white;">履歴削除</button>
+        <button id="closeSettings" class="primary">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const CONFIG = {
+      engines: [
+        { id: 'google', name: 'Google', url: 'https://google.com/search?q={query}', cmd: '!g' },
+        { id: 'youtube', name: 'YouTube', url: 'https://youtube.com/results?search_query={query}', cmd: '!yt' },
+        { id: 'wiki', name: 'Wikipedia', url: 'https://ja.wikipedia.org/wiki/{query}', cmd: '!w' },
+        { id: 'duck', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={query}', cmd: '!d' }
+      ],
+      bookmarks: [
+        { name: 'GitHub', url: 'https://github.com', icon: '🐙' },
+        { name: 'Gmail', url: 'https://gmail.com', icon: '✉️' },
+        { name: 'ChatGPT', url: 'https://chat.openai.com', icon: '🤖' },
+        { name: 'Twitter', url: 'https://x.com', icon: '🐦' }
+      ]
+    };
+
+    const queryInput = document.getElementById('query');
+    const engineSelect = document.getElementById('engine');
+    const suggestionsBox = document.getElementById('suggestions');
+    const quickLinks = document.getElementById('quickLinks');
+
+    // 初期化
+    function init() {
+      // エンジン選択の描画
+      CONFIG.engines.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id; opt.textContent = e.name;
+        engineSelect.appendChild(opt);
+      });
+
+      // クイックリンクの描画
+      CONFIG.bookmarks.forEach(b => {
+        const a = document.createElement('a');
+        a.className = 'link-item'; a.href = b.url;
+        a.innerHTML = `<div class="link-icon">${b.icon}</div><span>${b.name}</span>`;
+        quickLinks.appendChild(a);
+      });
+
+      setupEventListeners();
+    }
+
+    function setupEventListeners() {
+      // 検索実行
+      queryInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter') performSearch();
+      });
+
+      // サジェスト機能 (Google API使用)
+      queryInput.addEventListener('input', async () => {
+        const val = queryInput.value.trim();
+        if (val.length < 2 || val.startsWith('!')) {
+          suggestionsBox.style.display = 'none';
+          return;
+        }
+
+        try {
+          // JSONPの代わりに特定のProxy等が必要な場合もありますが、ここでは簡易的な仕組み
+          const resp = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(val)}`);
+          const data = await resp.json();
+          renderSuggestions(data[1]);
+        } catch (err) {
+          console.error("Suggest error", err);
+        }
+      });
+
+      // 設定モーダル
+      document.getElementById('openSettings').onclick = () => document.getElementById('settingsModal').style.display = 'flex';
+      document.getElementById('closeSettings').onclick = () => document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function renderSuggestions(list) {
+      suggestionsBox.innerHTML = '';
+      if (list.length === 0) {
+        suggestionsBox.style.display = 'none';
+        return;
+      }
+      list.slice(0, 6).forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.textContent = s;
+        div.onclick = () => {
+          queryInput.value = s;
+          performSearch();
+        };
+        suggestionsBox.appendChild(div);
+      });
+      suggestionsBox.style.display = 'flex';
+    }
+
+    function performSearch() {
+      let query = queryInput.value.trim();
+      let targetEngine = CONFIG.engines.find(e => e.id === engineSelect.value);
+
+      // コマンド解析 (例: !yt 音楽)
+      if (query.startsWith('!')) {
+        const parts = query.split(' ');
+        const cmd = parts[0];
+        const found = CONFIG.engines.find(e => e.cmd === cmd);
+        if (found) {
+          targetEngine = found;
+          query = parts.slice(1).join(' ');
+        }
+      }
+
+      if (!query) return;
+      const url = targetEngine.url.replace('{query}', encodeURIComponent(query));
+      window.location.href = url; // PRO版は新しいタブより遷移を優先（設定で変更可）
+    }
+
+    // フォーカスを自動で当てる
+    window.onload = () => {
+        init();
+        queryInput.focus();
+    };
+  </script>
+</body>
+</html>
