@@ -4,315 +4,164 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <title>SURGE PRO</title>
+  <title>SURGE PRO | Extreme</title>
   <style>
-    :root{
-      --bg: #f8f9fa;
-      --card: #ffffff;
-      --text: #202124;
-      --muted: #5f6368;
-      --border: #dadce0;
-      --accent: #1a73e8;
-      --shadow: 0 1px 6px rgba(32,33,36,0.28);
-    }
-    /* ダークモード対応 */
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #202124; --card: #303134; --text: #e8eaed; --muted: #bdc1c6; --border: #3c4043; --accent: #8ab4f8;
-      }
+    :root {
+      --bg: #0a0a0c;
+      --card: rgba(255, 255, 255, 0.04);
+      --text: #ffffff;
+      --accent: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+      --accent-solid: #00a2ff;
+      --border: rgba(255, 255, 255, 0.1);
+      --glass: blur(20px) saturate(180%);
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%; margin:0; overflow:hidden;}
-    body{
-      background:var(--bg); color:var(--text);
-      font-family: "Inter", "Noto Sans JP", sans-serif;
-      display:flex; align-items:center; justify-content:center;
+    * { box-sizing: border-box; }
+    body, html { height: 100%; margin: 0; overflow: hidden; }
+
+    /* 背景：絵を使わずCSSグラデーションのみで奥行きを出す */
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(0, 114, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(0, 198, 255, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    /* top bar */
-    .topbar{
-      position:fixed; top:12px; right:12px; display:flex; gap:.6rem; align-items:center;
+    .container { width: min(92vw, 750px); text-align: center; z-index: 1; }
+
+    /* PROロゴ：高級感のあるタイポグラフィ */
+    .logo-box { margin-bottom: 2.5rem; }
+    .logo-main {
+      font-size: 4.5rem; font-weight: 900; letter-spacing: -3px; line-height: 1;
+      background: var(--accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 15px rgba(0, 162, 255, 0.4));
+      display: inline-block;
     }
-    #engine, .settings-btn {
-      padding:.4rem .8rem; font-size:.9rem; border:1px solid var(--border);
-      border-radius:8px; background:var(--card); color:var(--text); cursor:pointer;
-      display:flex; align-items:center; gap:5px;
+    .logo-sub {
+      font-size: 0.9rem; font-weight: 300; letter-spacing: 0.6em; text-transform: uppercase;
+      opacity: 0.5; margin-top: 10px; display: block;
     }
 
-    /* center content */
-    .center{
-      width:100%; display:flex; flex-direction:column; align-items:center;
-      padding:2rem; text-align:center;
-    }
-    h1{ margin:0; font-size: 3rem; font-weight:800; color:var(--accent); letter-spacing:-1px;}
-    .subtitle{ margin:0 0 2.5rem; color:var(--muted); font-size:1rem; }
-
-    /* Search Box */
-    .search-group { position: relative; width:min(92vw, 680px); }
-    #query{
-      width:100%; padding:1.1rem 1.5rem; font-size:1.2rem;
-      border:1px solid var(--border); border-radius:30px;
-      background:var(--card); color:var(--text); outline:none;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: all .2s;
-    }
-    #query:focus { box-shadow: var(--shadow); border-color: transparent; }
-
-    /* Suggestions */
-    .suggest-box {
-      position: absolute; top: 100%; left: 0; right: 0;
+    /* 検索バー：ネオンの輝き */
+    .search-group { position: relative; width: 100%; }
+    #query {
+      width: 100%; padding: 1.2rem 1.8rem; font-size: 1.3rem;
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 0 0 20px 20px; border-top: none;
-      display: none; flex-direction: column; text-align: left; z-index: 10;
-      overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 100px; color: white; outline: none;
+      backdrop-filter: var(--glass);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    #query:focus {
+      border-color: var(--accent-solid);
+      box-shadow: 0 0 20px rgba(0, 162, 255, 0.3), 0 10px 40px rgba(0,0,0,0.5);
+      transform: scale(1.02);
+    }
+
+    /* サジェスト：より洗練されたリスト */
+    #suggestions {
+      position: absolute; top: 110%; left: 10px; right: 10px;
+      background: rgba(20, 20, 25, 0.95); border: 1px solid var(--border);
+      border-radius: 24px; display: none; flex-direction: column;
+      overflow: hidden; backdrop-filter: var(--glass); z-index: 10;
     }
     .suggest-item {
-      padding: 0.8rem 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      padding: 14px 24px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px;
+      border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s;
     }
-    .suggest-item:hover { background: rgba(0,0,0,0.05); }
+    .suggest-item:hover, .suggest-item.selected { background: rgba(255,255,255,0.08); color: var(--accent-solid); }
 
-    /* history */
-    .history{ margin-top:2rem; width:min(92vw, 680px); text-align:left; }
-    .history-title{ color:var(--muted); font-size:.85rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 5px;}
-    .history-list{ display:flex; flex-wrap:wrap; gap:.5rem; }
-    .history-item{
-      padding:.4rem .7rem; border:1px solid var(--border); border-radius:10px;
-      cursor:pointer; background:var(--card); font-size: 0.9rem; color: var(--text);
+    /* 周辺の装飾要素：CSSのみ */
+    .status-bar {
+      position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 40px; font-size: 0.75rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.2em;
     }
-    .history-item:hover{ border-color:var(--accent); color:var(--accent); }
-
-    /* Modal (既存のロジックを踏襲) */
-    .modal-backdrop{
-      position:fixed; inset:0; background:rgba(0,0,0,.5);
-      display:none; align-items:center; justify-content:center; padding:1rem; z-index: 100;
+    .top-nav {
+      position: absolute; top: 30px; right: 40px; display: flex; gap: 20px;
     }
-    .modal {
-      width: min(94vw, 600px); background: var(--card); border-radius: 20px;
-      display: flex; flex-direction: column; max-height: 85vh; overflow: hidden;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-    .modal-header{ padding:1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-    .modal-body { padding: 1.5rem; overflow-y: auto; display: grid; gap: 1.5rem; }
-    .section{ border:1px solid var(--border); border-radius:15px; padding:1rem; background: rgba(0,0,0,0.02);}
-    .row{ display:flex; gap:.8rem; flex-wrap:wrap; align-items:center; margin-top: 0.5rem;}
-    .label{ font-weight: 600; font-size:.9rem; color:var(--text); }
-    .modal-footer{ padding:1rem; border-top:1px solid var(--border); display:flex; gap:.6rem; justify-content:flex-end; }
-    .btn{ padding:.6rem 1rem; border:1px solid var(--border); border-radius:10px; background:var(--card); color:var(--text); cursor:pointer; }
-    .btn.primary{ background:var(--accent); color:#fff; border:none; }
-    .btn.danger{ color:#ff4d4d; border-color: #ff4d4d; }
-
-    .animated:focus { transform: translateY(-2px); }
+    .nav-icon { color: white; opacity: 0.6; font-size: 1.2rem; cursor: pointer; transition: 0.3s; }
+    .nav-icon:hover { opacity: 1; color: var(--accent-solid); }
   </style>
 </head>
 <body>
 
-  <div class="topbar">
-    <a href="/ai/" class="settings-btn" style="text-decoration:none;"><i class="fa-solid fa-robot"></i> AI</a>
-    <select id="engine"></select>
-    <button class="settings-btn" id="openSettings"><i class="fa-solid fa-gear"></i></button>
+  <div class="top-nav">
+    <i class="fa-solid fa-bolt nav-icon"></i>
+    <i class="fa-solid fa-gear nav-icon"></i>
   </div>
 
-  <main class="center">
-    <h1>SURGE PRO</h1>
-    <p class="subtitle">光を超える、知の到達点。</p>
+  <div class="container">
+    <div class="logo-box">
+      <span class="logo-main">SURGE PRO</span>
+      <span class="logo-sub">Ultimate Search Interface</span>
+    </div>
 
     <div class="search-group">
-      <input id="query" type="text" placeholder="キーワード、または !コマンド を入力..." autocomplete="off" spellcheck="false"/>
-      <div id="suggestions" class="suggest-box"></div>
+      <input id="query" type="text" placeholder="Start typing to explore..." autocomplete="off">
+      <div id="suggestions"></div>
     </div>
+  </div>
 
-    <section class="history" id="historySection">
-      <p class="history-title"><i class="fa-solid fa-clock-rotate-left"></i> 最近の検索</p>
-      <div class="history-list" id="history"></div>
-    </section>
-  </main>
-
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="label" style="font-size: 1.2rem">プロ設定</div>
-        <button class="btn" id="closeSettings"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div class="modal-body">
-        <div class="section">
-          <div class="label">検索エンジン有効化</div>
-          <div id="engineToggleList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;"></div>
-        </div>
-
-        <div class="section">
-          <div class="label">デフォルト検索</div>
-          <select id="defaultEngineSelect" style="width: 100%; padding: 8px; margin-top: 10px; border-radius: 8px;"></select>
-        </div>
-
-        <div class="section">
-          <div class="label">履歴と演出</div>
-          <div class="row">
-            <label><input type="checkbox" id="animateInputToggle"> アニメーションを有効化</label>
-          </div>
-          <div class="row" id="historyLimitRow">
-             <label><input type="radio" name="historyLimit" value="10"> 10</label>
-             <label><input type="radio" name="historyLimit" value="30"> 30</label>
-             <label><input type="radio" name="historyLimit" value="9999"> 無制限</label>
-          </div>
-          <button class="btn danger" id="clearHistory" style="margin-top: 10px; width: 100%;">履歴を全削除</button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" id="resetSettings">初期化</button>
-        <button class="btn primary" id="saveSettings">変更を保存</button>
-      </div>
-    </div>
+  <div class="status-bar">
+    <span>SYSTEM: READY</span>
+    <span>ENGINE: GOOGLE CORE</span>
+    <span>LATENCY: 12ms</span>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const DEFAULT_ENGINES = [
-        { id:"google",   name:"Google",    url:"https://www.google.com/search?q={query}", cmd: "!g" },
-        { id:"bing",     name:"Bing",      url:"https://www.bing.com/search?q={query}", cmd: "!b" },
-        { id:"wikipedia",name:"Wikipedia", url:"https://ja.wikipedia.org/wiki/{query}", cmd: "!w" },
-        { id:"youtube",  name:"YouTube",   url:"https://www.youtube.com/results?search_query={query}", cmd: "!yt" },
-        { id:"surge",    name:"SURGE",     url:"results?q={query}", cmd: "!s" }
-      ];
+    const queryInput = document.getElementById('query');
+    const suggestBox = document.getElementById('suggestions');
+    let selectedIdx = -1;
 
-      const STORAGE_KEYS = { settings: "surgeProSettings", history: "searchHistory" };
-      let settings = loadSettings();
-      let engines = [...DEFAULT_ENGINES, ...settings.customEngines];
+    // サジェスト機能（Fetch処理の強化）
+    queryInput.addEventListener('input', async () => {
+      const q = queryInput.value.trim();
+      if (q.length < 1) { suggestBox.style.display = 'none'; return; }
 
-      const queryInput = document.getElementById('query');
-      const engineSelect = document.getElementById('engine');
-      const suggestBox = document.getElementById('suggestions');
-      const historyContainer = document.getElementById('history');
-      const modal = document.getElementById('settingsModal');
+      try {
+        const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const items = data[1].slice(0, 6);
 
-      function loadSettings() {
-        const raw = localStorage.getItem(STORAGE_KEYS.settings);
-        const defaults = { enabledEngines: DEFAULT_ENGINES.map(e => e.id), defaultEngineId: "google", historyLimit: 10, animateInput: true, customEngines: [] };
-        return raw ? {...defaults, ...JSON.parse(raw)} : defaults;
-      }
-
-      function saveSettings() {
-        localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
-        engines = [...DEFAULT_ENGINES, ...settings.customEngines];
-        renderEngineSelect();
-        applyUI();
-      }
-
-      function applyUI() {
-        queryInput.classList.toggle('animated', settings.animateInput);
-        renderDefaultEngineSelect();
-      }
-
-      function renderEngineSelect() {
-        const list = engines.filter(e => settings.enabledEngines.includes(e.id));
-        engineSelect.innerHTML = list.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-        engineSelect.value = settings.enabledEngines.includes(settings.defaultEngineId) ? settings.defaultEngineId : (list[0]?.id || "");
-      }
-
-      // --- Search Core ---
-      async function performSearch() {
-        let q = queryInput.value.trim();
-        if (!q) return;
-
-        addHistory(q);
-        let targetUrl = "";
-        
-        // 1. URLダイレクト判定
-        if (q.startsWith('http')) {
-          targetUrl = q;
+        if (items.length > 0) {
+          suggestBox.innerHTML = items.map((text, i) => `
+            <div class="suggest-item" data-index="${i}">
+              <i class="fa-solid fa-magnifying-glass" style="font-size:0.8rem; opacity:0.5"></i>
+              ${text}
+            </div>
+          `).join('');
+          suggestBox.style.display = 'flex';
         } else {
-          // 2. クイックコマンド判定 (!yt 音楽 など)
-          const firstWord = q.split(' ')[0];
-          const cmdEngine = engines.find(e => e.cmd === firstWord);
-          
-          if (cmdEngine) {
-            const realQuery = q.replace(firstWord, '').trim();
-            targetUrl = cmdEngine.url.replace("{query}", encodeURIComponent(realQuery));
-          } else {
-            // 3. 通常検索
-            const engine = engines.find(e => e.id === engineSelect.value);
-            targetUrl = (engine?.url || "").replace("{query}", encodeURIComponent(q));
-          }
+          suggestBox.style.display = 'none';
         }
-        window.open(targetUrl, "_blank");
-        suggestBox.style.display = "none";
+      } catch (e) {
+        console.warn("API Error: Suggestion failed");
       }
+    });
 
-      // --- Google Suggestions ---
-      queryInput.addEventListener('input', async () => {
-        const q = queryInput.value.trim();
-        if (q.length < 2 || q.startsWith('!')) { suggestBox.style.display = "none"; return; }
-
-        try {
-          const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(q)}`);
-          const data = await res.json();
-          const items = data[1].slice(0, 5);
-          
-          if (items.length) {
-            suggestBox.innerHTML = items.map(item => `<div class="suggest-item"><i class="fa-solid fa-magnifying-glass" style="font-size:0.8rem; opacity:0.5"></i> ${item}</div>`).join('');
-            suggestBox.style.display = "flex";
-            document.querySelectorAll('.suggest-item').forEach(el => {
-              el.onclick = () => { queryInput.value = el.innerText.trim(); performSearch(); };
-            });
-          } else { suggestBox.style.display = "none"; }
-        } catch (e) { console.error(e); }
-      });
-
-      // --- History ---
-      function renderHistory() {
-        const list = JSON.parse(localStorage.getItem(STORAGE_KEYS.history) || "[]");
-        document.getElementById('historySection').style.display = list.length ? "block" : "none";
-        historyContainer.innerHTML = list.map(q => `<button class="history-item">${q}</button>`).join('');
-        document.querySelectorAll('.history-item').forEach(btn => {
-          btn.onclick = () => { queryInput.value = btn.textContent; performSearch(); };
-        });
+    // Enterで検索
+    queryInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = queryInput.value.trim();
+        if (val) window.open(`https://www.google.com/search?q=${encodeURIComponent(val)}`, '_blank');
       }
+    });
 
-      function addHistory(q) {
-        let list = JSON.parse(localStorage.getItem(STORAGE_KEYS.history) || "[]");
-        list = [q, ...list.filter(x => x !== q)].slice(0, settings.historyLimit);
-        localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(list));
-        renderHistory();
+    // クリックで選択
+    suggestBox.addEventListener('click', (e) => {
+      const item = e.target.closest('.suggest-item');
+      if (item) {
+        queryInput.value = item.innerText.trim();
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(queryInput.value)}`, '_blank');
       }
+    });
 
-      // --- Events ---
-      queryInput.onkeydown = (e) => { if(e.key === "Enter") performSearch(); };
-      document.getElementById('openSettings').onclick = () => {
-        renderEngineToggleList();
-        modal.style.display = "flex";
-      };
-      document.getElementById('closeSettings').onclick = () => modal.style.display = "none";
-      document.getElementById('saveSettings').onclick = () => { saveSettings(); modal.style.display = "none"; };
-      document.getElementById('clearHistory').onclick = () => { localStorage.removeItem(STORAGE_KEYS.history); renderHistory(); };
-
-      // エンジンON/OFFの描画
-      function renderEngineToggleList() {
-        const wrap = document.getElementById('engineToggleList');
-        wrap.innerHTML = engines.map(e => `
-          <label style="display:flex; align-items:center; gap:5px; font-size:0.9rem;">
-            <input type="checkbox" value="${e.id}" ${settings.enabledEngines.includes(e.id) ? 'checked' : ''}> ${e.name}
-          </label>
-        `).join('');
-        wrap.querySelectorAll('input').forEach(cb => {
-          cb.onchange = () => {
-            if(cb.checked) settings.enabledEngines.push(cb.value);
-            else settings.enabledEngines = settings.enabledEngines.filter(id => id !== cb.value);
-          };
-        });
-      }
-
-      function renderDefaultEngineSelect() {
-        const sel = document.getElementById('defaultEngineSelect');
-        const list = engines.filter(e => settings.enabledEngines.includes(e.id));
-        sel.innerHTML = list.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-        sel.value = settings.defaultEngineId;
-        sel.onchange = () => settings.defaultEngineId = sel.value;
-      }
-
-      init();
-      function init() {
-        applyUI(); renderEngineSelect(); renderHistory();
-        setTimeout(() => queryInput.focus(), 100);
-      }
+    // フォーカスが外れたら隠す
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-group')) suggestBox.style.display = 'none';
     });
   </script>
 </body>
