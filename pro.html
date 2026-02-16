@@ -3,265 +3,255 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SURGE PRO</title>
+  <title>SURGE PRO | Ultimate Search</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --bg: #ffffff;
-      --text: #1a1a1a;
-      --muted: #666666;
-      --border: #e0e0e0;
-      --accent: #007aff;
-      --card-bg: #f5f5f7;
-      --shadow: 0 8px 30px rgba(0,0,0,0.08);
-      --glass: rgba(255, 255, 255, 0.8);
+      --glass: rgba(255, 255, 255, 0.12);
+      --glass-heavy: rgba(255, 255, 255, 0.2);
+      --text: #ffffff;
+      --accent: #4da6ff;
+      --bg-dark: #0f1115;
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0a0a0a;
-        --text: #f5f5f7;
-        --muted: #a1a1a6;
-        --border: #333333;
-        --accent: #0a84ff;
-        --card-bg: #1c1c1e;
-        --shadow: 0 8px 30px rgba(0,0,0,0.3);
-        --glass: rgba(20, 20, 20, 0.8);
-      }
+    * { box-sizing: border-box; font-family: 'Inter', 'Noto Sans JP', sans-serif; }
+    body, html { height: 100%; margin: 0; background: var(--bg-dark); color: var(--text); overflow: hidden; }
+
+    /* Dynamic Background */
+    #bg-layer {
+      position: fixed; inset: 0; 
+      background: linear-gradient(135deg, #1a1c2c 0%, #4a192c 100%);
+      background-size: cover; background-position: center;
+      z-index: -1; transition: filter 0.5s ease;
+    }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: -1; }
+
+    /* Layout */
+    .app-container {
+      height: 100vh; display: flex; flex-direction: column; align-items: center;
+      padding-top: 12vh; backdrop-filter: blur(10px);
     }
 
-    * { box-sizing: border-box; transition: all 0.2s ease; }
-    body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    /* Top Bar */
+    .top-bar {
+      position: absolute; top: 20px; right: 20px; display: flex; gap: 15px;
     }
-
-    /* Header */
-    header {
-      padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
-      backdrop-filter: blur(10px); background: var(--glass); z-index: 100;
+    .icon-btn {
+      background: var(--glass); border: none; color: white; width: 42px; height: 42px;
+      border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; transition: 0.3s;
     }
-    .brand { font-weight: 700; font-size: 1.2rem; letter-spacing: -0.5px; }
-    .brand span { color: var(--accent); }
+    .icon-btn:hover { background: var(--glass-heavy); transform: rotate(15deg); }
 
-    /* Main Content */
-    main {
-      flex: 1; display: flex; flex-direction: column; align-items: center;
-      justify-content: center; padding: 2rem; overflow-y: auto;
-    }
+    /* Main Search */
+    .search-section { width: min(90%, 750px); text-align: center; }
+    .logo { font-size: 3.5rem; font-weight: 800; letter-spacing: -2px; margin-bottom: 30px; }
+    .logo span { color: var(--accent); text-shadow: 0 0 20px rgba(77,166,255,0.5); }
 
-    .search-container {
-      width: min(100%, 720px); position: relative; margin-bottom: 2rem;
-    }
-
+    .search-wrapper { position: relative; width: 100%; }
     #query {
-      width: 100%; padding: 1.2rem 1.5rem; font-size: 1.25rem;
-      border: 1px solid var(--border); border-radius: 18px;
-      background: var(--card-bg); color: var(--text); outline: none;
-      box-shadow: var(--shadow);
+      width: 100%; padding: 1.2rem 1.8rem; font-size: 1.4rem;
+      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50px; color: white; outline: none;
+      backdrop-filter: blur(20px); box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    #query:focus { background: rgba(255,255,255,0.25); border-color: var(--accent); width: 105%; margin-left: -2.5%; }
 
-    #query:focus { border-color: var(--accent); transform: scale(1.01); }
-
-    /* Suggestion Box */
+    /* Suggestions */
     .suggestions {
-      position: absolute; top: 110%; left: 0; right: 0;
-      background: var(--glass); border-radius: 14px; border: 1px solid var(--border);
-      display: none; flex-direction: column; overflow: hidden; z-index: 1000;
-      backdrop-filter: blur(20px);
+      position: absolute; top: 110%; left: 0; right: 0; background: rgba(30,30,30,0.95);
+      border-radius: 20px; overflow: hidden; display: none; flex-direction: column; z-index: 1000;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    .suggestion-item {
-      padding: 0.8rem 1.2rem; cursor: pointer; border-bottom: 1px solid var(--border);
+    .suggest-item {
+      padding: 12px 25px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 15px;
     }
-    .suggestion-item:hover { background: var(--accent); color: white; }
+    .suggest-item:hover { background: var(--accent); }
 
     /* Quick Links */
-    .quick-links {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-      gap: 1.5rem; width: min(100%, 600px); margin-top: 1rem;
+    .links-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 25px; margin-top: 50px; width: 100%;
     }
-    .link-item {
-      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-      text-decoration: none; color: var(--muted); font-size: 0.8rem;
+    .link-card {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      text-decoration: none; color: white; transition: 0.3s;
     }
     .link-icon {
-      width: 48px; height: 48px; border-radius: 12px; background: var(--card-bg);
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-      border: 1px solid var(--border);
+      width: 64px; height: 64px; background: var(--glass); border-radius: 18px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+      border: 1px solid rgba(255,255,255,0.1);
     }
-    .link-item:hover .link-icon { transform: translateY(-5px); background: var(--accent); color: white; }
+    .link-card:hover .link-icon { transform: translateY(-8px) scale(1.1); background: var(--accent); }
+    .link-card span { font-size: 0.85rem; opacity: 0.8; }
 
-    /* Modal PRO styling */
-    .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      display: none; align-items: center; justify-content: center; z-index: 2000;
-    }
+    /* Settings Modal */
     .modal {
-      width: min(90vw, 500px); background: var(--bg); border-radius: 24px;
-      padding: 2rem; max-height: 80vh; overflow-y: auto;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      display: none; align-items: center; justify-content: center; z-index: 9999;
     }
-    .btn-group { display: flex; gap: 0.5rem; margin-top: 1rem; }
-    button {
-      padding: 0.6rem 1rem; border-radius: 10px; border: none; cursor: pointer;
-      font-weight: 500; background: var(--card-bg); color: var(--text);
+    .modal-content {
+      background: #1e1e2e; width: min(90vw, 500px); border-radius: 30px;
+      padding: 30px; border: 1px solid var(--glass-heavy);
     }
-    button.primary { background: var(--accent); color: white; }
-
-    .pro-badge {
-      background: linear-gradient(45deg, #007aff, #00ff88);
-      color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 800;
-      margin-left: 5px; vertical-align: middle;
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .input-row { margin-bottom: 15px; }
+    input[type="text"], select {
+      width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #444; background: #2a2a3e; color: white;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="brand">SURGE<span>PRO</span><span class="pro-badge">EDITION</span></div>
-    <div class="nav-actions">
-      <select id="engine" style="padding: 5px; border-radius: 5px;"></select>
-      <button id="openSettings">⚙️</button>
-    </div>
-  </header>
+  <div id="bg-layer"></div>
+  <div class="overlay"></div>
 
-  <main>
-    <div class="search-container">
-      <input id="query" type="text" placeholder="キーワードを入力、または ! でコマンド..." autocomplete="off">
-      <div id="suggestions" class="suggestions"></div>
-    </div>
+  <div class="top-bar">
+    <button class="icon-btn" onclick="toggleSettings()"><i class="fa-solid fa-sliders"></i></button>
+  </div>
 
-    <div class="quick-links" id="quickLinks">
+  <div class="app-container">
+    <div class="search-section">
+      <div class="logo">SURGE<span>PRO</span></div>
+      
+      <div class="search-wrapper">
+        <input id="query" type="text" placeholder="Search anything or use !cmd..." autocomplete="off">
+        <div id="suggestions" class="suggestions"></div>
       </div>
-  </main>
 
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="modal">
-      <h2>Settings</h2>
-      <div class="section">
-        <h3>コマンド設定 (!cmd)</h3>
-        <p class="muted" style="font-size: 0.8rem;">!yt = YouTube, !w = Wikipedia, !g = Google</p>
+      <div class="links-grid" id="linksGrid">
+        </div>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2><i class="fa-solid fa-gear"></i> Settings</h2>
+        <button class="icon-btn" onclick="toggleSettings()"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="btn-group">
-        <button id="clearHistory" style="background: #ff3b30; color: white;">履歴削除</button>
-        <button id="closeSettings" class="primary">閉じる</button>
+      <div class="input-row">
+        <label>Wallpaper URL</label>
+        <input id="bgInput" type="text" placeholder="Unsplash URL etc.">
+      </div>
+      <div class="input-row">
+        <button onclick="saveSettings()" style="width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer;">Apply Changes</button>
+      </div>
+      <div class="input-row">
+        <button onclick="clearAll()" style="width: 100%; margin-top: 10px; background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d; border-radius: 10px; padding: 8px; cursor: pointer;">Reset All</button>
       </div>
     </div>
   </div>
 
   <script>
-    const CONFIG = {
+    const DEFAULT_DATA = {
+      bg: "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?auto=format&fit=crop&w=1920&q=80",
       engines: [
-        { id: 'google', name: 'Google', url: 'https://google.com/search?q={query}', cmd: '!g' },
-        { id: 'youtube', name: 'YouTube', url: 'https://youtube.com/results?search_query={query}', cmd: '!yt' },
-        { id: 'wiki', name: 'Wikipedia', url: 'https://ja.wikipedia.org/wiki/{query}', cmd: '!w' },
-        { id: 'duck', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q={query}', cmd: '!d' }
+        { cmd: "!g", url: "https://google.com/search?q={query}", icon: "fa-brands fa-google" },
+        { cmd: "!yt", url: "https://youtube.com/results?search_query={query}", icon: "fa-brands fa-youtube" },
+        { cmd: "!w", url: "https://ja.wikipedia.org/wiki/{query}", icon: "fa-brands fa-wikipedia-w" },
+        { cmd: "!gh", url: "https://github.com/search?q={query}", icon: "fa-brands fa-github" }
       ],
-      bookmarks: [
-        { name: 'GitHub', url: 'https://github.com', icon: '🐙' },
-        { name: 'Gmail', url: 'https://gmail.com', icon: '✉️' },
-        { name: 'ChatGPT', url: 'https://chat.openai.com', icon: '🤖' },
-        { name: 'Twitter', url: 'https://x.com', icon: '🐦' }
+      links: [
+        { name: "Gmail", url: "https://gmail.com", icon: "fa-solid fa-envelope" },
+        { name: "ChatGPT", url: "https://chatgpt.com", icon: "fa-solid fa-robot" },
+        { name: "Notion", url: "https://notion.so", icon: "fa-solid fa-note-sticky" },
+        { name: "Twitter", url: "https://x.com", icon: "fa-brands fa-x-twitter" }
       ]
     };
 
+    let store = JSON.parse(localStorage.getItem('surge_pro_v1')) || DEFAULT_DATA;
+
     const queryInput = document.getElementById('query');
-    const engineSelect = document.getElementById('engine');
-    const suggestionsBox = document.getElementById('suggestions');
-    const quickLinks = document.getElementById('quickLinks');
+    const suggestions = document.getElementById('suggestions');
 
-    // 初期化
     function init() {
-      // エンジン選択の描画
-      CONFIG.engines.forEach(e => {
-        const opt = document.createElement('option');
-        opt.value = e.id; opt.textContent = e.name;
-        engineSelect.appendChild(opt);
-      });
-
-      // クイックリンクの描画
-      CONFIG.bookmarks.forEach(b => {
-        const a = document.createElement('a');
-        a.className = 'link-item'; a.href = b.url;
-        a.innerHTML = `<div class="link-icon">${b.icon}</div><span>${b.name}</span>`;
-        quickLinks.appendChild(a);
-      });
-
-      setupEventListeners();
-    }
-
-    function setupEventListeners() {
-      // 検索実行
-      queryInput.addEventListener('keydown', e => {
-        if (e.key === 'Enter') performSearch();
-      });
-
-      // サジェスト機能 (Google API使用)
-      queryInput.addEventListener('input', async () => {
-        const val = queryInput.value.trim();
-        if (val.length < 2 || val.startsWith('!')) {
-          suggestionsBox.style.display = 'none';
-          return;
-        }
-
-        try {
-          // JSONPの代わりに特定のProxy等が必要な場合もありますが、ここでは簡易的な仕組み
-          const resp = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(val)}`);
-          const data = await resp.json();
-          renderSuggestions(data[1]);
-        } catch (err) {
-          console.error("Suggest error", err);
+      document.getElementById('bg-layer').style.backgroundImage = `url(${store.bg})`;
+      renderLinks();
+      
+      queryInput.addEventListener('input', handleInput);
+      queryInput.addEventListener('keydown', (e) => e.key === 'Enter' && executeSearch());
+      window.addEventListener('keydown', (e) => {
+        if(e.key === '/' && document.activeElement !== queryInput) {
+          e.preventDefault(); queryInput.focus();
         }
       });
-
-      // 設定モーダル
-      document.getElementById('openSettings').onclick = () => document.getElementById('settingsModal').style.display = 'flex';
-      document.getElementById('closeSettings').onclick = () => document.getElementById('settingsModal').style.display = 'none';
     }
 
-    function renderSuggestions(list) {
-      suggestionsBox.innerHTML = '';
-      if (list.length === 0) {
-        suggestionsBox.style.display = 'none';
+    function renderLinks() {
+      const grid = document.getElementById('linksGrid');
+      grid.innerHTML = store.links.map(l => `
+        <a href="${l.url}" class="link-card">
+          <div class="link-icon"><i class="${l.icon}"></i></div>
+          <span>${l.name}</span>
+        </a>
+      `).join('');
+    }
+
+    async function handleInput() {
+      const q = queryInput.value.trim();
+      if(q.length < 2 || q.startsWith('!')) {
+        suggestions.style.display = 'none';
         return;
       }
-      list.slice(0, 6).forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        div.textContent = s;
-        div.onclick = () => {
-          queryInput.value = s;
-          performSearch();
-        };
-        suggestionsBox.appendChild(div);
-      });
-      suggestionsBox.style.display = 'flex';
+
+      // API Suggestion
+      const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      
+      suggestions.innerHTML = data[1].slice(0, 5).map(s => `
+        <div class="suggest-item" onclick="selectSuggest('${s}')">
+          <i class="fa-solid fa-magnifying-glass" style="font-size:0.8rem; opacity:0.5"></i>
+          ${s}
+        </div>
+      `).join('');
+      suggestions.style.display = 'flex';
     }
 
-    function performSearch() {
-      let query = queryInput.value.trim();
-      let targetEngine = CONFIG.engines.find(e => e.id === engineSelect.value);
+    function selectSuggest(val) {
+      queryInput.value = val;
+      executeSearch();
+    }
 
-      // コマンド解析 (例: !yt 音楽)
-      if (query.startsWith('!')) {
-        const parts = query.split(' ');
-        const cmd = parts[0];
-        const found = CONFIG.engines.find(e => e.cmd === cmd);
-        if (found) {
-          targetEngine = found;
-          query = parts.slice(1).join(' ');
-        }
+    function executeSearch() {
+      let q = queryInput.value.trim();
+      if(!q) return;
+
+      // Check for Commands
+      const firstWord = q.split(' ')[0];
+      const engine = store.engines.find(e => e.cmd === firstWord);
+      
+      let targetUrl = "https://google.com/search?q=";
+      if(engine) {
+        targetUrl = engine.url.replace('{query}', encodeURIComponent(q.replace(firstWord, '').trim()));
+      } else if (q.match(/^https?:\/\//)) {
+        targetUrl = q;
+      } else {
+        targetUrl += encodeURIComponent(q);
       }
-
-      if (!query) return;
-      const url = targetEngine.url.replace('{query}', encodeURIComponent(query));
-      window.location.href = url; // PRO版は新しいタブより遷移を優先（設定で変更可）
+      
+      window.location.href = targetUrl;
     }
 
-    // フォーカスを自動で当てる
-    window.onload = () => {
-        init();
-        queryInput.focus();
-    };
+    function toggleSettings() {
+      const m = document.getElementById('settingsModal');
+      m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function saveSettings() {
+      const newBg = document.getElementById('bgInput').value;
+      if(newBg) store.bg = newBg;
+      localStorage.setItem('surge_pro_v1', JSON.stringify(store));
+      location.reload();
+    }
+
+    function clearAll() {
+      localStorage.removeItem('surge_pro_v1');
+      location.reload();
+    }
+
+    init();
   </script>
 </body>
 </html>
