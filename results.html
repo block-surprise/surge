@@ -17,7 +17,6 @@
     :root { --accent: #4f46e5; --bg: #fdfdfd; }
     body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: #222; padding: 20px; }
     
-    /* レスポンシブ対応 */
     .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer {
       max-width: 1000px;
       margin-left: 100px;
@@ -41,13 +40,11 @@
     }
     .ai-badge { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block; }
     
-    /* AIモードコンテナ */
     #aiModeContainer { display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
     #aiChatHistory { max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
     .ai-bubble { background: #f3f4f6; padding: 12px 16px; border-radius: 18px; line-height: 1.6; align-self: flex-start; max-width: 85%; }
     .user-bubble { background: #e0e7ff; padding: 12px 16px; border-radius: 18px; line-height: 1.6; align-self: flex-end; max-width: 85%; }
     
-    /* 返信フォーム */
     .ai-reply-form { display: flex; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
     #aiReplyInput { flex-grow: 1; padding: 10px 15px; border-radius: 24px; border: 1px solid #ddd; outline: none; }
     #aiReplyBtn { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
@@ -132,16 +129,13 @@
       const input = document.getElementById('aiReplyInput');
       const text = input.value.trim();
       if (!text) return;
-
       const history = document.getElementById('aiChatHistory');
       const userDiv = document.createElement('div');
       userDiv.className = 'user-bubble';
       userDiv.innerText = text;
       history.appendChild(userDiv);
-      
       input.value = '';
       history.scrollTop = history.scrollHeight;
-      
       await getAIResponse(text, 'aiChatHistory', true);
     }
 
@@ -151,13 +145,15 @@
       if (!q) return;
 
       if (type === 'image') {
-        // 画像タブはURL遷移で対応
         const targetUrl = `https://surge.ad-hub.f5.si/results?q=${encodeURIComponent(q)}#gsc.tab=1&gsc.q=${encodeURIComponent(q)}`;
         location.href = targetUrl;
         return;
       }
 
-      // 通常の切り替え処理
+      // 【修正】画像以外のタブを押したとき、URLからハッシュを消去して履歴に残す
+      const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?q=' + encodeURIComponent(q);
+      window.history.replaceState({path:newUrl}, '', newUrl);
+
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       el.classList.add('active');
       
@@ -196,15 +192,12 @@
           const element = google.search.cse.element.getElement("searchresults-only");
           const summaryBox = document.getElementById('aiSummaryBox');
           
-          // ハッシュを判定して読み込み時のタブ表示を合わせる
           if (location.hash.includes('gsc.tab=1')) {
             const imgTab = document.getElementById('tab-image');
             const webTab = document.getElementById('tab-web');
-            
             webTab.classList.remove('active');
             imgTab.classList.add('active');
             summaryBox.style.display = 'none';
-            
             if (element) element.execute(q, 1, {searchType: 'image'});
           } else {
             summaryBox.style.display = 'block';
