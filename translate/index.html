@@ -3,179 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SURGE PRO | 独自インテリジェンス・ハブ</title>
+    <title>SURGE PRO | 独自システム</title>
     <style>
         :root {
-            --primary-blue: #1a73e8;
-            --bg-gray: #f8f9fa;
-            --border-color: #dadce0;
-            --text-main: #202124;
-            --sidebar-width: 280px;
+            --primary: #1a73e8;
+            --bg: #f8f9fa;
+            --panel: #ffffff;
+            --border: #dadce0;
+            --text: #202124;
         }
-
         body {
-            margin: 0;
-            font-family: 'Google Sans', Roboto, Arial, sans-serif;
-            background-color: var(--bg-gray);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
+            margin: 0; font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg); color: var(--text);
+            display: flex; height: 100vh; overflow: hidden;
         }
-
-        /* サイドバー（独自機能へのショートカット） */
+        /* サイドバー */
         .sidebar {
-            width: var(--sidebar-width);
-            background: white;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
+            width: 260px; background: #fff; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 20px;
         }
+        .logo { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 30px; }
+        
+        /* メインエリア */
+        .main { flex: 1; display: flex; flex-direction: column; }
+        .header { height: 60px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-weight: bold; }
+        
+        /* ワークスペース */
+        .workspace { display: flex; flex: 1; padding: 20px; gap: 20px; }
+        .box { flex: 1; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .box-header { padding: 10px 15px; border-bottom: 1px solid var(--border); font-size: 12px; color: #5f6368; font-weight: bold; }
+        
+        textarea { flex: 1; border: none; padding: 15px; font-size: 16px; outline: none; resize: none; border-radius: 0 0 8px 8px; }
+        .output { flex: 1; padding: 15px; font-size: 16px; white-space: pre-wrap; overflow-y: auto; background: #fafafa; }
 
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--primary-blue);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        /* 操作バー */
+        .controls { padding: 15px 20px; background: #fff; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+        button { padding: 10px 25px; border-radius: 4px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-clear { background: #eee; color: #333; }
+        .btn-run { background: var(--primary); color: white; }
+        .btn-run:hover { opacity: 0.9; }
+        .btn-run:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* メインコンテンツエリア */
-        .main-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .top-nav {
-            height: 64px;
-            background: white;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            justify-content: space-between;
-        }
-
-        /* 2ペイン・ワークスペース */
-        .workspace {
-            display: flex;
-            flex: 1;
-            padding: 24px;
-            gap: 12px;
-        }
-
-        .card {
-            flex: 1;
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3);
-        }
-
-        .card-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 500;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        textarea {
-            flex: 1;
-            border: none;
-            padding: 16px;
-            font-size: 18px;
-            resize: none;
-            outline: none;
-            border-radius: 0 0 8px 8px;
-        }
-
-        .output-area {
-            flex: 1;
-            padding: 16px;
-            font-size: 18px;
-            background-color: #fdfdfd;
-            border-radius: 0 0 8px 8px;
-            white-space: pre-wrap;
-        }
-
-        /* アクションボタン */
-        .action-bar {
-            padding: 16px 24px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 10px 24px;
-            border-radius: 4px;
-            border: none;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-blue);
-            color: white;
-        }
-
-        .btn-primary:hover { background-color: #1765cc; }
+        /* ローディングアニメーション */
+        .loading { display: none; color: var(--primary); font-size: 14px; margin-right: auto; align-self: center; }
     </style>
 </head>
 <body>
 
     <aside class="sidebar">
         <div class="logo">⚡ SURGE PRO</div>
-        <nav>
-            <p style="color: #5f6368; font-size: 12px; text-transform: uppercase;">Main Tools</p>
-            <ul style="list-style: none; padding: 0;">
-                <li style="padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer;">Intelligence Base</li>
-                <li style="padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer;">Code Generator</li>
-                <li style="padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer;">Data Analyst</li>
-            </ul>
-        </nav>
+        <div style="font-size: 13px; color: #666;">Version 1.0.0 (Custom Build)</div>
     </aside>
 
-    <main class="main-content">
-        <header class="top-nav">
-            <div style="font-weight: 500;">Workspace / New Project</div>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <span style="font-size: 14px; color: #5f6368;">Status: Online</span>
-                <div style="width: 32px; height: 32px; background: #ddd; border-radius: 50%;"></div>
+    <main class="main">
+        <header class="header">独自ワークスペース</header>
+        
+        <div class="workspace">
+            <div class="box">
+                <div class="box-header">INPUT (指示を入力)</div>
+                <textarea id="userInput" placeholder="ここに何か入力してください..."></textarea>
             </div>
-        </header>
-
-        <section class="workspace">
-            <div class="card">
-                <div class="card-header">
-                    <span>INPUT (Source)</span>
-                </div>
-                <textarea placeholder="ここに指示やデータを入力してください..."></textarea>
+            <div class="box">
+                <div class="box-header">OUTPUT (SURGE エンジン応答)</div>
+                <div id="outputArea" class="output">応答待ち...</div>
             </div>
+        </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span>OUTPUT (SURGE Engine)</span>
-                </div>
-                <div class="output-area" id="result">
-                    ここに解析結果や生成された内容が表示されます。
-                </div>
-            </div>
-        </section>
-
-        <footer class="action-bar">
-            <button class="btn" style="background: transparent; border: 1px solid var(--border-color);">Clear</button>
-            <button class="btn btn-primary">RUN SURGE PRO</button>
-        </footer>
+        <div class="controls">
+            <div id="loader" class="loading">SURGE PRO が思考中...</div>
+            <button class="btn-clear" onclick="clearAll()">クリア</button>
+            <button id="runBtn" class="btn-run" onclick="runSurge()">実行 (RUN)</button>
+        </div>
     </main>
 
+    <script>
+        function clearAll() {
+            document.getElementById('userInput').value = '';
+            document.getElementById('outputArea').innerText = '応答待ち...';
+        }
+
+        async function runSurge() {
+            const input = document.getElementById('userInput').value;
+            const output = document.getElementById('outputArea');
+            const loader = document.getElementById('loader');
+            const btn = document.getElementById('runBtn');
+
+            if (!input.trim()) {
+                alert("指示を入力してください。");
+                return;
+            }
+
+            // UIを処理中にする
+            loader.style.display = 'block';
+            btn.disabled = true;
+            output.innerText = "解析中...";
+
+            // 独自の疑似ロジック（ここに後に本物のAI APIを繋げます）
+            setTimeout(() => {
+                const response = `【SURGE PRO 独自解析結果】\n\n入力された内容：「${input}」を受け取りました。\n\n現在、このシステムはGoogleから独立した環境で動作しています。次はここにどのようなロジック（自動翻訳、コード生成、データ集計など）を組み込みますか？`;
+                
+                output.innerText = response;
+                loader.style.display = 'none';
+                btn.disabled = false;
+            }, 1200);
+        }
+    </script>
 </body>
 </html>
