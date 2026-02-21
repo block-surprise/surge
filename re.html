@@ -49,23 +49,18 @@
     #aiReplyInput { flex-grow: 1; padding: 10px 15px; border-radius: 24px; border: 1px solid #ddd; outline: none; }
     #aiReplyBtn { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
-    /* 翻訳カードのデザイン修正 */
+    /* 翻訳カード：文章対応のため少し広めに調整 */
     #translationCard {
-      display: none; 
-      background: #fff; 
-      border: 1px solid #e5e7eb; 
-      border-radius: 16px; 
-      padding: 20px; 
-      margin-bottom: 25px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: none; background: #fff !important; border: 1px solid #e5e7eb !important; 
+      border-radius: 16px !important; padding: 20px !important; margin-bottom: 25px !important; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
     }
-    .trans-flex { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-    .trans-box { flex: 1; min-width: 150px; }
-    .trans-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .trans-input { width: 100%; border: none; font-size: 20px; outline: none; padding: 5px 0; border-bottom: 1px solid transparent; background: transparent; color: #222; }
-    .trans-input:focus { border-bottom: 1px dotted var(--accent); }
-    .trans-result { font-size: 22px; font-weight: bold; color: var(--accent); min-height: 30px; display: flex; align-items: center; }
-    .trans-arrow { font-size: 24px; color: #ccc; }
+    .trans-flex { display: flex; align-items: flex-start; gap: 20px; }
+    .trans-box { flex: 1; }
+    .trans-label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
+    .trans-input { width: 100%; border: none; font-size: 18px; outline: none; padding: 5px 0; background: transparent; color: #222; font-family: inherit; resize: none; }
+    .trans-result { font-size: 18px; font-weight: 500; color: var(--accent); min-height: 30px; line-height: 1.5; white-space: pre-wrap; }
+    .trans-arrow { font-size: 20px; color: #ccc; padding-top: 25px; }
 
     .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
     .gsc-control-cse { padding: 0 !important; }
@@ -87,12 +82,12 @@
   <div id="translationCard">
     <div class="trans-flex">
       <div class="trans-box">
-        <div class="trans-label">日本語</div>
-        <input type="text" id="transInput" class="trans-input" onkeydown="if(event.key==='Enter') triggerLiveTrans()">
+        <div id="transFromLabel" class="trans-label">原文</div>
+        <textarea id="transInput" class="trans-input" rows="2" spellcheck="false" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); triggerLiveTrans(); }"></textarea>
       </div>
       <div class="trans-arrow">→</div>
       <div class="trans-box">
-        <div class="trans-label">SURGE 翻訳</div>
+        <div id="transToLabel" class="trans-label">SURGE 翻訳</div>
         <div id="transOutput" class="trans-result">...</div>
       </div>
     </div>
@@ -118,8 +113,8 @@
 
   <script>
     const WORKER_URL = "https://surge.proluce.workers.dev/"; 
-    
-    // 翻訳実行関数
+
+    // --- 万能翻訳ロジック ---
     async function runTranslation(text) {
       const output = document.getElementById('transOutput');
       output.innerText = "翻訳中...";
@@ -127,11 +122,11 @@
         const res = await fetch(WORKER_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: `以下の日本語を英語に翻訳して。翻訳結果の単語のみを返して。:${text}` })
+          body: JSON.stringify({ inputs: `あなたはプロの翻訳機です。入力されたテキストが日本語なら英語に、英語なら日本語に、その他の言語なら日本語に翻訳して結果のみを出力してください。解説は不要です。:${text}` })
         });
         const data = await res.json();
         const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
-        const reply = raw.split("AI:").pop()?.replace(/[.!?]/g, '').trim() || "Error";
+        const reply = raw.split("AI:").pop()?.trim() || "Error";
         output.innerText = reply;
       } catch (e) {
         output.innerText = "Error";
@@ -143,31 +138,39 @@
       if (val) runTranslation(val);
     }
 
-    // 翻訳が必要なクエリかチェックする関数
     function checkAndShowTranslation(q) {
       const transCard = document.getElementById('translationCard');
-      // 「パン 英語」「パン　翻訳」「英語　パン」などのパターンに対応
-      const transPattern = /(.+)(英語|翻訳)|(英語|翻訳)\s*(.+)/;
-      const match = q.match(transPattern);
-
+      const fromLabel = document.getElementById('transFromLabel');
+      
+      // 判定パターン： 「〇〇 英語」「〇〇 翻訳」「〇〇 日本語訳」「〇〇 意味」など
+      const match = q.match(/(.+)(英語|翻訳|訳|意味|日本語)/);
+      
       if (match) {
-        // キーワードを抽出
-        let word = (match[1] || match[4] || "").replace(/[\s　]+/g, "").trim();
+        const word = match[1].trim();
         if (word) {
           transCard.style.display = 'block';
           document.getElementById('transInput').value = word;
+          
+          // 言語ラベルの簡易切り替え
+          if (q.includes("日本語") || q.includes("訳")) {
+            fromLabel.innerText = "英語 / 他言語";
+          } else {
+            fromLabel.innerText = "日本語";
+          }
+
           runTranslation(word);
+          return true; // 翻訳モード確定
         }
-      } else {
-        transCard.style.display = 'none';
       }
+      transCard.style.display = 'none';
+      return false;
     }
 
+    // --- 既存のAI要約・検索機能 ---
     async function getAIResponse(query, targetId, isFollowUp = false) {
       const target = document.getElementById(targetId);
       const status = document.getElementById('aiStatus');
       if (isFollowUp) status.style.display = 'block';
-
       try {
         const res = await fetch(WORKER_URL, {
           method: "POST",
@@ -177,7 +180,6 @@
         const data = await res.json();
         const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
         const reply = raw.split("AI:").pop()?.trim() || "応答なし";
-        
         if (targetId === 'aiChatHistory') {
           const div = document.createElement('div');
           div.className = 'ai-bubble';
@@ -187,17 +189,10 @@
         } else {
           target.innerText = reply;
         }
-      } catch (e) { 
-        if(isFollowUp) {
-          const errDiv = document.createElement('div');
-          errDiv.className = 'ai-bubble';
-          errDiv.innerText = "エラーが発生しました。";
-          target.appendChild(errDiv);
-        } else {
-          target.innerText = "AIエラー";
-        }
+      } catch (e) {
+        if (target) target.innerText = "AIエラー";
       } finally {
-        status.style.display = 'none';
+        if (status) status.style.display = 'none';
       }
     }
 
@@ -251,13 +246,18 @@
         }
       } else {
         aiModeArea.style.display = 'none'; webArea.style.display = 'block';
-        summaryBox.style.display = (type === 'web') ? 'block' : 'none';
         
-        // タブ切り替え時にも翻訳判定を実行
         if (type === 'web') {
-           checkAndShowTranslation(q);
+          const isTrans = checkAndShowTranslation(q);
+          if (isTrans) {
+            summaryBox.style.display = 'none'; // 翻訳時はAI要約を呼ばない(節約)
+          } else {
+            summaryBox.style.display = 'block';
+            getAIResponse(q, 'aiSummaryContent');
+          }
         } else {
-           document.getElementById('translationCard').style.display = 'none';
+          summaryBox.style.display = 'none';
+          document.getElementById('translationCard').style.display = 'none';
         }
 
         if (element) {
@@ -278,27 +278,29 @@
           const summaryBox = document.getElementById('aiSummaryBox');
           
           if (location.hash.includes('gsc.tab=1')) {
-            const imgTab = document.getElementById('tab-image');
-            const webTab = document.getElementById('tab-web');
-            webTab.classList.remove('active');
-            imgTab.classList.add('active');
+            document.getElementById('tab-web').classList.remove('active');
+            document.getElementById('tab-image').classList.add('active');
             summaryBox.style.display = 'none';
             if (element) element.execute(q, 1, {searchType: 'image'});
           } else {
-            summaryBox.style.display = 'block';
-            getAIResponse(q, 'aiSummaryContent');
+            const isTrans = checkAndShowTranslation(q);
+            if (!isTrans) {
+              summaryBox.style.display = 'block';
+              getAIResponse(q, 'aiSummaryContent');
+            } else {
+              summaryBox.style.display = 'none';
+            }
             if (element) element.execute(q);
-            
-            // 初回読み込み時の翻訳判定
-            checkAndShowTranslation(q);
           }
         }
-        document.getElementById('searchForm').addEventListener('submit', (e) => {
-          e.preventDefault();
-          if (input.value.trim()) location.href = "?q=" + encodeURIComponent(input.value.trim());
-        });
       }
     };
+
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = document.getElementById('searchInput').value.trim();
+      if (val) location.href = "?q=" + encodeURIComponent(val);
+    });
   </script>
   <script async src="https://cse.google.com/cse.js?cx=818be131768c247f3"></script>
 </body>
