@@ -3,89 +3,80 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SURGE Light</title>
+  <title>SURGE PRO</title>
   <style>
-    /* デザインは一切変更していません */
-    :root{ --bg:#fdfdfd; --text:#333; --muted:#888; --border:#d9d9d9; --accent:#4da6ff; --shadow:rgba(0,0,0,0.06); }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{ margin:0; background:var(--bg); color:var(--text); font-family: "Inter", "Noto Sans JP", sans-serif; display:flex; align-items:center; justify-content:center; }
-    .topbar{ position:fixed; top:12px; right:12px; display:flex; gap:.5rem; align-items:center; }
-    #engine, .settings-btn{ padding:.35rem .6rem; font-size:.9rem; border:1px solid var(--border); border-radius:8px; background:#fff; cursor:pointer; }
-    .center{ width:100%; display:flex; flex-direction:column; align-items:center; padding:10vh 2rem 6vh; text-align:center; }
-    h1{ margin:0 0 .25rem; font-weight:600; letter-spacing:.04em; color:#444; }
-    .subtitle{ margin:0 0 2.2rem; color:var(--muted); font-size:1rem; }
-    #query{ width:min(92vw, 640px); padding:0.95rem 1.25rem; font-size:1.25rem; border:1px solid var(--border); border-radius:32px; background:#fff; box-shadow: 0 2px 10px var(--shadow); outline:none; transition: all .2s ease; }
-    #query:focus{ border-color:var(--accent); box-shadow: 0 0 0 4px rgba(77,166,255,.18); transform: translate3d(0,-1px,0); }
-    .history{ margin-top:1.2rem; width:min(92vw, 640px); text-align:left; color:#666; font-size:.95rem; }
-    .history-title{ margin:0 0 .4rem; color:#777; font-size:.9rem; }
-    .history-list{ display:flex; flex-wrap:wrap; gap:.4rem .6rem; }
-    .history-item{ padding:.25rem .55rem; border:1px dashed #cfcfcf; border-radius:14px; cursor:pointer; background:#fff; font-size: 0.85rem; }
-    .history-item:hover{ color:var(--accent); border-color:var(--accent); }
+    :root{ --bg:#fdfdfd; --text:#333; --muted:#888; --border:#d9d9d9; --accent:#4da6ff; --shadow:0 2px 12px rgba(0,0,0,0.08); }
+    *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font-family: "Inter", "Noto Sans JP", sans-serif;}
+    
+    /* 検索コンテナの強化 */
+    .center{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:0 1.5rem; }
+    .search-wrapper{ position:relative; width:min(92vw, 600px); }
+    
+    #query{ 
+      width:100%; padding:1rem 3.5rem 1rem 1.5rem; font-size:1.1rem; 
+      border:1px solid var(--border); border-radius:28px; background:#fff; 
+      box-shadow: var(--shadow); outline:none; transition: box-shadow .2s;
+    }
+    #query:focus{ box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
 
-    /* Modal styles */
-    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.22); display:none; align-items:center; justify-content:center; z-index: 1000; }
-    .modal { width: min(94vw, 720px); background: #fff; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.18); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
-    .modal-header{ padding:1rem 1.2rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
-    .modal-body { padding: 1rem 1.2rem; display: grid; gap: 1.2rem; overflow-y: auto; flex: 1 1 auto; }
-    .section{ border:1px solid #eee; border-radius:12px; padding:.9rem; }
-    .row{ display:flex; gap:.8rem; flex-wrap:wrap; align-items:center; margin-bottom: 0.5rem; }
-    .label{ color:#555; font-size:.95rem; min-width:170px; }
-    .modal-footer{ padding:.9rem 1.2rem; border-top:1px solid var(--border); display:flex; gap:.6rem; justify-content:flex-end; }
-    .btn{ padding:.5rem .8rem; border:1px solid var(--border); border-radius:8px; background:#fff; cursor:pointer; }
-    .btn.primary{ border-color:var(--accent); color:#fff; background:var(--accent); }
-    .small{ font-size:.8rem; color:#888; }
+    /* サジェスト（検索候補）のデザイン */
+    .suggestions{
+      position:absolute; top:105%; left:0; right:0; background:#fff; 
+      border-radius:12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); 
+      display:none; z-index:100; overflow:hidden; border:1px solid #eee;
+    }
+    .suggestion-item{ padding:10px 18px; cursor:pointer; font-size:0.95rem; text-align:left; }
+    .suggestion-item:hover{ background:#f5f5f5; }
+
+    /* 音声入力アイコン */
+    .voice-btn{
+      position:absolute; right:15px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; font-size:1.2rem; color:var(--accent);
+    }
+
+    /* タイル型ブックマーク */
+    .shortcut-grid{ 
+      display:grid; grid-template-columns: repeat(4, 1fr); gap:1.5rem; 
+      margin-top:2.5rem; width:min(92vw, 480px); 
+    }
+    .shortcut-item{ 
+      display:flex; flex-direction:column; align-items:center; gap:8px; 
+      text-decoration:none; color:var(--text); font-size:0.8rem;
+    }
+    .shortcut-icon{
+      width:48px; height:48px; background:#f1f3f4; border-radius:50%;
+      display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+      transition: background 0.2s;
+    }
+    .shortcut-item:hover .shortcut-icon{ background:#e8eaed; }
+
+    .topbar{ position:fixed; top:15px; right:15px; display:flex; gap:10px; }
+    .btn-ui{ padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:#fff; cursor:pointer; font-size:0.85rem;}
   </style>
 </head>
 <body>
 
   <div class="topbar">
-    <button class="settings-btn" id="authBtn">読み込み中...</button>
-    <select id="engine"></select>
-    <button class="settings-btn" id="openSettings">設定</button>
+    <button class="btn-ui" id="authBtn">読み込み中...</button>
+    <button class="btn-ui" id="openSettings">設定</button>
   </div>
 
   <main class="center">
-    <h1>SURGE Light</h1>
-    <p class="subtitle">光のように、知をたどる。</p>
-    <input id="query" type="text" placeholder="検索ワードを入力…" autocomplete="off"/>
-    <section class="history" id="historySection">
-      <p class="history-title">最近の検索</p>
-      <div class="history-list" id="history"></div>
-    </section>
+    <h1 style="font-size:3rem; margin-bottom:2rem; letter-spacing:-1px;">SURGE<span style="color:var(--accent)">PRO</span></h1>
+    
+    <div class="search-wrapper">
+      <input id="query" type="text" placeholder="Google で検索、または URL を入力" autocomplete="off" spellcheck="false"/>
+      <button class="voice-btn" id="voiceBtn">🎙️</button>
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+
+    <div class="shortcut-grid" id="shortcuts">
+      </div>
   </main>
 
-  <div class="modal-backdrop" id="settingsModal">
-    <div class="modal">
-      <div class="modal-header">
-        <div class="modal-title">設定</div>
-        <button class="btn" id="closeSettings">閉じる</button>
-      </div>
-      <div class="modal-body">
-        <div class="section">
-          <div class="label" style="margin-bottom: 8px;">デフォルト検索先</div>
-          <select id="defaultEngineSelect" style="width: 100%; padding: 5px;"></select>
-        </div>
-        <div class="section">
-          <div class="label">カスタム検索先の追加</div>
-          <div class="row">
-            <input id="customName" type="text" placeholder="名前" style="flex:1; padding:5px;">
-            <input id="customUrl" type="text" placeholder="URL {query}" style="flex:2; padding:5px;">
-            <button class="btn" id="addCustomEngine">追加</button>
-          </div>
-          <div id="customEngineList"></div>
-        </div>
-        <div class="section">
-          <button class="btn" id="clearHistory" style="color:red;">履歴をすべて削除</button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn primary" id="saveSettings">保存して閉じる</button>
-      </div>
-    </div>
-  </div>
-
   <script type="module">
+    // --- Firebase設定（先ほどのあなたの設定を維持） ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -98,132 +89,113 @@
       messagingSenderId: "217437981571",
       appId: "1:217437981571:web:94c1081d79a4beb471c4b6"
     };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const provider = new GoogleAuthProvider();
 
-    // --- Data Management ---
-    let settings = JSON.parse(localStorage.getItem('surge_settings')) || {
-      customEngines: [],
-      defaultId: 'google',
-      history: []
+    let settings = {
+      history: [],
+      shortcuts: [
+        { name: 'YouTube', url: 'https://youtube.com', icon: '📺' },
+        { name: 'Gmail', url: 'https://mail.google.com', icon: '✉️' },
+        { name: 'X', url: 'https://x.com', icon: '🐦' },
+        { name: 'ChatGPT', url: 'https://chat.openai.com', icon: '🤖' }
+      ]
     };
 
-    const DEFAULT_ENGINES = [
-      { id:"google", name:"Google", url:"https://www.google.com/search?q={query}" },
-      { id:"youtube", name:"YouTube", url:"https://www.youtube.com/results?search_query={query}" },
-      { id:"wikipedia", name:"Wikipedia", url:"https://ja.wikipedia.org/wiki/Special:Search?search={query}" },
-      { id:"surge", name:"SURGE", url:"results?q={query}" }
-    ];
+    // --- インクリメンタル・サジェスト機能 ---
+    const qInput = document.getElementById('query');
+    const suggestBox = document.getElementById('suggestions');
 
-    function getFullEngines() { return [...DEFAULT_ENGINES, ...settings.customEngines]; }
+    qInput.addEventListener('input', async () => {
+      const q = qInput.value.trim();
+      if (!q) { suggestBox.style.display = 'none'; return; }
 
-    async function save(sync = true) {
-      localStorage.setItem('surge_settings', JSON.stringify(settings));
-      if (sync && auth.currentUser) {
-        await setDoc(doc(db, "users", auth.currentUser.uid), { settings: settings }, { merge: true });
-      }
-    }
+      // GoogleのサジェストAPI（JSONPの代替手法）
+      try {
+        const res = await fetch(`https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const candidates = data[1];
 
-    // --- Auth Logic ---
-    const authBtn = document.getElementById('authBtn');
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        authBtn.textContent = "ログアウト";
-        authBtn.onclick = () => signOut(auth);
-        // クラウドからデータ取得
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (snap.exists()) {
-          const cloudData = snap.data().settings;
-          // クラウドの方が新しければマージ（簡易版）
-          settings = cloudData;
-          save(false);
-          renderAll();
+        if (candidates.length > 0) {
+          suggestBox.innerHTML = candidates.slice(0, 6).map(text => `
+            <div class="suggestion-item">${text}</div>
+          `).join('');
+          suggestBox.style.display = 'block';
+        } else {
+          suggestBox.style.display = 'none';
         }
-      } else {
-        authBtn.textContent = "Googleログイン";
-        authBtn.onclick = () => signInWithPopup(auth, provider);
+      } catch (e) { console.log("Suggest error"); }
+    });
+
+    // 候補クリックで検索
+    suggestBox.addEventListener('click', (e) => {
+      if (e.target.classList.contains('suggestion-item')) {
+        qInput.value = e.target.innerText;
+        suggestBox.style.display = 'none';
+        performSearch();
       }
     });
 
-    // --- UI Logic ---
-    const queryInput = document.getElementById('query');
-    const engineSelect = document.getElementById('engine');
-    const historyContainer = document.getElementById('history');
-
-    function renderAll() {
-      const engines = getFullEngines();
-      engineSelect.innerHTML = '';
-      const defSelect = document.getElementById('defaultEngineSelect');
-      defSelect.innerHTML = '';
-
-      engines.forEach(e => {
-        engineSelect.add(new Option(e.name, e.id));
-        defSelect.add(new Option(e.name, e.id));
-      });
-      engineSelect.value = settings.defaultId;
-      defSelect.value = settings.defaultId;
-
-      historyContainer.innerHTML = '';
-      document.getElementById('historySection').style.display = settings.history.length ? 'block' : 'none';
-      settings.history.forEach(h => {
-        const btn = document.createElement('button');
-        btn.className = 'history-item';
-        btn.textContent = h;
-        btn.onclick = () => { queryInput.value = h; performSearch(); };
-        historyContainer.appendChild(btn);
-      });
-      updateCustomList();
+    // --- 音声入力機能 ---
+    const voiceBtn = document.getElementById('voiceBtn');
+    if ('webkitSpeechRecognition' in window) {
+      const rec = new webkitSpeechRecognition();
+      rec.lang = 'ja-JP';
+      voiceBtn.onclick = () => {
+        voiceBtn.innerText = '🔴';
+        rec.start();
+      };
+      rec.onresult = (e) => {
+        qInput.value = e.results[0][0].transcript;
+        voiceBtn.innerText = '🎙️';
+        performSearch();
+      };
+      rec.onend = () => voiceBtn.innerText = '🎙️';
     }
 
+    // --- 検索実行 ---
     function performSearch() {
-      const q = queryInput.value.trim();
+      const q = qInput.value.trim();
       if (!q) return;
-      const engine = getFullEngines().find(e => e.id === engineSelect.value);
-      settings.history = [q, ...settings.history.filter(x => x !== q)].slice(0, 15);
-      save();
-      window.open(engine.url.replace('{query}', encodeURIComponent(q)), '_blank');
-      renderAll();
-    }
-
-    function updateCustomList() {
-      const list = document.getElementById('customEngineList');
-      list.innerHTML = '';
-      settings.customEngines.forEach((e, i) => {
-        const div = document.createElement('div');
-        div.style = 'display:flex; justify-content:space-between; padding:4px; font-size:0.8rem;';
-        div.innerHTML = `<span>${e.name}</span> <span style="color:red; cursor:pointer;" onclick="removeCustom(${i})">削除</span>`;
-        list.appendChild(div);
-      });
-    }
-
-    // Window functions for global access
-    window.removeCustom = (i) => { settings.customEngines.splice(i, 1); save(); renderAll(); };
-    document.getElementById('addCustomEngine').onclick = () => {
-      const name = document.getElementById('customName').value;
-      const url = document.getElementById('customUrl').value;
-      if (name && url.includes('{query}')) {
-        settings.customEngines.push({ id: 'c_'+Date.now(), name, url });
-        save(); renderAll();
-        document.getElementById('customName').value = ''; document.getElementById('customUrl').value = '';
+      // URLっぽい場合は直接移動、それ以外はGoogle検索
+      if (q.match(/^https?:\/\//) || q.includes('.')) {
+        window.open(q.startsWith('http') ? q : 'https://' + q, '_blank');
+      } else {
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}`, '_blank');
       }
-    };
+    }
 
-    // Events
-    queryInput.onkeydown = (e) => { if (e.key === 'Enter') performSearch(); };
-    document.getElementById('openSettings').onclick = () => document.getElementById('settingsModal').style.display = 'flex';
-    document.getElementById('closeSettings').onclick = () => document.getElementById('settingsModal').style.display = 'none';
-    document.getElementById('saveSettings').onclick = () => {
-      settings.defaultId = document.getElementById('defaultEngineSelect').value;
-      save(); document.getElementById('settingsModal').style.display = 'none'; renderAll();
-    };
-    document.getElementById('clearHistory').onclick = () => { settings.history = []; save(); renderAll(); };
+    qInput.onkeydown = (e) => { if (e.key === 'Enter') performSearch(); };
 
-    // Initial run
-    renderAll();
-    queryInput.focus();
+    // --- Firebase 連携 ---
+    onAuthStateChanged(auth, async (user) => {
+      const btn = document.getElementById('authBtn');
+      if (user) {
+        btn.innerText = 'ログアウト';
+        btn.onclick = () => signOut(auth);
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) { settings = snap.data().settings; }
+        renderShortcuts();
+      } else {
+        btn.innerText = 'Googleログイン';
+        btn.onclick = () => signInWithPopup(auth, provider);
+        renderShortcuts();
+      }
+    });
+
+    function renderShortcuts() {
+      const container = document.getElementById('shortcuts');
+      container.innerHTML = settings.shortcuts.map(s => `
+        <a href="${s.url}" class="shortcut-item">
+          <div class="shortcut-icon">${s.icon}</div>
+          <span>${s.name}</span>
+        </a>
+      `).join('');
+    }
+
+    renderShortcuts();
   </script>
 </body>
 </html>
