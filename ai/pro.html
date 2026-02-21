@@ -11,104 +11,148 @@
             --bg-side: #f0f4f9;
             --text-main: #1f1f1f;
             --text-sub: #444746;
+            --hover-color: #e1e5ea;
             --surge-gradient: linear-gradient(70deg, #4285f4, #9b72cb, #d96570);
         }
         body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* サイドバー */
-        #sidebar { width: 280px; background: var(--bg-side); display: flex; flex-direction: column; padding: 12px; transition: 0.3s; z-index: 1000; }
-        #sidebar.closed { transform: translateX(-100%); position: absolute; }
-        .menu-btn { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .menu-btn:hover { background: #e1e5ea; }
-        .new-chat { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #e6eaf1; border-radius: 24px; margin-top: 10px; cursor: pointer; font-size: 14px; }
+        #sidebar { width: 260px; background: var(--bg-side); display: flex; flex-direction: column; padding: 12px; transition: 0.3s; z-index: 1000; flex-shrink: 0; }
+        #sidebar.closed { margin-left: -260px; }
+        .menu-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .menu-btn:hover { background: var(--hover-color); }
+        .new-chat { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #e6eaf1; border-radius: 24px; margin: 10px 0; cursor: pointer; font-size: 14px; font-weight: 500; }
+        
+        /* 履歴セクション */
+        .history-container { flex: 1; overflow-y: auto; margin-top: 10px; }
+        .history-label { font-size: 12px; font-weight: bold; padding: 10px; color: var(--text-sub); }
+        .history-item { padding: 10px 14px; border-radius: 10px; font-size: 14px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); transition: 0.2s; }
+        .history-item:hover { background: var(--hover-color); }
 
         /* メインエリア */
-        #main-container { flex: 1; display: flex; flex-direction: column; position: relative; }
-        header { padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
-        .logo { font-size: 20px; font-weight: 700; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #main-container { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; }
+        header { padding: 8px 16px; display: flex; align-items: center; gap: 15px; }
+        .logo { font-size: 18px; font-weight: 700; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         /* チャット表示エリア */
-        #chat-window { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .chat-container { width: 100%; max-width: 800px; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; align-items: center; scroll-behavior: smooth; }
+        .chat-container { width: 90%; max-width: 700px; }
         
-        /* メッセージのスタイル */
-        .message { margin-bottom: 30px; line-height: 1.6; font-size: 16px; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .user-msg { font-weight: 500; color: var(--text-main); }
-        .ai-msg { color: var(--text-sub); display: flex; gap: 15px; }
-        .ai-icon { width: 30px; height: 30px; background: var(--surge-gradient); border-radius: 50%; flex-shrink: 0; }
+        /* チャット吹き出し */
+        .message { margin-bottom: 32px; display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .user-msg { align-items: flex-end; }
+        .user-text { background: #f0f4f9; padding: 12px 20px; border-radius: 22px; max-width: 85%; line-height: 1.6; }
+        
+        .ai-msg { align-items: flex-start; gap: 12px; }
+        .ai-row { display: flex; gap: 12px; width: 100%; }
+        .ai-icon { width: 32px; height: 32px; background: var(--surge-gradient); border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+        .ai-text { line-height: 1.7; color: var(--text-main); white-space: pre-wrap; flex: 1; }
 
         /* 初期表示 */
-        .greeting { text-align: left; width: 100%; max-width: 800px; margin-top: 10vh; }
-        .greeting h1 { font-size: 56px; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
+        .greeting { margin-top: 15vh; }
+        .greeting h1 { font-size: clamp(30px, 7vw, 50px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
 
         /* 入力エリア */
-        .bottom-area { padding: 20px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(transparent, #fff 20%); }
-        .input-wrapper { width: 100%; max-width: 768px; background: #f0f4f9; border-radius: 28px; padding: 10px 24px; display: flex; align-items: center; }
-        input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 40px; }
-        .send-btn { cursor: pointer; color: #4285f4; font-weight: bold; margin-left: 10px; }
+        .bottom-area { padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .input-wrapper { width: 100%; max-width: 768px; background: #f0f4f9; border-radius: 30px; padding: 8px 20px; display: flex; align-items: center; transition: 0.2s; border: 1px solid transparent; }
+        .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
+        input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 48px; }
+        .send-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; border-radius: 50%; }
+        .send-btn:hover { background: #e1e5ea; }
     </style>
 </head>
 <body>
 
     <nav id="sidebar">
-        <div class="menu-btn" onclick="toggleSidebar()"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></div>
-        <div class="new-chat" onclick="location.reload()">新しいチャット</div>
+        <div class="menu-btn" onclick="toggleSidebar()">
+            <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+        </div>
+        <div class="new-chat" onclick="location.reload()">
+            <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            新しいチャット
+        </div>
+        <div class="history-container">
+            <div class="history-label">最近</div>
+            <div id="history-list">
+                </div>
+        </div>
     </nav>
 
     <div id="main-container">
         <header>
-            <div class="menu-btn" id="header-menu" style="display: none;" onclick="toggleSidebar()"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></div>
+            <div class="menu-btn" id="header-menu-btn" style="display:none;" onclick="toggleSidebar()">
+                <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </div>
             <div class="logo">SURGE PRO</div>
-            <div style="width: 32px; height: 32px; background: #ddd; border-radius: 50%;"></div>
         </header>
 
         <div id="chat-window">
             <div class="chat-container" id="chat-content">
                 <div class="greeting" id="initial-view">
                     <h1>こんにちは</h1>
-                    <p style="font-size: 24px; color: #c4c7c5;">今日はどんなお手伝いをしましょうか？</p>
+                    <p style="font-size: 22px; color: #c4c7c5; margin-top: 10px;">今日はどんなお手伝いをしましょうか？</p>
                 </div>
             </div>
         </div>
 
         <div class="bottom-area">
             <div class="input-wrapper">
-                <input type="text" id="user-input" placeholder="ここにメッセージを入力してください" onkeypress="if(event.key==='Enter') sendMsg()">
-                <div class="send-btn" onclick="sendMsg()">送信</div>
+                <input type="text" id="user-input" placeholder="ここにメッセージを入力してください" autocomplete="off">
+                <div class="send-btn" onclick="sendMsg()">
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </div>
             </div>
-            <div style="font-size: 11px; color: #70757a; margin-top: 10px;">SURGE PRO は、間違いを表示することがあります。</div>
+            <div style="font-size: 11px; color: #70757a; margin-top: 12px;">SURGE PRO は間違いを表示することがあります。</div>
         </div>
     </div>
 
     <script>
         const WORKER_URL = "https://aipro.proluce.workers.dev";
+        let isFirstMessage = true;
 
         async function sendMsg() {
             const input = document.getElementById('user-input');
             const chatContent = document.getElementById('chat-content');
             const initialView = document.getElementById('initial-view');
+            const historyList = document.getElementById('history-list');
             const text = input.value.trim();
+            
             if (!text) return;
 
-            // 初期表示を消す
-            if (initialView) initialView.remove();
+            // 1. 初回メッセージなら履歴に追加 & 初期画面消去
+            if (isFirstMessage) {
+                if (initialView) initialView.remove();
+                
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerText = text;
+                historyList.prepend(historyItem); // 一番上に追加
+                isFirstMessage = false;
+            }
 
-            // ユーザーのメッセージを表示
-            chatContent.innerHTML += `<div class="message user-msg">${text}</div>`;
+            // 2. ユーザーの吹き出しを表示
+            chatContent.innerHTML += `
+                <div class="message user-msg">
+                    <div class="user-text">${text}</div>
+                </div>`;
+            
             input.value = "";
 
-            // AIの待機中表示
+            // 3. AIの待機中（スケルトン風）
             const aiMsgId = "ai-" + Date.now();
             chatContent.innerHTML += `
                 <div class="message ai-msg" id="${aiMsgId}">
-                    <div class="ai-icon"></div>
-                    <div class="ai-text">考え中...</div>
+                    <div class="ai-row">
+                        <div class="ai-icon"></div>
+                        <div class="ai-text">...</div>
+                    </div>
                 </div>`;
             
-            // スクロール
-            document.getElementById('chat-window').scrollTo(0, chatContent.scrollHeight);
+            scrollToBottom();
 
+            // 4. API呼び出し
             try {
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
@@ -117,21 +161,33 @@
                 });
 
                 const data = await response.json();
-                // Workersの出力形式 [{ generated_text: "AI: 応答内容" }] に合わせる
-                const aiText = data[0].generated_text.replace("AI: ", "");
-                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = aiText;
+                const aiResponseText = data[0].generated_text.replace("AI: ", "");
+                
+                // 応答を表示
+                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = aiResponseText;
+                scrollToBottom();
 
             } catch (e) {
-                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "エラーが発生しました。";
+                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "接続エラーが発生しました。";
             }
+        }
+
+        function scrollToBottom() {
+            const window = document.getElementById('chat-window');
+            window.scrollTo(0, window.scrollHeight);
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            const headerMenu = document.getElementById('header-menu');
+            const headerBtn = document.getElementById('header-menu-btn');
             sidebar.classList.toggle('closed');
-            headerMenu.style.display = sidebar.classList.contains('closed') ? 'flex' : 'none';
+            headerBtn.style.display = sidebar.classList.contains('closed') ? 'block' : 'none';
         }
+
+        // Enterキー対応
+        document.getElementById('user-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMsg();
+        });
     </script>
 </body>
 </html>
