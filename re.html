@@ -49,16 +49,22 @@
     #aiReplyInput { flex-grow: 1; padding: 10px 15px; border-radius: 24px; border: 1px solid #ddd; outline: none; }
     #aiReplyBtn { background: var(--accent); color: white; border: none; padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; }
 
-    /* 翻訳ウィジェット用スタイル */
+    /* 翻訳カードのデザイン修正 */
     #translationCard {
-      display: none; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: none; 
+      background: #fff; 
+      border: 1px solid #e5e7eb; 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 25px; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .trans-flex { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
     .trans-box { flex: 1; min-width: 150px; }
     .trans-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .trans-input { width: 100%; border: none; font-size: 20px; outline: none; padding: 5px 0; border-bottom: 1px solid transparent; background: transparent; }
+    .trans-input { width: 100%; border: none; font-size: 20px; outline: none; padding: 5px 0; border-bottom: 1px solid transparent; background: transparent; color: #222; }
     .trans-input:focus { border-bottom: 1px dotted var(--accent); }
-    .trans-result { font-size: 22px; font-weight: bold; color: var(--accent); min-height: 30px; }
+    .trans-result { font-size: 22px; font-weight: bold; color: var(--accent); min-height: 30px; display: flex; align-items: center; }
     .trans-arrow { font-size: 24px; color: #ccc; }
 
     .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
@@ -113,6 +119,50 @@
   <script>
     const WORKER_URL = "https://surge.proluce.workers.dev/"; 
     
+    // 翻訳実行関数
+    async function runTranslation(text) {
+      const output = document.getElementById('transOutput');
+      output.innerText = "翻訳中...";
+      try {
+        const res = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ inputs: `以下の日本語を英語に翻訳して。翻訳結果の単語のみを返して。:${text}` })
+        });
+        const data = await res.json();
+        const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
+        const reply = raw.split("AI:").pop()?.replace(/[.!?]/g, '').trim() || "Error";
+        output.innerText = reply;
+      } catch (e) {
+        output.innerText = "Error";
+      }
+    }
+
+    function triggerLiveTrans() {
+      const val = document.getElementById('transInput').value.trim();
+      if (val) runTranslation(val);
+    }
+
+    // 翻訳が必要なクエリかチェックする関数
+    function checkAndShowTranslation(q) {
+      const transCard = document.getElementById('translationCard');
+      // 「パン 英語」「パン　翻訳」「英語　パン」などのパターンに対応
+      const transPattern = /(.+)(英語|翻訳)|(英語|翻訳)\s*(.+)/;
+      const match = q.match(transPattern);
+
+      if (match) {
+        // キーワードを抽出
+        let word = (match[1] || match[4] || "").replace(/[\s　]+/g, "").trim();
+        if (word) {
+          transCard.style.display = 'block';
+          document.getElementById('transInput').value = word;
+          runTranslation(word);
+        }
+      } else {
+        transCard.style.display = 'none';
+      }
+    }
+
     async function getAIResponse(query, targetId, isFollowUp = false) {
       const target = document.getElementById(targetId);
       const status = document.getElementById('aiStatus');
@@ -151,30 +201,6 @@
       }
     }
 
-    // 翻訳専用の関数
-    async function runTranslation(text) {
-      const output = document.getElementById('transOutput');
-      output.innerText = "...";
-      try {
-        const res = await fetch(WORKER_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ inputs: `以下の日本語を英語に翻訳して。余計な解説は省き、翻訳した単語のみを1つ答えて。:${text}` })
-        });
-        const data = await res.json();
-        const raw = Array.isArray(data) ? (data[0]?.generated_text || "") : (data.generated_text || "");
-        const reply = raw.split("AI:").pop()?.replace(/[.!?]/g, '').trim() || "翻訳不可";
-        output.innerText = reply;
-      } catch (e) {
-        output.innerText = "エラー";
-      }
-    }
-
-    function triggerLiveTrans() {
-      const val = document.getElementById('transInput').value.trim();
-      if (val) runTranslation(val);
-    }
-
     async function sendAIFollowUp() {
       const input = document.getElementById('aiReplyInput');
       const text = input.value.trim();
@@ -209,11 +235,12 @@
       const summaryBox = document.getElementById('aiSummaryBox');
       const aiModeArea = document.getElementById('aiModeContainer');
       const webArea = document.getElementById('webResultsArea');
-      const transCard = document.getElementById('translationCard');
       const element = google.search.cse.element.getElement("searchresults-only");
 
       if (type === 'ai') {
-        webArea.style.display = 'none'; summaryBox.style.display = 'none'; transCard.style.display = 'none'; aiModeArea.style.display = 'block';
+        webArea.style.display = 'none'; summaryBox.style.display = 'none'; 
+        document.getElementById('translationCard').style.display = 'none';
+        aiModeArea.style.display = 'block';
         if (!document.getElementById('aiChatHistory').hasChildNodes()) {
           const history = document.getElementById('aiChatHistory');
           const firstUserMsg = document.createElement('div');
@@ -226,11 +253,11 @@
         aiModeArea.style.display = 'none'; webArea.style.display = 'block';
         summaryBox.style.display = (type === 'web') ? 'block' : 'none';
         
-        // 翻訳カードの表示制御（「すべて」タブの時のみ）
-        if (type === 'web' && q.match(/(.+)[\s　]*(英語|翻訳)/)) {
-          transCard.style.display = 'block';
+        // タブ切り替え時にも翻訳判定を実行
+        if (type === 'web') {
+           checkAndShowTranslation(q);
         } else {
-          transCard.style.display = 'none';
+           document.getElementById('translationCard').style.display = 'none';
         }
 
         if (element) {
@@ -249,7 +276,6 @@
           input.value = q;
           const element = google.search.cse.element.getElement("searchresults-only");
           const summaryBox = document.getElementById('aiSummaryBox');
-          const transCard = document.getElementById('translationCard');
           
           if (location.hash.includes('gsc.tab=1')) {
             const imgTab = document.getElementById('tab-image');
@@ -262,15 +288,9 @@
             summaryBox.style.display = 'block';
             getAIResponse(q, 'aiSummaryContent');
             if (element) element.execute(q);
-
-            // 翻訳クエリ判定
-            const transMatch = q.match(/(.+)[\s　]*(英語|翻訳)/);
-            if (transMatch) {
-              const word = transMatch[1].trim();
-              transCard.style.display = 'block';
-              document.getElementById('transInput').value = word;
-              runTranslation(word);
-            }
+            
+            // 初回読み込み時の翻訳判定
+            checkAndShowTranslation(q);
           }
         }
         document.getElementById('searchForm').addEventListener('submit', (e) => {
