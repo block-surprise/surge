@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -25,7 +25,14 @@
             display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* --- サイドバー（接合型） --- */
+        /* --- 埋め込みモード用の設定 --- */
+        body.is-embedded aside, 
+        body.is-embedded header { display: none !important; }
+        body.is-embedded .result-view { margin: 10px auto !important; padding: 0 20px !important; }
+        body.is-embedded .result-view h1 { font-size: 1.8rem !important; margin-top: 0; }
+        body.is-embedded .result-view button { display: none !important; }
+
+        /* --- サイドバー --- */
         aside {
             width: var(--sidebar-w); background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
@@ -51,16 +58,14 @@
         .menu-item.active { background: #e5e5ea; color: var(--accent); font-weight: 600; }
 
         /* --- メインエリア --- */
-        main { flex-grow: 1; display: flex; flex-direction: column; background: #fff; }
+        main { flex-grow: 1; display: flex; flex-direction: column; background: #fff; width: 100%; }
 
         header {
             height: var(--header-h); padding: 0 30px;
             display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid var(--border);
-            background: #fff;
+            border-bottom: 1px solid var(--border); background: #fff;
         }
 
-        /* コンテンツエリア（上部は角丸なし、下部は内容に合わせて） */
         .page-content {
             flex-grow: 1; position: relative;
             overflow-y: auto; display: none;
@@ -71,9 +76,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* --- 検索ホーム --- */
-        .search-container {
-            max-width: 600px; margin: 15vh auto; text-align: center; padding: 0 20px;
-        }
+        .search-container { max-width: 600px; margin: 15vh auto; text-align: center; padding: 0 20px; }
         .search-bar {
             background: #f2f2f7; border-radius: 12px;
             padding: 12px 20px; display: flex; border: 1px solid transparent;
@@ -93,12 +96,6 @@
             border-radius: 12px; padding: 25px; font-size: 1rem; outline: none; resize: none;
             background: #fafafa;
         }
-
-        /* --- 設定 --- */
-        .settings-container { max-width: 600px; margin: 40px auto; padding: 0 20px; }
-        .settings-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        .settings-row { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #fff; border-bottom: 1px solid var(--border); }
-        .settings-row:last-child { border-bottom: none; }
 
         #loader { font-size: 0.8rem; color: var(--accent); margin-top: 15px; display: none; }
     </style>
@@ -147,18 +144,9 @@
         </div>
 
         <div id="page-settings" class="page-content">
-            <div class="settings-container">
+            <div class="settings-container" style="padding: 20px;">
                 <h3>システム設定</h3>
-                <div class="settings-card">
-                    <div class="settings-row">
-                        <span>言語</span>
-                        <span style="color: var(--text-sub);">日本語</span>
-                    </div>
-                    <div class="settings-row">
-                        <span>全データの消去</span>
-                        <button onclick="localStorage.clear(); location.reload();" style="color:red; border:none; background:none; cursor:pointer;">実行</button>
-                    </div>
-                </div>
+                <button onclick="localStorage.clear(); location.reload();" style="color:red; border:none; background:none; cursor:pointer;">データの全消去</button>
             </div>
         </div>
     </main>
@@ -167,10 +155,12 @@
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-            document.getElementById(`page-${pageId}`).classList.add('active');
-            document.getElementById(`m-${pageId}`).classList.add('active');
+            const targetPage = document.getElementById(`page-${pageId}`);
+            const targetMenu = document.getElementById(`m-${pageId}`);
+            if(targetPage) targetPage.classList.add('active');
+            if(targetMenu) targetMenu.classList.add('active');
             const titles = { home: 'ホーム', result: '検索結果', note: 'ノート', settings: '設定' };
-            document.getElementById('headerTitle').innerText = titles[pageId];
+            document.getElementById('headerTitle').innerText = titles[pageId] || 'SURGE';
         }
 
         async function search() {
@@ -186,16 +176,35 @@
                     document.getElementById('m-result').style.display = 'flex';
                     showPage('result');
                 } else { alert("見つかりませんでした"); }
-            } catch(e) { alert("接続エラー"); }
+            } catch(e) { console.error(e); }
             document.getElementById('loader').style.display = 'none';
         }
+
+        // --- 自動実行 & 埋め込みモード判定 ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get('q');
+            
+            // iframe内で呼ばれているか、またはURLにパラメータがある場合に埋め込みモードにする
+            if (window.self !== window.top || query) {
+                document.body.classList.add('is-embedded');
+            }
+
+            if (query) {
+                document.getElementById('mainInput').value = query;
+                search();
+            }
+        });
 
         const na = document.getElementById('noteArea');
         na.value = localStorage.getItem('surge_hub_note') || "";
         na.oninput = () => localStorage.setItem('surge_hub_note', na.value);
 
         document.getElementById('mainInput').onkeydown = (e) => { if(e.key==='Enter') search(); };
-        setInterval(() => { document.getElementById('time').innerText = new Date().toLocaleTimeString(); }, 1000);
+        setInterval(() => { 
+            const timeEl = document.getElementById('time');
+            if(timeEl) timeEl.innerText = new Date().toLocaleTimeString(); 
+        }, 1000);
     </script>
 </body>
 </html>
