@@ -188,6 +188,10 @@
       if (type === 'ai') {
         webArea.style.display = 'none'; summaryBox.style.display = 'none'; document.querySelectorAll('.utility-card').forEach(c => c.style.display = 'none');
         aiModeArea.style.display = 'block';
+        // AIタブ切り替え時に履歴がなければ最初の質問を投げる
+        if (!document.getElementById('aiChatHistory').hasChildNodes()) {
+          sendAIFollowUp(q);
+        }
       } else {
         aiModeArea.style.display = 'none'; webArea.style.display = 'block';
         if (type === 'web') {
@@ -206,6 +210,34 @@
         const data = await res.json();
         target.innerText = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop().trim();
       } catch (e) { target.innerText = "Error"; }
+    }
+
+    // AIタブ用の送信関数
+    async function sendAIFollowUp(customQ) {
+      const input = document.getElementById('aiReplyInput');
+      const q = customQ || input.value.trim();
+      if (!q) return;
+
+      const hist = document.getElementById('aiChatHistory');
+      hist.innerHTML += `<div class="user-bubble">${q}</div>`;
+      input.value = "";
+      
+      const aiDiv = document.createElement('div');
+      aiDiv.className = 'ai-bubble'; aiDiv.innerText = "...";
+      hist.appendChild(aiDiv);
+      hist.scrollTop = hist.scrollHeight;
+
+      try {
+        const res = await fetch(WORKER_URL, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ inputs: q }) 
+        });
+        const data = await res.json();
+        const aiText = (Array.isArray(data) ? data[0].generated_text : data.generated_text).split("AI:").pop().trim();
+        aiDiv.innerText = aiText;
+      } catch (e) { aiDiv.innerText = "Error: 接続失敗"; }
+      hist.scrollTop = hist.scrollHeight;
     }
 
     window.__gcse = {
