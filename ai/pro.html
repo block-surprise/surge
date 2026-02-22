@@ -38,7 +38,6 @@
         #chat-window { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; align-items: center; scroll-behavior: smooth; }
         .chat-container { width: 90%; max-width: 700px; }
         
-        /* チャット吹き出し */
         .message { margin-bottom: 32px; display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
@@ -50,11 +49,9 @@
         .ai-icon { width: 32px; height: 32px; background: var(--surge-gradient); border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
         .ai-text { line-height: 1.7; color: var(--text-main); white-space: pre-wrap; flex: 1; }
 
-        /* 初期表示 */
         .greeting { margin-top: 15vh; }
         .greeting h1 { font-size: clamp(30px, 7vw, 50px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
 
-        /* 入力エリア */
         .bottom-area { padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .input-wrapper { width: 100%; max-width: 768px; background: #f0f4f9; border-radius: 30px; padding: 8px 20px; display: flex; align-items: center; transition: 0.2s; border: 1px solid transparent; }
         .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
@@ -108,32 +105,56 @@
     </div>
 
     <script>
-        // 動いている surge の方にURLを合わせました
         const WORKER_URL = "https://surge.proluce.workers.dev";
         let isFirstMessage = true;
-        let chatHistory = []; // 会話履歴を保持する配列
+        let chatHistory = []; 
+
+        // ページ読み込み時に保存された履歴をサイドバーに表示
+        window.onload = () => {
+            const savedHistory = JSON.parse(localStorage.getItem('surge_history') || '[]');
+            savedHistory.forEach(text => {
+                addHistoryItem(text);
+            });
+        };
+
+        // サイドバーに履歴アイテムを追加する関数
+        function addHistoryItem(text) {
+            const historyList = document.getElementById('history-list');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerText = text;
+            // 履歴をクリックすると入力欄にコピーされる機能
+            historyItem.onclick = () => { 
+                document.getElementById('user-input').value = text;
+                document.getElementById('user-input').focus();
+            };
+            historyList.prepend(historyItem);
+        }
 
         async function sendMsg() {
             const input = document.getElementById('user-input');
             const chatContent = document.getElementById('chat-content');
             const initialView = document.getElementById('initial-view');
-            const historyList = document.getElementById('history-list');
             const text = input.value.trim();
             
             if (!text) return;
 
-            // 1. 初回メッセージなら履歴に追加 & 初期画面消去
+            // 初回送信時の処理：履歴保存と初期画面消去
             if (isFirstMessage) {
                 if (initialView) initialView.remove();
                 
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerText = text;
-                historyList.prepend(historyItem);
+                // localStorageに保存
+                const savedHistory = JSON.parse(localStorage.getItem('surge_history') || '[]');
+                savedHistory.push(text);
+                // 履歴は最新15件に制限
+                if (savedHistory.length > 15) savedHistory.shift();
+                localStorage.setItem('surge_history', JSON.stringify(savedHistory));
+                
+                addHistoryItem(text);
                 isFirstMessage = false;
             }
 
-            // 2. ユーザーの吹き出しを表示
+            // ユーザーメッセージ表示
             chatContent.innerHTML += `
                 <div class="message user-msg">
                     <div class="user-text">${text}</div>
@@ -141,7 +162,7 @@
             
             input.value = "";
 
-            // 3. AIの待機中（スケルトン風）
+            // AIの待機表示
             const aiMsgId = "ai-" + Date.now();
             chatContent.innerHTML += `
                 <div class="message ai-msg" id="${aiMsgId}">
@@ -153,39 +174,33 @@
             
             scrollToBottom();
 
-            // 4. API呼び出し
             try {
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         inputs: text,
-                        history: chatHistory // 会話の記憶を送信
+                        history: chatHistory 
                     })
                 });
 
                 const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
 
                 const aiResponseText = data[0].generated_text.replace("AI: ", "");
                 
-                // 会話履歴を更新（最新のやり取りを配列に追加）
+                // 会話のコンテキスト（記憶）を更新
                 chatHistory.push({ role: "user", parts: [{ text: text }] });
                 chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
 
-                // 履歴が長すぎるとAIが混乱するので、直近10往復(20件)に制限
+                // 記憶は最新10往復分
                 if (chatHistory.length > 20) chatHistory.shift();
 
-                // 応答を表示
                 document.getElementById(aiMsgId).querySelector('.ai-text').innerText = aiResponseText;
                 scrollToBottom();
 
             } catch (e) {
-                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "接続に問題が発生しました。時間をおいて再度お試しください。";
-                console.error("Error:", e);
+                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "接続に問題が発生しました。";
             }
         }
 
@@ -201,7 +216,6 @@
             headerBtn.style.display = sidebar.classList.contains('closed') ? 'block' : 'none';
         }
 
-        // Enterキー対応
         document.getElementById('user-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMsg();
         });
