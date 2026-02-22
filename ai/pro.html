@@ -105,120 +105,141 @@
     </div>
 
     <script>
-        const WORKER_URL = "https://surge.proluce.workers.dev";
-        let isFirstMessage = true;
-        let chatHistory = []; 
+    const WORKER_URL = "https://surge.proluce.workers.dev";
+    let currentChatId = null; // 現在の会話のID
+    let chatHistory = [];     // 現在の会話のメモリ（Gemini用）
 
-        // ページ読み込み時に保存された履歴をサイドバーに表示
-        window.onload = () => {
-            const savedHistory = JSON.parse(localStorage.getItem('surge_history') || '[]');
-            savedHistory.forEach(text => {
-                addHistoryItem(text);
-            });
-        };
+    // 1. ページ読み込み時にサイドバーのリストを更新
+    window.onload = () => {
+        refreshHistoryList();
+    };
 
-        // サイドバーに履歴アイテムを追加する関数
-        function addHistoryItem(text) {
-            const historyList = document.getElementById('history-list');
+    // サイドバーの「最近」リストを更新する
+    function refreshHistoryList() {
+        const historyList = document.getElementById('history-list');
+        historyList.innerHTML = "";
+        const allChats = JSON.parse(localStorage.getItem('surge_chats') || '{}');
+        
+        // 日付が新しい順に並べて表示
+        Object.keys(allChats).reverse().forEach(id => {
+            const chatData = allChats[id];
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
-            historyItem.innerText = text;
-            // 履歴をクリックすると入力欄にコピーされる機能
-            historyItem.onclick = () => { 
-                document.getElementById('user-input').value = text;
-                document.getElementById('user-input').focus();
-            };
-            historyList.prepend(historyItem);
+            historyItem.innerText = chatData.title;
+            historyItem.onclick = () => loadChat(id); // クリックで会話を復元
+            historyList.appendChild(historyItem);
+        });
+    }
+
+    // 過去の会話を画面にロードする
+    function loadChat(id) {
+        currentChatId = id;
+        const allChats = JSON.parse(localStorage.getItem('surge_chats') || '{}');
+        const chatData = allChats[id];
+        
+        // 画面をリセットして過去のログを描画
+        const chatContent = document.getElementById('chat-content');
+        const initialView = document.getElementById('initial-view');
+        if (initialView) initialView.remove();
+        chatContent.innerHTML = "";
+
+        chatData.messages.forEach(msg => {
+            if (msg.role === "user") {
+                appendUserMsg(msg.parts[0].text);
+            } else {
+                appendAiMsg(msg.parts[0].text);
+            }
+        });
+        
+        chatHistory = chatData.messages; // メモリに履歴をセット
+        scrollToBottom();
+    }
+
+    // 画面にユーザーのメッセージを表示
+    function appendUserMsg(text) {
+        const chatContent = document.getElementById('chat-content');
+        chatContent.innerHTML += `<div class="message user-msg"><div class="user-text">${text}</div></div>`;
+    }
+
+    // 画面にAIのメッセージを表示
+    function appendAiMsg(text, id = null) {
+        const chatContent = document.getElementById('chat-content');
+        const aiId = id || "ai-" + Date.now();
+        chatContent.innerHTML += `
+            <div class="message ai-msg" id="${aiId}">
+                <div class="ai-row">
+                    <div class="ai-icon"></div>
+                    <div class="ai-text">${text}</div>
+                </div>
+            </div>`;
+        return aiId;
+    }
+
+    async function sendMsg() {
+        const input = document.getElementById('user-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const initialView = document.getElementById('initial-view');
+        if (initialView) initialView.remove();
+
+        // 初めての送信なら新しいチャットIDを作成
+        if (!currentChatId) {
+            currentChatId = "chat-" + Date.now();
         }
 
-        async function sendMsg() {
-            const input = document.getElementById('user-input');
-            const chatContent = document.getElementById('chat-content');
-            const initialView = document.getElementById('initial-view');
-            const text = input.value.trim();
-            
-            if (!text) return;
+        appendUserMsg(text);
+        input.value = "";
+        const aiId = appendAiMsg("...");
+        scrollToBottom();
 
-            // 初回送信時の処理：履歴保存と初期画面消去
-            if (isFirstMessage) {
-                if (initialView) initialView.remove();
-                
-                // localStorageに保存
-                const savedHistory = JSON.parse(localStorage.getItem('surge_history') || '[]');
-                savedHistory.push(text);
-                // 履歴は最新15件に制限
-                if (savedHistory.length > 15) savedHistory.shift();
-                localStorage.setItem('surge_history', JSON.stringify(savedHistory));
-                
-                addHistoryItem(text);
-                isFirstMessage = false;
-            }
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ inputs: text, history: chatHistory })
+            });
 
-            // ユーザーメッセージ表示
-            chatContent.innerHTML += `
-                <div class="message user-msg">
-                    <div class="user-text">${text}</div>
-                </div>`;
-            
-            input.value = "";
+            const data = await response.json();
+            const aiResponseText = data[0].generated_text.replace("AI: ", "");
 
-            // AIの待機表示
-            const aiMsgId = "ai-" + Date.now();
-            chatContent.innerHTML += `
-                <div class="message ai-msg" id="${aiMsgId}">
-                    <div class="ai-row">
-                        <div class="ai-icon"></div>
-                        <div class="ai-text">...</div>
-                    </div>
-                </div>`;
-            
+            // メモリを更新
+            chatHistory.push({ role: "user", parts: [{ text: text }] });
+            chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+
+            // 永続保存 (localStorage)
+            const allChats = JSON.parse(localStorage.getItem('surge_chats') || '{}');
+            allChats[currentChatId] = {
+                title: allChats[currentChatId]?.title || text, // 1行目をタイトルにする
+                messages: chatHistory
+            };
+            localStorage.setItem('surge_chats', JSON.stringify(allChats));
+
+            // AIのテキストを更新
+            document.getElementById(aiId).querySelector('.ai-text').innerText = aiResponseText;
+            refreshHistoryList(); // サイドバー更新
             scrollToBottom();
 
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        inputs: text,
-                        history: chatHistory 
-                    })
-                });
-
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
-
-                const aiResponseText = data[0].generated_text.replace("AI: ", "");
-                
-                // 会話のコンテキスト（記憶）を更新
-                chatHistory.push({ role: "user", parts: [{ text: text }] });
-                chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
-
-                // 記憶は最新10往復分
-                if (chatHistory.length > 20) chatHistory.shift();
-
-                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = aiResponseText;
-                scrollToBottom();
-
-            } catch (e) {
-                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "接続に問題が発生しました。";
-            }
+        } catch (e) {
+            document.getElementById(aiId).querySelector('.ai-text').innerText = "接続に問題が発生しました。";
         }
+    }
 
-        function scrollToBottom() {
-            const window = document.getElementById('chat-window');
-            window.scrollTo(0, window.scrollHeight);
-        }
+    function scrollToBottom() {
+        const window = document.getElementById('chat-window');
+        window.scrollTo(0, window.scrollHeight);
+    }
 
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const headerBtn = document.getElementById('header-menu-btn');
-            sidebar.classList.toggle('closed');
-            headerBtn.style.display = sidebar.classList.contains('closed') ? 'block' : 'none';
-        }
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const headerBtn = document.getElementById('header-menu-btn');
+        sidebar.classList.toggle('closed');
+        headerBtn.style.display = sidebar.classList.contains('closed') ? 'block' : 'none';
+    }
 
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') sendMsg();
-        });
-    </script>
+    document.getElementById('user-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMsg();
+    });
+</script>
 </body>
 </html>
