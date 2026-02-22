@@ -14,61 +14,141 @@
             --hover-color: #e1e5ea;
             --surge-gradient: linear-gradient(70deg, #4285f4, #9b72cb, #d96570);
         }
-        body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; display: flex; height: 100vh; height: -webkit-fill-available; overflow: hidden; }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Noto Sans JP', sans-serif; 
+            background: var(--bg-main); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            height: 100dvh; 
+            overflow: hidden; 
+        }
         
         /* サイドバー */
         #sidebar { 
-            width: 260px; background: var(--bg-side); display: flex; flex-direction: column; padding: 12px; transition: 0.3s; z-index: 1000; flex-shrink: 0; 
-            position: relative;
+            width: 260px; 
+            background: var(--bg-side); 
+            display: flex; 
+            flex-direction: column; 
+            padding: 12px; 
+            transition: 0.3s; 
+            z-index: 2000; 
+            flex-shrink: 0; 
         }
         #sidebar.closed { margin-left: -260px; }
         
         @media (max-width: 768px) {
-            #sidebar { position: fixed; height: 100%; box-shadow: 2px 0 10px rgba(0,0,0,0.1); width: 280px; }
+            #sidebar { position: fixed; height: 100dvh; box-shadow: 2px 0 10px rgba(0,0,0,0.1); width: 280px; }
             #sidebar.closed { margin-left: -280px; }
         }
 
         .menu-btn { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
         .menu-btn:hover { background: var(--hover-color); }
-        .new-chat { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #e6eaf1; border-radius: 24px; margin: 10px 0; cursor: pointer; font-size: 14px; font-weight: 500; }
+        
+        .new-chat { 
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px; 
+            background: #e6eaf1; border-radius: 24px; margin: 10px 0; 
+            cursor: pointer; font-size: 14px; font-weight: 500; 
+        }
         
         .history-container { flex: 1; overflow-y: auto; margin-top: 10px; }
         .history-label { font-size: 12px; font-weight: bold; padding: 10px; color: var(--text-sub); }
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 10px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .history-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px 14px; border-radius: 10px; font-size: 14px; 
+            cursor: pointer; transition: 0.2s; 
+        }
         .history-item:hover { background: var(--hover-color); }
         .history-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
         .delete-btn { opacity: 0.6; color: #999; padding: 4px; display: flex; align-items: center; }
         @media (min-width: 769px) { .delete-btn { opacity: 0; } .history-item:hover .delete-btn { opacity: 1; } }
 
         /* メインエリア */
-        #main-container { flex: 1; display: flex; flex-direction: column; position: relative; min-width: 0; width: 100%; }
-        header { padding: 8px 16px; display: flex; align-items: center; gap: 10px; height: 56px; flex-shrink: 0; }
+        #main-container { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100dvh; 
+            width: 100%; 
+            position: relative; 
+            background: #fff;
+        }
+
+        header { 
+            padding: 8px 16px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            height: 56px; 
+            flex-shrink: 0; 
+        }
         .logo { font-size: 18px; font-weight: 700; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        #chat-window { flex: 1; overflow-y: auto; padding: 10px 0; display: flex; flex-direction: column; align-items: center; scroll-behavior: smooth; }
-        .chat-container { width: 92%; max-width: 700px; padding-bottom: 20px; }
+        /* チャット表示エリア */
+        #chat-window { 
+            flex: 1; 
+            overflow-y: auto; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            scroll-behavior: smooth;
+        }
+        .chat-container { width: 92%; max-width: 700px; padding: 20px 0; }
         
         .message { margin-bottom: 24px; display: flex; flex-direction: column; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         .user-msg { align-items: flex-end; }
-        .user-text { background: #f0f4f9; padding: 10px 18px; border-radius: 20px; max-width: 85%; line-height: 1.6; font-size: 15px; word-break: break-all; }
+        .user-text { background: #f0f4f9; padding: 12px 18px; border-radius: 20px; max-width: 85%; line-height: 1.6; font-size: 15px; word-break: break-all; }
         
         .ai-msg { align-items: flex-start; gap: 10px; }
         .ai-row { display: flex; gap: 10px; width: 100%; }
-        .ai-icon { width: 28px; height: 28px; background: var(--surge-gradient); border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+        .ai-icon { width: 30px; height: 30px; background: var(--surge-gradient); border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
         .ai-text { line-height: 1.7; color: var(--text-main); white-space: pre-wrap; flex: 1; font-size: 15px; }
 
-        .share-btn { font-size: 12px; color: #70757a; cursor: pointer; margin-top: 8px; margin-left: 38px; display: inline-flex; align-items: center; gap: 4px; }
+        .share-btn { font-size: 12px; color: #70757a; cursor: pointer; margin-top: 8px; margin-left: 40px; display: inline-flex; align-items: center; gap: 4px; }
 
-        .greeting { margin-top: 10vh; text-align: center; width: 100%; }
-        .greeting h1 { font-size: clamp(28px, 8vw, 48px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; }
-        .greeting p { font-size: 18px; color: #c4c7c5; padding: 0 20px; }
+        /* 挨拶画面 */
+        .greeting { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            min-height: 300px;
+        }
+        .greeting h1 { font-size: clamp(32px, 8vw, 48px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; padding: 0 20px; }
+        .greeting p { font-size: 18px; color: #c4c7c5; margin-top: 15px; padding: 0 20px; }
 
-        .bottom-area { padding: 10px 15px 20px; display: flex; flex-direction: column; align-items: center; background: #fff; }
-        .input-wrapper { width: 100%; max-width: 768px; background: #f0f4f9; border-radius: 28px; padding: 4px 16px; display: flex; align-items: center; border: 1px solid transparent; }
+        /* 入力エリア（画面下部に絶対固定） */
+        .bottom-area { 
+            padding: 10px 15px calc(15px + env(safe-area-inset-bottom)); 
+            background: #fff; 
+            width: 100%; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex-shrink: 0;
+        }
+        .input-wrapper { 
+            width: 100%; 
+            max-width: 768px; 
+            background: #f0f4f9; 
+            border-radius: 28px; 
+            padding: 6px 16px; 
+            display: flex; 
+            align-items: center; 
+            border: 1px solid transparent; 
+            transition: 0.2s;
+        }
+        .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 44px; min-width: 0; }
-        .send-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; }
+        .send-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; }
     </style>
 </head>
 <body>
@@ -111,7 +191,7 @@
                     <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                 </div>
             </div>
-            <div style="font-size: 10px; color: #70757a; margin-top: 8px; text-align: center;">SURGE PRO は間違いを表示することがあります。</div>
+            <div style="font-size: 10px; color: #70757a; margin-top: 10px; text-align: center;">SURGE PRO は間違いを表示することがあります。</div>
         </div>
     </div>
 
@@ -157,7 +237,8 @@
             const allChats = JSON.parse(localStorage.getItem('surge_chats') || '{}');
             const chatData = allChats[id];
             const chatContent = document.getElementById('chat-content');
-            if (document.getElementById('initial-view')) document.getElementById('initial-view').remove();
+            const initialView = document.getElementById('initial-view');
+            if (initialView) initialView.style.display = 'none';
             chatContent.innerHTML = "";
             chatData.messages.forEach(msg => {
                 msg.role === "user" ? appendUserMsg(msg.parts[0].text) : appendAiMsg(msg.parts[0].text);
@@ -189,7 +270,8 @@
             const input = document.getElementById('user-input');
             const text = input.value.trim();
             if (!text) return;
-            if (document.getElementById('initial-view')) document.getElementById('initial-view').remove();
+            const initialView = document.getElementById('initial-view');
+            if (initialView) initialView.style.display = 'none';
             if (!currentChatId) currentChatId = "chat-" + Date.now();
             appendUserMsg(text);
             input.value = "";
@@ -217,12 +299,11 @@
 
         function scrollToBottom() {
             const win = document.getElementById('chat-window');
-            win.scrollTop = win.scrollHeight;
+            setTimeout(() => { win.scrollTop = win.scrollHeight; }, 50);
         }
 
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('closed');
+            document.getElementById('sidebar').classList.toggle('closed');
         }
 
         document.getElementById('user-input').addEventListener('keypress', (e) => {
