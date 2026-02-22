@@ -120,10 +120,28 @@
             justify-content: center; 
             align-items: center; 
             text-align: center; 
-            min-height: 300px;
+            padding: 40px 0;
         }
         .greeting h1 { font-size: clamp(32px, 8vw, 48px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; padding: 0 20px; }
         .greeting p { font-size: 18px; color: #c4c7c5; margin-top: 15px; padding: 0 20px; }
+
+        /* PC用クイックカード */
+        .quick-actions {
+            display: none; 
+            gap: 15px;
+            margin-top: 40px;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        @media (min-width: 769px) { .quick-actions { display: flex; } }
+        .action-card {
+            background: #fff; border: 1px solid #e1e5ea; border-radius: 12px; padding: 16px; width: 180px; cursor: pointer; transition: 0.3s; text-align: left; display: flex; flex-direction: column; gap: 10px;
+        }
+        .action-card:hover { background: var(--bg-side); border-color: #4285f4; transform: translateY(-2px); }
+        .action-card .icon { font-size: 20px; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .action-card .label { font-size: 13px; font-weight: 500; color: var(--text-main); }
 
         /* 入力エリア（画面下部に絶対固定） */
         .bottom-area { 
@@ -146,50 +164,6 @@
             border: 1px solid transparent; 
             transition: 0.2s;
         }
-
-        /* PC用クイックカード */
-        .quick-actions {
-            display: none; /* 基本は非表示 */
-            gap: 15px;
-            margin-top: 30px;
-            width: 100%;
-            max-width: 800px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        @media (min-width: 769px) {
-            .quick-actions { display: flex; } /* PCのみ表示 */
-        }
-
-        .action-card {
-            background: #fff;
-            border: 1px solid #e1e5ea;
-            border-radius: 12px;
-            padding: 16px;
-            width: 180px;
-            cursor: pointer;
-            transition: 0.3s;
-            text-align: left;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .action-card:hover {
-            background: var(--bg-side);
-            border-color: #4285f4;
-            transform: translateY(-2px);
-        }
-
-        .action-card .icon {
-            font-size: 20px;
-            background: var(--surge-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .action-card .label { font-size: 13px; font-weight: 500; color: var(--text-main); }
         .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 44px; min-width: 0; }
         .send-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; }
@@ -220,30 +194,32 @@
         </header>
 
         <div id="chat-window">
-<div class="greeting" id="initial-view">
-            <h1>こんにちは</h1>
-            <p>今日はどんなお手伝いをしましょうか？</p>
-            
-            <div class="quick-actions">
-                <div class="action-card" onclick="setQuickInput('画像を生成して')">
-                    <div class="icon">🎨</div>
-                    <div class="label">画像を生成する</div>
-                </div>
-                <div class="action-card" onclick="setQuickInput('コードを書いて')">
-                    <div class="icon">💻</div>
-                    <div class="label">コードを作成する</div>
-                </div>
-                <div class="action-card" onclick="setQuickInput('要約して')">
-                    <div class="icon">📝</div>
-                    <div class="label">文章を要約する</div>
-                </div>
-                <div class="action-card" onclick="setQuickInput('面白いアイデアを教えて')">
-                    <div class="icon">💡</div>
-                    <div class="label">アイデアを出す</div>
+            <div class="chat-container" id="chat-content">
+                <div class="greeting" id="initial-view">
+                    <h1>こんにちは</h1>
+                    <p>今日はどんなお手伝いをしましょうか？</p>
+                    <div class="quick-actions">
+                        <div class="action-card" onclick="setQuickInput('画像を生成して')">
+                            <div class="icon">🎨</div>
+                            <div class="label">画像を生成する</div>
+                        </div>
+                        <div class="action-card" onclick="setQuickInput('コードを書いて')">
+                            <div class="icon">💻</div>
+                            <div class="label">コードを作成する</div>
+                        </div>
+                        <div class="action-card" onclick="setQuickInput('要約して')">
+                            <div class="icon">📝</div>
+                            <div class="label">文章を要約する</div>
+                        </div>
+                        <div class="action-card" onclick="setQuickInput('面白いアイデアを教えて')">
+                            <div class="icon">💡</div>
+                            <div class="label">アイデアを出す</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        </div>
+
         <div class="bottom-area">
             <div class="input-wrapper">
                 <input type="text" id="user-input" placeholder="メッセージを入力" autocomplete="off">
@@ -297,8 +273,6 @@
             const allChats = JSON.parse(localStorage.getItem('surge_chats') || '{}');
             const chatData = allChats[id];
             const chatContent = document.getElementById('chat-content');
-            const initialView = document.getElementById('initial-view');
-            if (initialView) initialView.style.display = 'none';
             chatContent.innerHTML = "";
             chatData.messages.forEach(msg => {
                 msg.role === "user" ? appendUserMsg(msg.parts[0].text) : appendAiMsg(msg.parts[0].text);
@@ -331,7 +305,7 @@
             const text = input.value.trim();
             if (!text) return;
             const initialView = document.getElementById('initial-view');
-            if (initialView) initialView.style.display = 'none';
+            if (initialView) initialView.remove(); // 完全に削除して場所を空ける
             if (!currentChatId) currentChatId = "chat-" + Date.now();
             appendUserMsg(text);
             input.value = "";
@@ -371,10 +345,10 @@
         });
 
         function setQuickInput(text) {
-        const input = document.getElementById('user-input');
-        input.value = text;
-        input.focus();
-    }
+            const input = document.getElementById('user-input');
+            input.value = text;
+            input.focus();
+        }
     </script>
 </body>
 </html>
