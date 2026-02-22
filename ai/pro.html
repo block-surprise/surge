@@ -121,18 +121,22 @@
         .greeting h1 { font-size: clamp(32px, 8vw, 48px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; padding: 0 20px; }
         .greeting p { font-size: 18px; color: #c4c7c5; margin-top: 15px; padding: 0 20px; }
 
+        /* PC用クイックカード：横4つ並ぶデザイン */
         .quick-actions {
             display: none; 
-            gap: 15px;
+            gap: 12px;
             margin-top: 40px;
-            width: 100%;
-            max-width: 800px;
+            width: 95%;
+            max-width: 900px;
             justify-content: center;
-            flex-wrap: wrap;
         }
-        @media (min-width: 769px) { .quick-actions { display: flex; } }
+        @media (min-width: 1024px) { 
+            .quick-actions { display: flex; } 
+        }
         .action-card {
-            background: #fff; border: 1px solid #e1e5ea; border-radius: 12px; padding: 16px; width: 180px; cursor: pointer; transition: 0.3s; text-align: left; display: flex; flex-direction: column; gap: 10px;
+            background: #fff; border: 1px solid #e1e5ea; border-radius: 12px; padding: 16px; 
+            width: calc(25% - 12px); min-width: 160px;
+            cursor: pointer; transition: 0.3s; text-align: left; display: flex; flex-direction: column; gap: 10px;
         }
         .action-card:hover { background: var(--bg-side); border-color: #4285f4; transform: translateY(-2px); }
         .action-card .icon { font-size: 20px; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
