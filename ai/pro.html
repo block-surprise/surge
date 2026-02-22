@@ -28,7 +28,6 @@
             overflow: hidden; 
         }
         
-        /* サイドバー */
         #sidebar { 
             width: 260px; 
             background: var(--bg-side); 
@@ -67,7 +66,6 @@
         .delete-btn { opacity: 0.6; color: #999; padding: 4px; display: flex; align-items: center; }
         @media (min-width: 769px) { .delete-btn { opacity: 0; } .history-item:hover .delete-btn { opacity: 1; } }
 
-        /* メインエリア */
         #main-container { 
             flex: 1; 
             display: flex; 
@@ -88,7 +86,6 @@
         }
         .logo { font-size: 18px; font-weight: 700; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* チャット表示エリア */
         #chat-window { 
             flex: 1; 
             overflow-y: auto; 
@@ -112,7 +109,6 @@
 
         .share-btn { font-size: 12px; color: #70757a; cursor: pointer; margin-top: 8px; margin-left: 40px; display: inline-flex; align-items: center; gap: 4px; }
 
-        /* 挨拶画面 */
         .greeting { 
             flex: 1; 
             display: flex; 
@@ -125,7 +121,6 @@
         .greeting h1 { font-size: clamp(32px, 8vw, 48px); background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; padding: 0 20px; }
         .greeting p { font-size: 18px; color: #c4c7c5; margin-top: 15px; padding: 0 20px; }
 
-        /* PC用クイックカード */
         .quick-actions {
             display: none; 
             gap: 15px;
@@ -143,7 +138,6 @@
         .action-card .icon { font-size: 20px; background: var(--surge-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .action-card .label { font-size: 13px; font-weight: 500; color: var(--text-main); }
 
-        /* 入力エリア（画面下部に絶対固定） */
         .bottom-area { 
             padding: 10px 15px calc(15px + env(safe-area-inset-bottom)); 
             background: #fff; 
@@ -199,19 +193,19 @@
                     <h1>こんにちは</h1>
                     <p>今日はどんなお手伝いをしましょうか？</p>
                     <div class="quick-actions">
-                        <div class="action-card" onclick="setQuickInput('画像を生成して')">
-                            <div class="icon">🎨</div>
-                            <div class="label">画像を生成する</div>
+                        <div class="action-card" onclick="setQuickInput('次の文章を英語に翻訳して：')">
+                            <div class="icon">🌐</div>
+                            <div class="label">翻訳する</div>
                         </div>
-                        <div class="action-card" onclick="setQuickInput('コードを書いて')">
+                        <div class="action-card" onclick="setQuickInput('コードを書いて：')">
                             <div class="icon">💻</div>
                             <div class="label">コードを作成する</div>
                         </div>
-                        <div class="action-card" onclick="setQuickInput('要約して')">
+                        <div class="action-card" onclick="setQuickInput('要約して：')">
                             <div class="icon">📝</div>
                             <div class="label">文章を要約する</div>
                         </div>
-                        <div class="action-card" onclick="setQuickInput('面白いアイデアを教えて')">
+                        <div class="action-card" onclick="setQuickInput('面白いアイデアを教えて：')">
                             <div class="icon">💡</div>
                             <div class="label">アイデアを出す</div>
                         </div>
@@ -305,7 +299,7 @@
             const text = input.value.trim();
             if (!text) return;
             const initialView = document.getElementById('initial-view');
-            if (initialView) initialView.remove(); // 完全に削除して場所を空ける
+            if (initialView) initialView.remove();
             if (!currentChatId) currentChatId = "chat-" + Date.now();
             appendUserMsg(text);
             input.value = "";
