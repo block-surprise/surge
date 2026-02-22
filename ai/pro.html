@@ -146,6 +146,50 @@
             border: 1px solid transparent; 
             transition: 0.2s;
         }
+
+        /* PC用クイックカード */
+        .quick-actions {
+            display: none; /* 基本は非表示 */
+            gap: 15px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        @media (min-width: 769px) {
+            .quick-actions { display: flex; } /* PCのみ表示 */
+        }
+
+        .action-card {
+            background: #fff;
+            border: 1px solid #e1e5ea;
+            border-radius: 12px;
+            padding: 16px;
+            width: 180px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-card:hover {
+            background: var(--bg-side);
+            border-color: #4285f4;
+            transform: translateY(-2px);
+        }
+
+        .action-card .icon {
+            font-size: 20px;
+            background: var(--surge-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .action-card .label { font-size: 13px; font-weight: 500; color: var(--text-main); }
         .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 44px; min-width: 0; }
         .send-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; }
@@ -176,14 +220,30 @@
         </header>
 
         <div id="chat-window">
-            <div class="chat-container" id="chat-content">
-                <div class="greeting" id="initial-view">
-                    <h1>こんにちは</h1>
-                    <p>今日はどんなお手伝いをしましょうか？</p>
+<div class="greeting" id="initial-view">
+            <h1>こんにちは</h1>
+            <p>今日はどんなお手伝いをしましょうか？</p>
+            
+            <div class="quick-actions">
+                <div class="action-card" onclick="setQuickInput('画像を生成して')">
+                    <div class="icon">🎨</div>
+                    <div class="label">画像を生成する</div>
+                </div>
+                <div class="action-card" onclick="setQuickInput('コードを書いて')">
+                    <div class="icon">💻</div>
+                    <div class="label">コードを作成する</div>
+                </div>
+                <div class="action-card" onclick="setQuickInput('要約して')">
+                    <div class="icon">📝</div>
+                    <div class="label">文章を要約する</div>
+                </div>
+                <div class="action-card" onclick="setQuickInput('面白いアイデアを教えて')">
+                    <div class="icon">💡</div>
+                    <div class="label">アイデアを出す</div>
                 </div>
             </div>
         </div>
-
+        </div>
         <div class="bottom-area">
             <div class="input-wrapper">
                 <input type="text" id="user-input" placeholder="メッセージを入力" autocomplete="off">
@@ -309,6 +369,12 @@
         document.getElementById('user-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') { sendMsg(); document.activeElement.blur(); }
         });
+
+        function setQuickInput(text) {
+        const input = document.getElementById('user-input');
+        input.value = text;
+        input.focus();
+    }
     </script>
 </body>
 </html>
