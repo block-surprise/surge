@@ -75,8 +75,7 @@
         </div>
         <div class="history-container">
             <div class="history-label">最近</div>
-            <div id="history-list">
-                </div>
+            <div id="history-list"></div>
         </div>
     </nav>
 
@@ -109,8 +108,10 @@
     </div>
 
     <script>
-        const WORKER_URL = "https://aipro.proluce.workers.dev";
+        // 動いている surge の方にURLを合わせました
+        const WORKER_URL = "https://surge.proluce.workers.dev";
         let isFirstMessage = true;
+        let chatHistory = []; // 会話履歴を保持する配列
 
         async function sendMsg() {
             const input = document.getElementById('user-input');
@@ -128,7 +129,7 @@
                 const historyItem = document.createElement('div');
                 historyItem.className = 'history-item';
                 historyItem.innerText = text;
-                historyList.prepend(historyItem); // 一番上に追加
+                historyList.prepend(historyItem);
                 isFirstMessage = false;
             }
 
@@ -157,18 +158,34 @@
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ inputs: "\nユーザー: " + text })
+                    body: JSON.stringify({ 
+                        inputs: text,
+                        history: chatHistory // 会話の記憶を送信
+                    })
                 });
 
                 const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
                 const aiResponseText = data[0].generated_text.replace("AI: ", "");
                 
+                // 会話履歴を更新（最新のやり取りを配列に追加）
+                chatHistory.push({ role: "user", parts: [{ text: text }] });
+                chatHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+
+                // 履歴が長すぎるとAIが混乱するので、直近10往復(20件)に制限
+                if (chatHistory.length > 20) chatHistory.shift();
+
                 // 応答を表示
                 document.getElementById(aiMsgId).querySelector('.ai-text').innerText = aiResponseText;
                 scrollToBottom();
 
             } catch (e) {
-                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "接続エラーが発生しました。";
+                document.getElementById(aiMsgId).querySelector('.ai-text').innerText = "接続に問題が発生しました。時間をおいて再度お試しください。";
+                console.error("Error:", e);
             }
         }
 
