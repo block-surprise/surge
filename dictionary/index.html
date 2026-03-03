@@ -8,11 +8,12 @@
   <style>
     :root {
       --bg: #fdfdfd;
-      --accent: #4da6ff;
+      --accent: #007aff;
       --text-main: #1c1c1e;
       --text-sub: #8e8e93;
       --border: #e5e5ea;
       --header-h: 60px;
+      --sidebar-w: 240px;
       --nav-h: 65px;
     }
 
@@ -21,76 +22,115 @@
     body {
       margin: 0; background: var(--bg); color: var(--text-main);
       font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3", sans-serif;
-      display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+      display: flex; height: 100vh; overflow: hidden;
     }
 
-    /* ヘッダー：戻るボタン付き */
+    /* --- PC用サイドバー（スマホでは隠す） --- */
+    aside {
+      width: var(--sidebar-w); background: #f8f9fa;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .sidebar-logo {
+      height: var(--header-h); display: flex; align-items: center;
+      padding: 0 25px; font-weight: 800; color: var(--text-main);
+      border-bottom: 1px solid var(--border); font-size: 1.2rem;
+    }
+    .menu-list { padding: 15px 10px; flex-grow: 1; }
+    .menu-item {
+      padding: 12px 15px; color: var(--text-sub); cursor: pointer;
+      font-size: 0.95rem; display: flex; align-items: center; gap: 12px;
+      border-radius: 10px; margin-bottom: 4px; transition: 0.2s;
+    }
+    .menu-item:hover { background: #eeeef0; color: var(--text-main); }
+    .menu-item.active { background: #e5e5ea; color: var(--accent); font-weight: 600; }
+
+    /* --- メインエリア --- */
+    main { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+
     header {
-      height: var(--header-h); padding: env(safe-area-inset-top, 0) 20px 0;
+      height: var(--header-h); padding: 0 25px;
       display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid var(--border); background: #fff; flex-shrink: 0;
+      border-bottom: 1px solid var(--border); background: #fff;
     }
     .back-btn { text-decoration: none; color: var(--text-main); font-weight: 600; font-size: 0.9rem; }
 
-    /* メインコンテンツエリア */
-    main { flex-grow: 1; position: relative; overflow-y: auto; padding-bottom: var(--nav-h); }
-
-    .page-content { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+    .page-content { display: none; padding: 40px; overflow-y: auto; flex-grow: 1; }
     .page-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* 検索画面 */
-    .search-hero { text-align: center; margin-top: 15vh; }
-    .search-hero h1 { font-size: 2.2rem; margin-bottom: 10px; letter-spacing: -1px; }
+    /* --- 検索・結果表示 --- */
+    .search-hero { max-width: 600px; margin: 10vh auto; text-align: center; }
     .search-bar {
       background: #f2f2f7; border-radius: 16px; padding: 15px 20px;
-      display: flex; border: 1px solid transparent; margin-top: 25px;
+      display: flex; border: 1px solid transparent; margin-top: 30px;
     }
     .search-bar:focus-within { background: #fff; border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
     #mainInput { background: transparent; border: none; outline: none; flex-grow: 1; font-size: 1.1rem; }
 
-    /* 結果表示 */
-    .result-view h2 { font-size: 1.8rem; border-bottom: 2px solid var(--accent); display: inline-block; margin-bottom: 15px; }
-    .wiki-text { line-height: 1.8; color: #333; font-size: 1.05rem; }
+    .result-view { max-width: 800px; margin: 0 auto; }
+    .result-view h2 { font-size: 2.2rem; margin-bottom: 20px; border-bottom: 2px solid var(--accent); padding-bottom: 10px; }
+    .wiki-text { line-height: 1.8; color: #333; font-size: 1.1rem; }
 
-    /* ノート */
     .note-area {
       width: 100%; height: calc(100vh - 200px); border: 1px solid var(--border);
-      border-radius: 16px; padding: 20px; font-size: 1rem; outline: none; resize: none;
-      background: #fff; line-height: 1.6;
+      border-radius: 16px; padding: 25px; font-size: 1rem; outline: none; resize: none; background: #fafafa;
     }
 
-    /* スマホ用ボトムナビゲーション */
-    nav {
-      position: fixed; bottom: 0; width: 100%; height: var(--nav-h);
-      background: #fff; border-top: 1px solid var(--border);
-      display: flex; justify-content: space-around; align-items: center;
-      padding-bottom: env(safe-area-inset-bottom, 0);
-    }
-    .nav-item {
-      flex: 1; text-align: center; color: var(--text-sub); font-size: 0.7rem;
-      text-decoration: none; display: flex; flex-direction: column; gap: 4px;
-    }
-    .nav-item i { font-size: 1.3rem; }
-    .nav-item.active { color: var(--accent); }
+    /* --- スマホ用ナビ（PCでは隠す） --- */
+    nav { display: none; }
 
-    #loader { font-size: 0.85rem; color: var(--accent); margin-top: 20px; display: none; }
+    /* --- レスポンシブ切り替え（画面幅が768px以下の場合） --- */
+    @media (max-width: 768px) {
+      aside { display: none; } /* サイドバーを消す */
+      nav {
+        display: flex; position: fixed; bottom: 0; width: 100%; height: var(--nav-h);
+        background: #fff; border-top: 1px solid var(--border);
+        justify-content: space-around; align-items: center;
+        padding-bottom: env(safe-area-inset-bottom, 0); z-index: 100;
+      }
+      .nav-item {
+        flex: 1; text-align: center; color: var(--text-sub); font-size: 0.7rem;
+        text-decoration: none; display: flex; flex-direction: column; gap: 4px;
+      }
+      .nav-item.active { color: var(--accent); }
+      .nav-item i { font-size: 1.3rem; }
+      .page-content { padding: 20px 20px 100px; }
+      .search-hero { margin-top: 5vh; }
+    }
+
+    #loader { font-size: 0.9rem; color: var(--accent); margin-top: 20px; display: none; }
   </style>
 </head>
 <body>
 
-  <header>
-    <a href="/" class="back-btn"><i class="fa-solid fa-chevron-left"></i> 戻る</a>
-    <div id="headerTitle" style="font-weight: 700;">辞書</div>
-    <div style="width: 40px;"></div> </header>
+  <aside>
+    <div class="sidebar-logo">辞書</div>
+    <div class="menu-list">
+      <div class="menu-item active" onclick="showPage('home')" id="m-home">
+        <i class="fa-solid fa-magnifying-glass"></i><span>検索</span>
+      </div>
+      <div class="menu-item" onclick="showPage('note')" id="m-note">
+        <i class="fa-solid fa-pen-nib"></i><span>ノート</span>
+      </div>
+      <div class="menu-item" onclick="showPage('settings')" id="m-settings">
+        <i class="fa-solid fa-gear"></i><span>設定</span>
+      </div>
+    </div>
+  </aside>
 
   <main>
+    <header>
+      <a href="/" class="back-btn"><i class="fa-solid fa-chevron-left"></i> 戻る</a>
+      <div id="headerTitle" style="font-weight: 700;">ホーム</div>
+      <div style="width: 40px;"></div>
+    </header>
+
     <div id="page-home" class="page-content active">
       <div class="search-hero">
-        <h1>辞書検索</h1>
+        <h1 style="font-size: 2.5rem;">辞書検索</h1>
         <p style="color: var(--text-sub);">知りたい言葉を入力してください</p>
         <div class="search-bar">
-          <input type="text" id="mainInput" placeholder="キーワードを入力..." inputmode="search" autocomplete="off">
+          <input type="text" id="mainInput" placeholder="キーワードを入力..." autocomplete="off">
         </div>
         <div id="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> 照合中...</div>
       </div>
@@ -104,17 +144,15 @@
     </div>
 
     <div id="page-note" class="page-content">
-      <textarea id="noteArea" class="note-area" placeholder="検索した内容をメモできます..."></textarea>
+      <textarea id="noteArea" class="note-area" placeholder="思考を記録する..."></textarea>
     </div>
 
     <div id="page-settings" class="page-content">
-      <div style="padding-top: 20px;">
-        <h3 style="margin-bottom: 20px;">設定</h3>
-        <button onclick="if(confirm('すべてのデータを消去しますか？')){localStorage.clear(); location.reload();}" 
-                style="width:100%; padding:15px; border-radius:12px; border:1px solid #ffb3b3; color:red; background:none; font-weight:600;">
-          保存データの全消去
-        </button>
-      </div>
+      <h3>システム設定</h3>
+      <button onclick="if(confirm('すべて消去しますか？')){localStorage.clear(); location.reload();}" 
+              style="padding:10px 20px; border-radius:8px; border:1px solid red; color:red; background:none; cursor:pointer;">
+        保存データの全消去
+      </button>
     </div>
   </main>
 
@@ -132,50 +170,46 @@
 
   <script>
     function showPage(pageId) {
+      // ページ、サイドバー、スマホナビすべてを更新
       document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       
-      document.getElementById(`page-${pageId}`).classList.add('active');
-      document.getElementById(`n-${pageId}`).classList.add('active');
-      
-      const titles = { home: '辞書', result: '検索結果', note: 'ノート', settings: '設定' };
-      document.getElementById('headerTitle').innerText = titles[pageId];
-      
-      // ページ切り替え時に一番上へスクロール
-      document.querySelector('main').scrollTop = 0;
+      const targetPage = document.getElementById(`page-${pageId}`);
+      if(targetPage) targetPage.classList.add('active');
+
+      const sideMenu = document.getElementById(`m-${pageId}`);
+      if(sideMenu) sideMenu.classList.add('active');
+
+      const bottomNav = document.getElementById(`n-${pageId}`);
+      if(bottomNav) bottomNav.classList.add('active');
+
+      const titles = { home: 'ホーム', result: '検索結果', note: 'ノート', settings: '設定' };
+      document.getElementById('headerTitle').innerText = titles[pageId] || '辞書';
     }
 
     async function search() {
       const q = document.getElementById('mainInput').value.trim();
       if(!q) return;
-      
       document.getElementById('loader').style.display = 'block';
       try {
         const res = await fetch(`https://ja.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);
         const data = await res.json();
-        
         if(data.extract) {
           document.getElementById('dispWord').innerText = data.title;
           document.getElementById('dispMeaning').innerText = data.extract;
           showPage('result');
-        } else {
-          alert("該当する項目が見つかりませんでした。");
-        }
-      } catch(e) {
-        alert("エラーが発生しました。");
-      }
+        } else { alert("見つかりませんでした"); }
+      } catch(e) { console.error(e); }
       document.getElementById('loader').style.display = 'none';
     }
 
-    // Enterキーで検索
     document.getElementById('mainInput').onkeydown = (e) => { if(e.key==='Enter') search(); };
 
-    // ノートの自動保存
     const na = document.getElementById('noteArea');
     na.value = localStorage.getItem('surge_dict_note') || "";
     na.oninput = () => localStorage.setItem('surge_dict_note', na.value);
 
-    // URLパラメータがある場合の自動検索
     window.onload = () => {
       const q = new URLSearchParams(window.location.search).get('q');
       if (q) {
