@@ -34,7 +34,6 @@
             padding-bottom: 90px;
         }
 
-        /* ページ切り替え */
         .page { display: none; flex-direction: column; flex: 1; }
         .page.active { display: flex; }
 
@@ -58,27 +57,32 @@
         .logo-group { display: flex; align-items: center; gap: 10px; }
         .logo-text { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
 
+        /* 共有ボタンをしっかり配置 */
         .share-btn {
-            background: #e0f2fe;
-            color: var(--accent);
+            background: var(--accent);
+            color: white;
             border: none;
-            padding: 8px 12px;
+            padding: 8px 14px;
             border-radius: 12px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .progress-container { background: #e2eef9; height: 8px; border-radius: 10px; overflow: hidden; }
         #progress-bar { background: var(--accent); width: 0%; height: 100%; transition: width 0.5s ease; }
 
-        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; border-bottom: 1px solid #f1f5f9; }
+        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; }
         input { flex: 1; background: #f8fafc; border: 1px solid #e2eef9; padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; }
-        .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3); }
+        .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .tabs { display: flex; padding: 12px 20px; gap: 25px; }
-        .tab { font-size: 0.95rem; font-weight: bold; color: var(--text-light); cursor: pointer; padding-bottom: 4px; }
-        .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+        .tab { font-size: 0.95rem; font-weight: bold; color: var(--text-light); cursor: pointer; }
+        .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); padding-bottom: 2px; }
 
         #task-list { padding: 10px 20px; }
         .task-item {
@@ -90,10 +94,7 @@
             align-items: center;
             gap: 15px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            animation: popIn 0.3s ease-out;
         }
-
-        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
         .checkbox { width: 28px; height: 28px; border: 2.5px solid #cbd5e1; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .task-item.done .checkbox { background: var(--success); border-color: var(--success); }
@@ -163,12 +164,11 @@
 
     <div id="calendar" class="page">
         <header><div class="logo-text">トドリスト</div></header>
-        <div class="placeholder-content"><i class="fa-solid fa-calendar-days fa-4x" style="color: #e2eef9; margin-bottom: 20px;"></i><p>予定機能は準備中です</p></div>
+        <div class="placeholder-content"><i class="fa-solid fa-calendar-days fa-4x" style="color: #e2eef9;"></i><p>予定は未実装です</p></div>
     </div>
-
     <div id="settings" class="page">
         <header><div class="logo-text">トドリスト</div></header>
-        <div class="placeholder-content"><i class="fa-solid fa-gear fa-4x" style="color: #e2eef9; margin-bottom: 20px;"></i><p>設定画面は準備中です</p></div>
+        <div class="placeholder-content"><i class="fa-solid fa-gear fa-4x" style="color: #e2eef9;"></i><p>設定は未実装です</p></div>
     </div>
 
     <nav class="bottom-nav">
@@ -186,33 +186,39 @@
     const addBtn = document.getElementById('add-btn');
     const listElement = document.getElementById('task-list');
 
-    // 共有データの読み込み
+    // データの読み込み（URL優先）
     function loadData() {
         const params = new URLSearchParams(window.location.search);
         const encodedData = params.get('data');
         if (encodedData) {
             try {
                 const decoded = JSON.parse(decodeURIComponent(atob(encodedData)));
-                if (confirm("共有されたリストを表示しますか？")) {
+                if (confirm("共有されたリストを読み込みますか？")) {
                     tasks = decoded;
                     save();
+                    // URLをきれいにする（リロードで何度も聞かれないように）
+                    window.history.replaceState({}, document.title, window.location.pathname);
                 }
-            } catch (e) { console.error("Data error"); }
+            } catch (e) { console.error("URLデータが不正です"); }
         } else {
             tasks = JSON.parse(localStorage.getItem('todo_list_data')) || [];
         }
     }
 
-    // 共有リンク生成
+    // 共有用リンク作成
     async function generateShareLink() {
         if (tasks.length === 0) return alert("タスクがありません");
-        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
+        const jsonStr = JSON.stringify(tasks);
+        const encoded = btoa(encodeURIComponent(jsonStr));
         const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+
         if (navigator.share) {
-            await navigator.share({ title: 'トドリスト共有', url: url });
+            try {
+                await navigator.share({ title: 'トドリスト', text: 'リストを共有します', url: url });
+            } catch (e) { }
         } else {
             await navigator.clipboard.writeText(url);
-            alert("リンクをコピーしました");
+            alert("リンクをコピーしました！");
         }
     }
 
