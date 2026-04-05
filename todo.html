@@ -31,7 +31,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: 90px;
+            padding-bottom: 120px; /* 下に余裕を持たせてタスクが隠れないように */
         }
 
         .page { display: none; flex-direction: column; flex: 1; }
@@ -57,7 +57,6 @@
         .logo-group { display: flex; align-items: center; gap: 10px; }
         .logo-text { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
 
-        /* 共有ボタンをしっかり配置 */
         .share-btn {
             background: var(--accent);
             color: white;
@@ -105,25 +104,28 @@
 
         .del-btn { background: none; border: none; color: #cbd5e1; padding: 5px; cursor: pointer; }
 
-        /* ボトムナビ */
+        /* ボトムナビの位置を少し上に調整 */
         .bottom-nav {
             position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
+            bottom: 20px; /* 下端から20px浮かせました */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%; /* 画面幅いっぱいにせず、少しスリムに */
+            max-width: 440px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
             display: flex;
             justify-content: space-around;
             padding: 12px 0;
-            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-            border-top: 1px solid #f1f5f9;
+            border-radius: 25px; /* 角を丸くして浮遊感をアップ */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             z-index: 100;
         }
 
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #94a3b8; font-size: 0.75rem; font-weight: bold; cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #94a3b8; font-size: 0.7rem; font-weight: bold; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 1.4rem; }
+        .nav-item i { font-size: 1.3rem; }
 
         .placeholder-content { padding: 100px 20px; text-align: center; color: var(--text-light); }
     </style>
@@ -131,7 +133,6 @@
 <body>
 
 <div class="app-container">
-    
     <div id="home" class="page active">
         <header>
             <div class="header-top">
@@ -162,14 +163,8 @@
         <div id="task-list"></div>
     </div>
 
-    <div id="calendar" class="page">
-        <header><div class="logo-text">トドリスト</div></header>
-        <div class="placeholder-content"><i class="fa-solid fa-calendar-days fa-4x" style="color: #e2eef9;"></i><p>予定は未実装です</p></div>
-    </div>
-    <div id="settings" class="page">
-        <header><div class="logo-text">トドリスト</div></header>
-        <div class="placeholder-content"><i class="fa-solid fa-gear fa-4x" style="color: #e2eef9;"></i><p>設定は未実装です</p></div>
-    </div>
+    <div id="calendar" class="page"><header><div class="logo-text">トドリスト</div></header></div>
+    <div id="settings" class="page"><header><div class="logo-text">トドリスト</div></header></div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchPage('home', event)"><i class="fa-solid fa-house-user"></i><span>ホーム</span></div>
@@ -186,7 +181,6 @@
     const addBtn = document.getElementById('add-btn');
     const listElement = document.getElementById('task-list');
 
-    // データの読み込み（URL優先）
     function loadData() {
         const params = new URLSearchParams(window.location.search);
         const encodedData = params.get('data');
@@ -196,29 +190,23 @@
                 if (confirm("共有されたリストを読み込みますか？")) {
                     tasks = decoded;
                     save();
-                    // URLをきれいにする（リロードで何度も聞かれないように）
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
-            } catch (e) { console.error("URLデータが不正です"); }
+            } catch (e) { }
         } else {
             tasks = JSON.parse(localStorage.getItem('todo_list_data')) || [];
         }
     }
 
-    // 共有用リンク作成
     async function generateShareLink() {
         if (tasks.length === 0) return alert("タスクがありません");
-        const jsonStr = JSON.stringify(tasks);
-        const encoded = btoa(encodeURIComponent(jsonStr));
+        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
         const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
-
         if (navigator.share) {
-            try {
-                await navigator.share({ title: 'トドリスト', text: 'リストを共有します', url: url });
-            } catch (e) { }
+            try { await navigator.share({ title: 'トドリスト', url: url }); } catch (e) {}
         } else {
             await navigator.clipboard.writeText(url);
-            alert("リンクをコピーしました！");
+            alert("コピーしました");
         }
     }
 
@@ -269,11 +257,7 @@
         filtered.forEach(task => {
             const div = document.createElement('div');
             div.className = `task-item ${task.done ? 'done' : ''}`;
-            div.innerHTML = `
-                <div class="checkbox" onclick="toggleTask(${task.id})"></div>
-                <div class="task-text">${task.text}</div>
-                <button class="del-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash-can"></i></button>
-            `;
+            div.innerHTML = `<div class="checkbox" onclick="toggleTask(${task.id})"></div><div class="task-text">${task.text}</div><button class="del-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash-can"></i></button>`;
             listElement.appendChild(div);
         });
 
