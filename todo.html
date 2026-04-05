@@ -14,7 +14,6 @@
             --text-light: #94a3b8;
             --success: #10b981;
             --danger: #f87171;
-            --header-bg: #ffffff;
         }
 
         body.dark-mode {
@@ -22,7 +21,6 @@
             --main: #1e293b;
             --text-dark: #f8fafc;
             --text-light: #64748b;
-            --header-bg: #1e293b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -30,10 +28,10 @@
         body {
             background-color: var(--bg);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-dark);
             display: flex;
             justify-content: center;
-            color: var(--text-dark);
-            transition: background 0.3s, color 0.3s;
+            transition: background 0.3s;
         }
 
         .app-container {
@@ -42,52 +40,58 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            padding-bottom: calc(85px + env(safe-area-inset-bottom));
         }
 
-        .page { display: none; flex-direction: column; flex: 1; }
-        .page.active { display: flex; }
-
+        /* ヘッダー：共有ボタンとパーセント表示 */
         header {
-            background: var(--header-bg);
+            background: var(--main);
             padding: 20px;
             padding-top: env(safe-area-inset-top, 20px);
             position: sticky;
             top: 0;
-            z-index: 10;
+            z-index: 1000;
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .logo-text { font-size: 1.4rem; font-weight: 900; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-size: 1.4rem; font-weight: 900; color: var(--accent); }
+        .percent-tag { font-size: 0.85rem; font-weight: 900; color: var(--accent); background: rgba(14,165,233,0.1); padding: 2px 10px; border-radius: 20px; }
 
-        /* 共有ボタンを復活 */
         .share-btn {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 8px 14px;
+            padding: 8px 16px;
             border-radius: 12px;
             font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
             display: flex;
-            align-items: center;
-            gap: 6px;
+            align-items: center; gap: 6px;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
         }
 
-        .progress-container { background: rgba(0,0,0,0.1); height: 8px; border-radius: 10px; overflow: hidden; }
+        .progress-container { background: rgba(0,0,0,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
         #progress-bar { background: var(--accent); width: 0%; height: 100%; transition: width 0.5s ease; }
 
-        .input-area { padding: 15px 20px; background: var(--header-bg); display: flex; gap: 12px; }
+        /* ページ制御 */
+        .page { display: none; flex-direction: column; }
+        .page.active { display: flex; }
+
+        /* 入力エリア */
+        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; }
         input[type="text"] { flex: 1; background: var(--bg); border: 1px solid rgba(0,0,0,0.1); padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; color: var(--text-dark); }
-        .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; }
 
+        /* タブ切り替え */
         .tabs { display: flex; padding: 12px 20px; gap: 25px; }
-        .tab { font-size: 0.95rem; font-weight: bold; color: var(--text-light); cursor: pointer; }
-        .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); padding-bottom: 4px; }
+        .tab { font-size: 0.95rem; font-weight: bold; color: var(--text-light); cursor: pointer; position: relative; }
+        .tab.active { color: var(--accent); }
+        .tab.active::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 100%; height: 3px; background: var(--accent); border-radius: 10px; }
 
+        /* タスクリスト */
         #task-list { padding: 10px 20px; }
         .task-item {
             background: var(--main);
@@ -99,26 +103,25 @@
             gap: 15px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
-
-        .checkbox { width: 28px; height: 28px; border: 2.5px solid var(--text-light); border-radius: 10px; cursor: pointer; position: relative; }
+        .checkbox { width: 28px; height: 28px; border: 2.5px solid var(--text-light); border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .task-item.done .checkbox { background: var(--accent); border-color: var(--accent); }
-        .task-item.done .checkbox::after { content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900; color: white; font-size: 0.9rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-
+        .task-item.done .checkbox::after { content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900; color: white; font-size: 0.9rem; }
         .task-text { flex: 1; font-weight: 600; }
         .task-item.done .task-text { text-decoration: line-through; color: var(--text-light); }
+        .del-btn { color: var(--text-light); cursor: pointer; font-size: 1.1rem; padding: 5px; transition: color 0.2s; }
+        .del-btn:hover { color: var(--danger); }
 
         /* 設定画面 */
         .settings-content { padding: 20px; }
-        .setting-group { background: var(--main); border-radius: 20px; padding: 10px; margin-bottom: 20px; }
-        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .setting-item:last-child { border-bottom: none; }
-        
-        .toggle { width: 44px; height: 24px; background: #cbd5e1; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
-        .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
-        .toggle.on { background: var(--accent); }
-        .toggle.on::after { left: 23px; }
+        .set-group { background: var(--main); border-radius: 20px; padding: 5px; margin-bottom: 20px; }
+        .set-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .set-item:last-child { border-bottom: none; }
+        .toggle-sw { width: 44px; height: 24px; background: #cbd5e1; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .toggle-sw::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
+        .toggle-sw.on { background: var(--accent); }
+        .toggle-sw.on::after { left: 23px; }
 
-        /* ボトムナビ */
+        /* ボトムナビ（ホームバー回避済み） */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -132,9 +135,8 @@
             padding-top: 12px;
             padding-bottom: calc(12px + env(safe-area-inset-bottom)); 
             border-top: 1px solid rgba(0,0,0,0.05);
-            z-index: 100;
+            z-index: 1000;
         }
-
         .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-light); font-size: 0.75rem; font-weight: bold; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent); }
         .nav-item i { font-size: 1.4rem; }
@@ -143,50 +145,47 @@
 <body>
 
 <div class="app-container">
-    <div id="home" class="page active">
-        <header>
-            <div class="header-top">
-                <div class="logo-group">
-                    <div class="logo-text" id="display-name">トドリスト</div>
-                    <span id="task-percent" style="font-size: 0.85rem; font-weight: 900; color: var(--accent); background: rgba(14,165,233,0.1); padding: 2px 10px; border-radius: 20px;">0%</span>
-                </div>
-                <button class="share-btn" onclick="generateShareLink()">
-                    <i class="fa-solid fa-share-nodes"></i> 共有
-                </button>
+    <header>
+        <div class="header-top">
+            <div class="logo-group">
+                <div class="logo-text" id="display-name">トドリスト</div>
+                <span id="task-percent" class="percent-tag">0%</span>
             </div>
-            <div class="progress-container"><div id="progress-bar"></div></div>
-        </header>
+            <button class="share-btn" onclick="shareList()">
+                <i class="fa-solid fa-share-nodes"></i> 共有
+            </button>
+        </div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+    </header>
 
+    <div id="p-home" class="page active">
         <div class="input-area">
-            <input type="text" id="task-input" placeholder="なにをする？" autocomplete="off">
-            <button class="add-btn" onclick="addTask()"><i class="fa-solid fa-plus"></i></button>
+            <input type="text" id="t-input" placeholder="なにをする？" autocomplete="off">
+            <button class="add-btn" onclick="addT()"><i class="fa-solid fa-plus"></i></button>
         </div>
-
         <div class="tabs">
-            <div class="tab active" onclick="filterTasks('all', event)">すべて</div>
-            <div class="tab" onclick="filterTasks('active', event)">未完了</div>
-            <div class="tab" onclick="filterTasks('done', event)">完了</div>
+            <div class="tab active" onclick="setF('all', event)">すべて</div>
+            <div class="tab" onclick="setF('active', event)">未完了</div>
+            <div class="tab" onclick="setF('done', event)">完了</div>
         </div>
-
         <div id="task-list"></div>
     </div>
 
-    <div id="settings" class="page">
-        <header><div class="logo-text">設定</div></header>
+    <div id="p-settings" class="page">
         <div class="settings-content">
-            <div class="setting-group">
-                <div class="setting-item">
-                    <div style="font-weight: bold;"><i class="fa-solid fa-circle-half-stroke"></i> ダークモード</div>
-                    <div id="dark-toggle" class="toggle" onclick="toggleDarkMode()"></div>
+            <div class="set-group">
+                <div class="set-item">
+                    <span><i class="fa-solid fa-moon"></i> ダークモード</span>
+                    <div id="sw-dark" class="toggle-sw" onclick="toggleD()"></div>
                 </div>
-                <div class="setting-item">
-                    <div style="font-weight: bold;"><i class="fa-solid fa-signature"></i> 表示名</div>
-                    <input type="text" id="name-input" style="width: 140px; padding: 6px; border-radius: 8px; font-size: 0.9rem;" onchange="updateName()">
+                <div class="set-item">
+                    <span><i class="fa-solid fa-user"></i> 名前</span>
+                    <input type="text" id="in-name" style="width: 120px; padding: 6px; border-radius: 8px;" onchange="updateN()">
                 </div>
             </div>
-            <div class="setting-group">
-                <div class="setting-item" onclick="clearData()" style="color: var(--danger); cursor: pointer;">
-                    <div style="font-weight: bold;"><i class="fa-solid fa-trash-can"></i> データをリセット</div>
+            <div class="set-group">
+                <div class="set-item" style="color: var(--danger); cursor: pointer;" onclick="resetD()">
+                    <span><i class="fa-solid fa-trash-can"></i> データをリセット</span>
                     <i class="fa-solid fa-chevron-right"></i>
                 </div>
             </div>
@@ -194,137 +193,113 @@
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('home', event)"><i class="fa-solid fa-house-user"></i><span>ホーム</span></div>
-        <div class="nav-item" onclick="switchPage('settings', event)"><i class="fa-solid fa-sliders"></i><span>設定</span></div>
+        <div class="nav-item active" onclick="goP('p-home', event)"><i class="fa-solid fa-house-user"></i><span>ホーム</span></div>
+        <div class="nav-item" onclick="goP('p-settings', event)"><i class="fa-solid fa-sliders"></i><span>設定</span></div>
     </nav>
 </div>
 
 <script>
-    let tasks = JSON.parse(localStorage.getItem('todo_v3_tasks')) || [];
-    let config = JSON.parse(localStorage.getItem('todo_v3_config')) || { darkMode: false, name: 'トドリスト' };
+    let state = JSON.parse(localStorage.getItem('todo_final')) || { tasks: [], dark: false, name: 'トドリスト' };
     let currentFilter = 'all';
 
-    function init() {
-        if (config.darkMode) document.body.classList.add('dark-mode');
-        document.getElementById('dark-toggle').className = config.darkMode ? 'toggle on' : 'toggle';
-        document.getElementById('name-input').value = config.name;
-        document.getElementById('display-name').innerText = config.name;
-
-        // 共有データのチェック
-        const urlParams = new URLSearchParams(window.location.search);
-        const sharedData = urlParams.get('data');
-        if (sharedData) {
-            try {
-                const decoded = JSON.parse(decodeURIComponent(atob(sharedData)));
-                if (confirm("共有されたリストを読み込みますか？")) {
-                    tasks = decoded;
-                    save();
-                }
-                window.history.replaceState({}, document.title, window.location.pathname);
-            } catch (e) { console.error("Invalid data"); }
-        }
-        render();
-    }
-
     function save() {
-        localStorage.setItem('todo_v3_tasks', JSON.stringify(tasks));
-        localStorage.setItem('todo_v3_config', JSON.stringify(config));
+        localStorage.setItem('todo_final', JSON.stringify(state));
         render();
-    }
-
-    function toggleDarkMode() {
-        config.darkMode = !config.darkMode;
-        document.body.classList.toggle('dark-mode');
-        document.getElementById('dark-toggle').className = config.darkMode ? 'toggle on' : 'toggle';
-        save();
-    }
-
-    function updateName() {
-        config.name = document.getElementById('name-input').value || 'トドリスト';
-        document.getElementById('display-name').innerText = config.name;
-        save();
-    }
-
-    function clearData() {
-        if (confirm("すべてのデータを消去しますか？")) {
-            localStorage.clear();
-            location.reload();
-        }
-    }
-
-    function switchPage(pageId, event) {
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-    }
-
-    function addTask() {
-        const input = document.getElementById('task-input');
-        if (!input.value.trim()) return;
-        tasks.unshift({ id: Date.now(), text: input.value, done: false });
-        input.value = '';
-        save();
-    }
-
-    function toggleTask(id) {
-        tasks = tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
-        save();
-    }
-
-    function deleteTask(id) {
-        tasks = tasks.filter(t => t.id !== id);
-        save();
-    }
-
-    function filterTasks(type, event) {
-        currentFilter = type;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
-        render();
-    }
-
-    async function generateShareLink() {
-        if (tasks.length === 0) return alert("タスクがありません");
-        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
-        const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
-        
-        if (navigator.share) {
-            try { await navigator.share({ title: config.name, text: '私のトドリストを共有します', url: url }); } catch (e) {}
-        } else {
-            await navigator.clipboard.writeText(url);
-            alert("リンクをコピーしました！");
-        }
     }
 
     function render() {
+        // テーマ・名前反映
+        document.body.className = state.dark ? 'dark-mode' : '';
+        document.getElementById('sw-dark').className = state.dark ? 'toggle-sw on' : 'toggle-sw';
+        document.getElementById('display-name').innerText = state.name;
+        document.getElementById('in-name').value = state.name;
+
+        // リスト表示
         const list = document.getElementById('task-list');
         list.innerHTML = '';
-        const filtered = tasks.filter(t => {
+        const filtered = state.tasks.filter(t => {
             if (currentFilter === 'active') return !t.done;
             if (currentFilter === 'done') return t.done;
             return true;
         });
 
-        filtered.forEach(task => {
+        filtered.forEach(t => {
             const div = document.createElement('div');
-            div.className = `task-item ${task.done ? 'done' : ''}`;
+            div.className = `task-item ${t.done ? 'done' : ''}`;
             div.innerHTML = `
-                <div class="checkbox" onclick="toggleTask(${task.id})"></div>
-                <div class="task-text">${task.text}</div>
-                <i class="fa-solid fa-trash-can" style="color:var(--text-light); cursor:pointer;" onclick="deleteTask(${task.id})"></i>
+                <div class="checkbox" onclick="toggleT(${t.id})"></div>
+                <div class="task-text">${t.text}</div>
+                <div class="del-btn" onclick="delT(${t.id})"><i class="fa-solid fa-trash-can"></i></div>
             `;
             list.appendChild(div);
         });
 
-        const done = tasks.filter(t => t.done).length;
-        const percent = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0;
-        document.getElementById('progress-bar').style.width = percent + '%';
-        document.getElementById('task-percent').innerText = percent + '%';
+        // 進捗反映
+        const done = state.tasks.filter(t => t.done).length;
+        const p = state.tasks.length ? Math.round((done / state.tasks.length) * 100) : 0;
+        document.getElementById('progress-bar').style.width = p + '%';
+        document.getElementById('task-percent').innerText = p + '%';
     }
 
-    document.getElementById('task-input').onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
-    init();
+    function addT() {
+        const input = document.getElementById('t-input');
+        if (!input.value.trim()) return;
+        state.tasks.unshift({ id: Date.now(), text: input.value, done: false });
+        input.value = '';
+        save();
+    }
+
+    function toggleT(id) {
+        state.tasks = state.tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+        save();
+    }
+
+    function delT(id) {
+        state.tasks = state.tasks.filter(t => t.id !== id);
+        save();
+    }
+
+    function goP(id, e) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+    }
+
+    function setF(f, e) {
+        currentFilter = f;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        render();
+    }
+
+    function toggleD() { state.dark = !state.dark; save(); }
+    function updateN() { state.name = document.getElementById('in-name').value || 'トドリスト'; save(); }
+    function resetD() { if(confirm('全消去しますか？')){ localStorage.clear(); location.reload(); } }
+
+    async function shareList() {
+        const encoded = btoa(encodeURIComponent(JSON.stringify(state.tasks)));
+        const url = `${location.origin}${location.pathname}?data=${encoded}`;
+        if (navigator.share) {
+            await navigator.share({ title: state.name, url: url }).catch(()=>{});
+        } else {
+            await navigator.clipboard.writeText(url);
+            alert('コピーしました！');
+        }
+    }
+
+    // URL共有データの読み込み
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('data')) {
+        try {
+            state.tasks = JSON.parse(decodeURIComponent(atob(params.get('data'))));
+            save();
+            history.replaceState({}, '', location.pathname);
+        } catch(e){}
+    }
+
+    document.getElementById('t-input').onkeypress = (e) => e.key === 'Enter' && addT();
+    render();
 </script>
 </body>
 </html>
