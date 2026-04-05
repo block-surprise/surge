@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>トドリスト</title>
+    <title>トドリスト Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -12,16 +12,17 @@
             --accent: #0ea5e9;
             --text-dark: #1e293b;
             --text-light: #94a3b8;
-            --success: #0ea5e9;
+            --success: #10b981;
             --danger: #f87171;
+            --header-bg: #ffffff;
         }
 
-        /* ダークモード用の設定 */
         body.dark-mode {
             --bg: #0f172a;
             --main: #1e293b;
             --text-dark: #f8fafc;
             --text-light: #64748b;
+            --header-bg: #1e293b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -48,7 +49,7 @@
         .page.active { display: flex; }
 
         header {
-            background: var(--main);
+            background: var(--header-bg);
             padding: 20px;
             padding-top: env(safe-area-inset-top, 20px);
             position: sticky;
@@ -58,15 +59,29 @@
         }
 
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .logo-text { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
+        .logo-text { font-size: 1.4rem; font-weight: 900; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
 
-        .share-btn { background: var(--accent); color: white; border: none; padding: 8px 14px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        /* 共有ボタンを復活 */
+        .share-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-        .progress-container { background: rgba(0,0,0,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
+        .progress-container { background: rgba(0,0,0,0.1); height: 8px; border-radius: 10px; overflow: hidden; }
         #progress-bar { background: var(--accent); width: 0%; height: 100%; transition: width 0.5s ease; }
 
-        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; }
-        input { flex: 1; background: var(--bg); border: 1px solid rgba(0,0,0,0.1); padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; color: var(--text-dark); }
+        .input-area { padding: 15px 20px; background: var(--header-bg); display: flex; gap: 12px; }
+        input[type="text"] { flex: 1; background: var(--bg); border: 1px solid rgba(0,0,0,0.1); padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; color: var(--text-dark); }
         .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .tabs { display: flex; padding: 12px 20px; gap: 25px; }
@@ -86,26 +101,22 @@
         }
 
         .checkbox { width: 28px; height: 28px; border: 2.5px solid var(--text-light); border-radius: 10px; cursor: pointer; position: relative; }
-        .task-item.done .checkbox { background: var(--success); border-color: var(--success); }
+        .task-item.done .checkbox { background: var(--accent); border-color: var(--accent); }
         .task-item.done .checkbox::after { content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900; color: white; font-size: 0.9rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
         .task-text { flex: 1; font-weight: 600; }
         .task-item.done .task-text { text-decoration: line-through; color: var(--text-light); }
 
-        /* 設定画面のスタイル */
+        /* 設定画面 */
         .settings-content { padding: 20px; }
-        .setting-group { background: var(--main); border-radius: 20px; padding: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .setting-group { background: var(--main); border-radius: 20px; padding: 10px; margin-bottom: 20px; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .setting-item:last-child { border-bottom: none; }
-        .setting-label { font-weight: 600; display: flex; align-items: center; gap: 10px; }
         
-        .danger-text { color: var(--danger); }
-
-        /* スイッチの簡易版 */
-        .toggle { width: 40px; height: 20px; background: var(--text-light); border-radius: 20px; position: relative; cursor: pointer; }
-        .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
+        .toggle { width: 44px; height: 24px; background: #cbd5e1; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
         .toggle.on { background: var(--accent); }
-        .toggle.on::after { left: 22px; }
+        .toggle.on::after { left: 23px; }
 
         /* ボトムナビ */
         .bottom-nav {
@@ -129,29 +140,34 @@
         .nav-item i { font-size: 1.4rem; }
     </style>
 </head>
-<body class="">
+<body>
 
 <div class="app-container">
     <div id="home" class="page active">
         <header>
             <div class="header-top">
                 <div class="logo-group">
-                    <div class="logo-text" id="display-username">トドリスト</div>
-                    <span id="task-percent" style="font-size: 0.9rem; font-weight: 900; color: var(--accent); background: rgba(14,165,233,0.1); padding: 2px 10px; border-radius: 20px;">0%</span>
+                    <div class="logo-text" id="display-name">トドリスト</div>
+                    <span id="task-percent" style="font-size: 0.85rem; font-weight: 900; color: var(--accent); background: rgba(14,165,233,0.1); padding: 2px 10px; border-radius: 20px;">0%</span>
                 </div>
-                <button class="share-btn" onclick="generateShareLink()"><i class="fa-solid fa-share-nodes"></i> 共有</button>
+                <button class="share-btn" onclick="generateShareLink()">
+                    <i class="fa-solid fa-share-nodes"></i> 共有
+                </button>
             </div>
             <div class="progress-container"><div id="progress-bar"></div></div>
         </header>
+
         <div class="input-area">
             <input type="text" id="task-input" placeholder="なにをする？" autocomplete="off">
             <button class="add-btn" onclick="addTask()"><i class="fa-solid fa-plus"></i></button>
         </div>
+
         <div class="tabs">
             <div class="tab active" onclick="filterTasks('all', event)">すべて</div>
             <div class="tab" onclick="filterTasks('active', event)">未完了</div>
             <div class="tab" onclick="filterTasks('done', event)">完了</div>
         </div>
+
         <div id="task-list"></div>
     </div>
 
@@ -160,18 +176,18 @@
         <div class="settings-content">
             <div class="setting-group">
                 <div class="setting-item">
-                    <div class="setting-label"><i class="fa-solid fa-moon"></i> ダークモード</div>
+                    <div style="font-weight: bold;"><i class="fa-solid fa-circle-half-stroke"></i> ダークモード</div>
                     <div id="dark-toggle" class="toggle" onclick="toggleDarkMode()"></div>
                 </div>
                 <div class="setting-item">
-                    <div class="setting-label"><i class="fa-solid fa-user-tag"></i> 名前</div>
-                    <input type="text" id="username-input" style="width: 120px; padding: 5px 10px; font-size: 0.8rem;" onchange="updateUsername()" placeholder="ユーザー名">
+                    <div style="font-weight: bold;"><i class="fa-solid fa-signature"></i> 表示名</div>
+                    <input type="text" id="name-input" style="width: 140px; padding: 6px; border-radius: 8px; font-size: 0.9rem;" onchange="updateName()">
                 </div>
             </div>
             <div class="setting-group">
-                <div class="setting-item" onclick="clearAllData()">
-                    <div class="setting-label danger-text"><i class="fa-solid fa-trash-can"></i> 全データを消去</div>
-                    <i class="fa-solid fa-chevron-right" style="color: var(--text-light);"></i>
+                <div class="setting-item" onclick="clearData()" style="color: var(--danger); cursor: pointer;">
+                    <div style="font-weight: bold;"><i class="fa-solid fa-trash-can"></i> データをリセット</div>
+                    <i class="fa-solid fa-chevron-right"></i>
                 </div>
             </div>
         </div>
@@ -184,35 +200,35 @@
 </div>
 
 <script>
-    let tasks = JSON.parse(localStorage.getItem('todo_list_data')) || [];
-    let config = JSON.parse(localStorage.getItem('todo_config')) || { darkMode: false, username: 'トドリスト' };
+    let tasks = JSON.parse(localStorage.getItem('todo_v3_tasks')) || [];
+    let config = JSON.parse(localStorage.getItem('todo_v3_config')) || { darkMode: false, name: 'トドリスト' };
     let currentFilter = 'all';
 
     function init() {
         if (config.darkMode) document.body.classList.add('dark-mode');
         document.getElementById('dark-toggle').className = config.darkMode ? 'toggle on' : 'toggle';
-        document.getElementById('username-input').value = config.username;
-        updateUsername();
-        
-        // 共有リンクチェック
-        const params = new URLSearchParams(window.location.search);
-        const encoded = params.get('data');
-        if (encoded) {
+        document.getElementById('name-input').value = config.name;
+        document.getElementById('display-name').innerText = config.name;
+
+        // 共有データのチェック
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedData = urlParams.get('data');
+        if (sharedData) {
             try {
-                const decoded = JSON.parse(decodeURIComponent(atob(encoded)));
+                const decoded = JSON.parse(decodeURIComponent(atob(sharedData)));
                 if (confirm("共有されたリストを読み込みますか？")) {
                     tasks = decoded;
                     save();
                 }
                 window.history.replaceState({}, document.title, window.location.pathname);
-            } catch (e) { }
+            } catch (e) { console.error("Invalid data"); }
         }
         render();
     }
 
     function save() {
-        localStorage.setItem('todo_list_data', JSON.stringify(tasks));
-        localStorage.setItem('todo_config', JSON.stringify(config));
+        localStorage.setItem('todo_v3_tasks', JSON.stringify(tasks));
+        localStorage.setItem('todo_v3_config', JSON.stringify(config));
         render();
     }
 
@@ -223,15 +239,14 @@
         save();
     }
 
-    function updateUsername() {
-        const val = document.getElementById('username-input').value || 'トドリスト';
-        config.username = val;
-        document.getElementById('display-username').innerText = val;
+    function updateName() {
+        config.name = document.getElementById('name-input').value || 'トドリスト';
+        document.getElementById('display-name').innerText = config.name;
         save();
     }
 
-    function clearAllData() {
-        if (confirm("すべてのタスクと設定を削除しますか？")) {
+    function clearData() {
+        if (confirm("すべてのデータを消去しますか？")) {
             localStorage.clear();
             location.reload();
         }
@@ -269,32 +284,43 @@
         render();
     }
 
+    async function generateShareLink() {
+        if (tasks.length === 0) return alert("タスクがありません");
+        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
+        const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+        
+        if (navigator.share) {
+            try { await navigator.share({ title: config.name, text: '私のトドリストを共有します', url: url }); } catch (e) {}
+        } else {
+            await navigator.clipboard.writeText(url);
+            alert("リンクをコピーしました！");
+        }
+    }
+
     function render() {
         const list = document.getElementById('task-list');
         list.innerHTML = '';
-        tasks.filter(t => currentFilter === 'active' ? !t.done : currentFilter === 'done' ? t.done : true)
-             .forEach(task => {
-                const div = document.createElement('div');
-                div.className = `task-item ${task.done ? 'done' : ''}`;
-                div.innerHTML = `<div class="checkbox" onclick="toggleTask(${task.id})"></div><div class="task-text">${task.text}</div><i class="fa-solid fa-trash-can" style="color:var(--text-light); cursor:pointer;" onclick="deleteTask(${task.id})"></i>`;
-                list.appendChild(div);
-             });
+        const filtered = tasks.filter(t => {
+            if (currentFilter === 'active') return !t.done;
+            if (currentFilter === 'done') return t.done;
+            return true;
+        });
+
+        filtered.forEach(task => {
+            const div = document.createElement('div');
+            div.className = `task-item ${task.done ? 'done' : ''}`;
+            div.innerHTML = `
+                <div class="checkbox" onclick="toggleTask(${task.id})"></div>
+                <div class="task-text">${task.text}</div>
+                <i class="fa-solid fa-trash-can" style="color:var(--text-light); cursor:pointer;" onclick="deleteTask(${task.id})"></i>
+            `;
+            list.appendChild(div);
+        });
 
         const done = tasks.filter(t => t.done).length;
         const percent = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0;
         document.getElementById('progress-bar').style.width = percent + '%';
         document.getElementById('task-percent').innerText = percent + '%';
-    }
-
-    async function generateShareLink() {
-        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
-        const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
-        if (navigator.share) {
-            try { await navigator.share({ title: config.username, url: url }); } catch (e) {}
-        } else {
-            await navigator.clipboard.writeText(url);
-            alert("リンクをコピーしました");
-        }
     }
 
     document.getElementById('task-input').onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
