@@ -3,112 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SURGE PRO - Task Manager</title>
+    <title>SURGE PRO - Simple Todo</title>
     <style>
-        /* === デザイン設定 (CSS) === */
+        /* === シンプル＆クリーンなデザイン === */
         :root {
-            --bg-color: #0f172a;
-            --container-bg: #1e293b;
-            --accent-blue: #3b82f6;
-            --accent-green: #10b981;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
-            --high-color: #ef4444;
-            --medium-color: #f59e0b;
-            --low-color: #64748b;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --text: #334155;
+            --accent: #4f46e5;
+            --border: #e2e8f0;
+            --delete: #94a3b8;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--bg);
+            color: var(--text);
             display: flex;
             justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
+            padding-top: 60px;
         }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--container-bg);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            height: fit-content;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 15px;
+        .wrapper {
+            width: 90%;
+            max-width: 450px;
         }
 
         h1 {
-            font-size: 1.5rem;
-            letter-spacing: 1px;
-            background: linear-gradient(to right, #3b82f6, #60a5fa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--text);
+            letter-spacing: 0.5px;
         }
 
-        /* 入力エリア */
-        .input-section {
-            display: grid;
-            grid-template-columns: 1fr auto auto;
-            gap: 10px;
+        /* 入力エリア：馴染みやすいフラット設計 */
+        .input-box {
+            display: flex;
+            background: var(--card);
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             margin-bottom: 25px;
         }
 
-        input[type="text"] {
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            padding: 12px 15px;
-            border-radius: 8px;
+        input {
+            flex: 1;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
             outline: none;
-            transition: border 0.3s;
+            color: var(--text);
         }
 
-        input[type="text"]:focus {
-            border-color: var(--accent-blue);
+        input::placeholder {
+            color: #cbd5e1;
         }
 
-        select {
-            background: #0f172a;
-            color: white;
-            border: 1px solid #334155;
-            padding: 0 10px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        #add-btn {
-            background: var(--accent-blue);
+        button#add-btn {
+            background: var(--accent);
             color: white;
             border: none;
-            padding: 0 20px;
+            padding: 0 18px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s, background 0.3s;
+            transition: opacity 0.2s;
         }
 
-        #add-btn:hover {
-            background: #2563eb;
-        }
-
-        #add-btn:active {
-            transform: scale(0.95);
+        button#add-btn:hover {
+            opacity: 0.9;
         }
 
         /* リストエリア */
@@ -117,118 +87,101 @@
         }
 
         li {
-            background: #0f172a;
-            margin-bottom: 12px;
-            padding: 15px;
+            background: var(--card);
+            margin-bottom: 10px;
+            padding: 16px;
             border-radius: 12px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            border-left: 6px solid transparent;
-            animation: fadeIn 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* 優先度別の色 */
-        li.p-high { border-left-color: var(--high-color); }
-        li.p-medium { border-left-color: var(--medium-color); }
-        li.p-low { border-left-color: var(--low-color); }
-
-        .task-text {
-            flex: 1;
-            font-size: 1rem;
-        }
-
-        .delete-btn {
-            background: #334155;
-            color: #94a3b8;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
+        /* チェックボックス風の丸 */
+        .check-circle {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            margin-right: 15px;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .delete-btn:hover {
-            background: var(--high-color);
-            color: white;
+        li:hover .check-circle {
+            border-color: var(--accent);
         }
 
-        .status-badge {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: #334155;
-            color: var(--text-dim);
+        .task-text {
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        /* 削除ボタン：控えめにして馴染ませる */
+        .del-btn {
+            background: transparent;
+            color: var(--delete);
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+
+        .del-btn:hover {
+            color: #ef4444;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>SURGE PRO <span style="font-size: 0.8rem; color: var(--text-dim);">Task Manager</span></h1>
-            <div id="date-display" style="font-size: 0.9rem; color: var(--accent-blue);">2026.04.05</div>
-        </header>
+    <div class="wrapper">
+        <h1>SURGE PRO</h1>
 
-        <div class="input-section">
-            <input type="text" id="task-input" placeholder="実行するタスクを入力...">
-            <select id="priority-select">
-                <option value="p-high">高</option>
-                <option value="p-medium" selected>中</option>
-                <option value="p-low">低</option>
-            </select>
+        <div class="input-box">
+            <input type="text" id="input" placeholder="なにをする？">
             <button id="add-btn">追加</button>
         </div>
 
-        <ul id="task-list">
+        <ul id="list">
             </ul>
     </div>
 
     <script>
-        // === 機能設定 (JavaScript) ===
-        const addBtn = document.getElementById('add-btn');
-        const taskInput = document.getElementById('task-input');
-        const prioritySelect = document.getElementById('priority-select');
-        const taskList = document.getElementById('task-list');
+        const btn = document.getElementById('add-btn');
+        const input = document.getElementById('input');
+        const list = document.getElementById('list');
 
-        addBtn.addEventListener('click', () => {
-            const text = taskInput.value;
-            const priority = prioritySelect.value;
+        // タスク追加のメイン機能
+        function addTask() {
+            if (input.value.trim() === "") return;
 
-            if (text === "") {
-                alert("タスクを入力してください！");
-                return;
-            }
-
-            // タスク要素の作成
             const li = document.createElement('li');
-            li.className = priority;
-            
             li.innerHTML = `
-                <div class="task-text">${text}</div>
-                <span class="status-badge">${priority === 'p-high' ? '優先' : ''}</span>
-                <button class="delete-btn">×</button>
+                <div class="check-circle"></div>
+                <span class="task-text">${input.value}</span>
+                <button class="del-btn">×</button>
             `;
 
-            // 削除機能
-            li.querySelector('.delete-btn').addEventListener('click', () => {
-                li.style.opacity = '0';
-                setTimeout(() => li.remove(), 200);
-            });
+            // 完了（クリックで消える演出）
+            li.querySelector('.check-circle').onclick = () => {
+                li.style.opacity = '0.4';
+                li.style.textDecoration = 'line-through';
+            };
 
-            taskList.appendChild(li);
-            taskInput.value = ""; // 入力欄をクリア
-        });
+            // 削除
+            li.querySelector('.del-btn').onclick = () => {
+                li.remove();
+            };
 
-        // Enterキーでも追加できるようにする
-        taskInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addBtn.click();
+            list.appendChild(li);
+            input.value = "";
+        }
+
+        btn.onclick = addTask;
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
         });
     </script>
 </body>
