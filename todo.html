@@ -9,19 +9,14 @@
         :root {
             --bg: #f0f7ff;
             --main: #ffffff;
-            --accent: #0ea5e9; /* 清潔感のある水色 */
+            --accent: #0ea5e9;
             --text-dark: #1e293b;
             --text-light: #94a3b8;
             --success: #0ea5e9;
-            --nav-bg: #ffffff;
+            --share: #6366f1; /* 共有ボタン用の少し違う青 */
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg);
@@ -61,183 +56,74 @@
             margin-bottom: 15px;
         }
 
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: var(--accent);
-            letter-spacing: -0.5px;
-        }
+        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-size: 1.5rem; font-weight: 900; color: var(--accent); letter-spacing: -0.5px; }
 
-        .progress-container {
-            background: #e2eef9;
-            height: 8px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        #progress-bar {
-            background: var(--accent);
-            width: 0%;
-            height: 100%;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .input-area {
-            padding: 15px 20px;
-            background: var(--main);
-            display: flex;
-            gap: 12px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        input {
-            flex: 1;
-            background: #f8fafc;
-            border: 1px solid #e2eef9;
-            padding: 12px 18px;
-            border-radius: 16px;
-            font-size: 1rem;
-            outline: none;
-            transition: 0.2s;
-        }
-
-        input:focus {
-            border-color: var(--accent);
-            background: white;
-        }
-
-        .add-btn {
-            background: var(--accent);
-            color: white;
+        /* 全体共有ボタン */
+        .main-share-btn {
+            background: #f1f5f9;
             border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .tabs {
-            display: flex;
-            padding: 12px 20px;
-            gap: 25px;
-            background: var(--bg);
-        }
-
-        .tab {
-            font-size: 0.95rem;
-            font-weight: bold;
             color: var(--text-light);
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
             cursor: pointer;
-            padding-bottom: 4px;
-            transition: 0.2s;
         }
 
-        .tab.active {
-            color: var(--accent);
-            border-bottom: 3px solid var(--accent);
-        }
+        .progress-container { background: #e2eef9; height: 8px; border-radius: 10px; overflow: hidden; }
+        #progress-bar { background: var(--accent); width: 0%; height: 100%; transition: width 0.5s ease; }
 
-        #task-list {
-            padding: 10px 20px;
-        }
+        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; }
+        input { flex: 1; background: #f8fafc; border: 1px solid #e2eef9; padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; }
+        .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
+        .tabs { display: flex; padding: 12px 20px; gap: 25px; }
+        .tab { font-size: 0.95rem; font-weight: bold; color: var(--text-light); cursor: pointer; padding-bottom: 4px; }
+        .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+        #task-list { padding: 10px 20px; }
         .task-item {
             background: var(--main);
             margin-bottom: 12px;
-            padding: 18px;
+            padding: 16px;
             border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            animation: popIn 0.3s ease-out;
         }
 
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        .checkbox { width: 26px; height: 26px; border: 2.5px solid #cbd5e1; border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .task-item.done .checkbox { background: var(--success); border-color: var(--success); }
+        .task-item.done .checkbox::after { content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900; color: white; font-size: 0.8rem; }
 
-        .checkbox {
-            width: 28px;
-            height: 28px;
-            border: 2.5px solid #cbd5e1;
-            border-radius: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-
-        .task-item.done .checkbox {
-            background: var(--success);
-            border-color: var(--success);
-        }
-
-        .task-item.done .checkbox::after {
-            content: '\f00c';
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .task-text { flex: 1; font-weight: 600; color: #334155; }
+        .task-text { flex: 1; font-weight: 600; color: #334155; font-size: 0.95rem; }
         .task-item.done .task-text { text-decoration: line-through; color: var(--text-light); }
 
-        .del-btn { background: none; border: none; color: #cbd5e1; padding: 5px; cursor: pointer; transition: 0.2s; }
-        .del-btn:hover { color: #f87171; }
+        /* アクションボタン群 */
+        .actions { display: flex; gap: 8px; }
+        .action-btn { background: none; border: none; color: #cbd5e1; padding: 5px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .action-btn.share:hover { color: var(--share); }
+        .action-btn.del:hover { color: #f87171; }
 
-        /* ボトムナビ */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            max-width: 480px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-            border-top: 1px solid #f1f5f9;
-            z-index: 100;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            color: #94a3b8;
-            font-size: 0.75rem;
-            font-weight: bold;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .nav-item i { font-size: 1.4rem; transition: 0.2s; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 480px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); display: flex; justify-content: space-around; padding: 12px 0; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #f1f5f9; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: #94a3b8; font-size: 0.75rem; font-weight: bold; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent); }
-        .nav-item.active i { transform: translateY(-2px); }
-
-        .placeholder-content { padding: 100px 20px; text-align: center; color: var(--text-light); }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    
     <div id="home" class="page active">
         <header>
             <div class="header-top">
-                <div class="logo-text">トドリスト</div>
-                <span id="task-count" style="font-size: 0.9rem; font-weight: 900; color: var(--accent);">0%</span>
+                <div class="logo-group">
+                    <div class="logo-text">トドリスト</div>
+                    <span id="task-percent" style="font-size: 0.8rem; font-weight: 800; color: var(--accent); background: #e0f2fe; padding: 2px 8px; border-radius: 20px;">0%</span>
+                </div>
+                <button class="main-share-btn" onclick="shareApp()">
+                    <i class="fa-solid fa-share-nodes"></i> 共有
+                </button>
             </div>
             <div class="progress-container">
                 <div id="progress-bar"></div>
@@ -258,35 +144,13 @@
         <div id="task-list"></div>
     </div>
 
-    <div id="calendar" class="page">
-        <header><div class="logo-text">トドリスト</div></header>
-        <div class="placeholder-content">
-            <i class="fa-solid fa-calendar-days fa-4x" style="color: #e2eef9; margin-bottom: 20px;"></i>
-            <p>カレンダー機能は準備中です</p>
-        </div>
-    </div>
-
-    <div id="settings" class="page">
-        <header><div class="logo-text">トドリスト</div></header>
-        <div class="placeholder-content">
-            <i class="fa-solid fa-gear fa-4x" style="color: #e2eef9; margin-bottom: 20px;"></i>
-            <p>設定画面は準備中です</p>
-        </div>
-    </div>
+    <div id="calendar" class="page"><header><div class="logo-text">トドリスト</div></header></div>
+    <div id="settings" class="page"><header><div class="logo-text">トドリスト</div></header></div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="switchPage('home', event)">
-            <i class="fa-solid fa-house-user"></i>
-            <span>ホーム</span>
-        </div>
-        <div class="nav-item" onclick="switchPage('calendar', event)">
-            <i class="fa-solid fa-calendar-check"></i>
-            <span>予定</span>
-        </div>
-        <div class="nav-item" onclick="switchPage('settings', event)">
-            <i class="fa-solid fa-sliders"></i>
-            <span>設定</span>
-        </div>
+        <div class="nav-item active" onclick="switchPage('home', event)"><i class="fa-solid fa-house-user"></i><span>ホーム</span></div>
+        <div class="nav-item" onclick="switchPage('calendar', event)"><i class="fa-solid fa-calendar-check"></i><span>予定</span></div>
+        <div class="nav-item" onclick="switchPage('settings', event)"><i class="fa-solid fa-sliders"></i><span>設定</span></div>
     </nav>
 </div>
 
@@ -297,6 +161,35 @@
     const input = document.getElementById('task-input');
     const addBtn = document.getElementById('add-btn');
     const listElement = document.getElementById('task-list');
+
+    // --- 共有機能の実装 ---
+    async function shareTask(text) {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'トドリストのタスク',
+                    text: `【やりたいこと】\n${text}\n\n#トドリスト`,
+                });
+            } catch (err) { console.log('共有キャンセル'); }
+        } else {
+            alert('お使いのブラウザは共有機能に対応していません。');
+        }
+    }
+
+    async function shareApp() {
+        const doneCount = tasks.filter(t => t.done).length;
+        const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+        
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'トドリスト',
+                    text: `現在の達成率は ${percent}% です！目標に向かって頑張っています。`,
+                    url: window.location.href
+                });
+            } catch (err) { console.log('共有キャンセル'); }
+        }
+    }
 
     function switchPage(pageId, event) {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -348,7 +241,10 @@
             div.innerHTML = `
                 <div class="checkbox" onclick="toggleTask(${task.id})"></div>
                 <div class="task-text">${task.text}</div>
-                <button class="del-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash-can"></i></button>
+                <div class="actions">
+                    <button class="action-btn share" onclick="shareTask('${task.text}')"><i class="fa-solid fa-share"></i></button>
+                    <button class="action-btn del" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
             `;
             listElement.appendChild(div);
         });
@@ -356,14 +252,12 @@
         const doneCount = tasks.filter(t => t.done).length;
         const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
         document.getElementById('progress-bar').style.width = percent + '%';
-        document.getElementById('task-count').innerText = percent + '%';
+        document.getElementById('task-percent').innerText = percent + '%';
     }
 
     addBtn.onclick = addTask;
     input.onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
-
     render();
 </script>
-
 </body>
 </html>
