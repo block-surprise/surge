@@ -13,6 +13,15 @@
             --text-dark: #1e293b;
             --text-light: #94a3b8;
             --success: #0ea5e9;
+            --danger: #f87171;
+        }
+
+        /* ダークモード用の設定 */
+        body.dark-mode {
+            --bg: #0f172a;
+            --main: #1e293b;
+            --text-dark: #f8fafc;
+            --text-light: #64748b;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -22,17 +31,17 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             display: flex;
             justify-content: center;
+            color: var(--text-dark);
+            transition: background 0.3s, color 0.3s;
         }
 
         .app-container {
             width: 100%;
             max-width: 480px;
-            background: var(--bg);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            /* 下部のナビゲーションの高さ + セーフエリア分だけ余白を確保 */
-            padding-bottom: calc(70px + env(safe-area-inset-bottom));
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
         }
 
         .page { display: none; flex-direction: column; flex: 1; }
@@ -45,35 +54,19 @@
             position: sticky;
             top: 0;
             z-index: 10;
-            border-bottom: 1px solid #e2eef9;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .logo-group { display: flex; align-items: center; gap: 10px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .logo-text { font-size: 1.5rem; font-weight: 900; color: var(--accent); }
 
-        .share-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .share-btn { background: var(--accent); color: white; border: none; padding: 8px 14px; border-radius: 12px; font-weight: bold; cursor: pointer; }
 
-        .progress-container { background: #e2eef9; height: 8px; border-radius: 10px; overflow: hidden; }
+        .progress-container { background: rgba(0,0,0,0.05); height: 8px; border-radius: 10px; overflow: hidden; }
         #progress-bar { background: var(--accent); width: 0%; height: 100%; transition: width 0.5s ease; }
 
-        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; border-bottom: 1px solid #f1f5f9; }
-        input { flex: 1; background: #f8fafc; border: 1px solid #e2eef9; padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; }
+        .input-area { padding: 15px 20px; background: var(--main); display: flex; gap: 12px; }
+        input { flex: 1; background: var(--bg); border: 1px solid rgba(0,0,0,0.1); padding: 12px 18px; border-radius: 16px; font-size: 1rem; outline: none; color: var(--text-dark); }
         .add-btn { background: var(--accent); color: white; border: none; width: 50px; height: 50px; border-radius: 16px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .tabs { display: flex; padding: 12px 20px; gap: 25px; }
@@ -92,16 +85,29 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        .checkbox { width: 28px; height: 28px; border: 2.5px solid #cbd5e1; border-radius: 10px; cursor: pointer; }
-        .task-item.done .checkbox { background: var(--success); border-color: var(--success); position: relative; }
+        .checkbox { width: 28px; height: 28px; border: 2.5px solid var(--text-light); border-radius: 10px; cursor: pointer; position: relative; }
+        .task-item.done .checkbox { background: var(--success); border-color: var(--success); }
         .task-item.done .checkbox::after { content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900; color: white; font-size: 0.9rem; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
-        .task-text { flex: 1; font-weight: 600; color: #334155; }
+        .task-text { flex: 1; font-weight: 600; }
         .task-item.done .task-text { text-decoration: line-through; color: var(--text-light); }
 
-        .del-btn { background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 1.1rem; }
+        /* 設定画面のスタイル */
+        .settings-content { padding: 20px; }
+        .setting-group { background: var(--main); border-radius: 20px; padding: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-label { font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        
+        .danger-text { color: var(--danger); }
 
-        /* --- 修正したナビゲーションバー --- */
+        /* スイッチの簡易版 */
+        .toggle { width: 40px; height: 20px; background: var(--text-light); border-radius: 20px; position: relative; cursor: pointer; }
+        .toggle::after { content: ''; position: absolute; width: 16px; height: 16px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: 0.2s; }
+        .toggle.on { background: var(--accent); }
+        .toggle.on::after { left: 22px; }
+
+        /* ボトムナビ */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -109,95 +115,125 @@
             transform: translateX(-50%);
             width: 100%;
             max-width: 480px;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(10px);
+            background: var(--main);
             display: flex;
             justify-content: space-around;
-            /* ここでホームバーとの重なりを防止しています */
             padding-top: 12px;
             padding-bottom: calc(12px + env(safe-area-inset-bottom)); 
-            border-top: 1px solid #f1f5f9;
+            border-top: 1px solid rgba(0,0,0,0.05);
             z-index: 100;
         }
 
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #94a3b8; font-size: 0.75rem; font-weight: bold; cursor: pointer; flex: 1; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-light); font-size: 0.75rem; font-weight: bold; cursor: pointer; flex: 1; }
         .nav-item.active { color: var(--accent); }
         .nav-item i { font-size: 1.4rem; }
     </style>
 </head>
-<body>
+<body class="">
 
 <div class="app-container">
     <div id="home" class="page active">
         <header>
             <div class="header-top">
                 <div class="logo-group">
-                    <div class="logo-text">トドリスト</div>
-                    <span id="task-percent" style="font-size: 0.9rem; font-weight: 900; color: var(--accent); background: #e0f2fe; padding: 2px 10px; border-radius: 20px;">0%</span>
+                    <div class="logo-text" id="display-username">トドリスト</div>
+                    <span id="task-percent" style="font-size: 0.9rem; font-weight: 900; color: var(--accent); background: rgba(14,165,233,0.1); padding: 2px 10px; border-radius: 20px;">0%</span>
                 </div>
                 <button class="share-btn" onclick="generateShareLink()"><i class="fa-solid fa-share-nodes"></i> 共有</button>
             </div>
             <div class="progress-container"><div id="progress-bar"></div></div>
         </header>
-
         <div class="input-area">
             <input type="text" id="task-input" placeholder="なにをする？" autocomplete="off">
-            <button class="add-btn" id="add-btn"><i class="fa-solid fa-plus"></i></button>
+            <button class="add-btn" onclick="addTask()"><i class="fa-solid fa-plus"></i></button>
         </div>
-
         <div class="tabs">
             <div class="tab active" onclick="filterTasks('all', event)">すべて</div>
             <div class="tab" onclick="filterTasks('active', event)">未完了</div>
             <div class="tab" onclick="filterTasks('done', event)">完了</div>
         </div>
-
         <div id="task-list"></div>
     </div>
 
-    <div id="calendar" class="page"><header><div class="logo-text">トドリスト</div></header></div>
-    <div id="settings" class="page"><header><div class="logo-text">トドリスト</div></header></div>
+    <div id="settings" class="page">
+        <header><div class="logo-text">設定</div></header>
+        <div class="settings-content">
+            <div class="setting-group">
+                <div class="setting-item">
+                    <div class="setting-label"><i class="fa-solid fa-moon"></i> ダークモード</div>
+                    <div id="dark-toggle" class="toggle" onclick="toggleDarkMode()"></div>
+                </div>
+                <div class="setting-item">
+                    <div class="setting-label"><i class="fa-solid fa-user-tag"></i> 名前</div>
+                    <input type="text" id="username-input" style="width: 120px; padding: 5px 10px; font-size: 0.8rem;" onchange="updateUsername()" placeholder="ユーザー名">
+                </div>
+            </div>
+            <div class="setting-group">
+                <div class="setting-item" onclick="clearAllData()">
+                    <div class="setting-label danger-text"><i class="fa-solid fa-trash-can"></i> 全データを消去</div>
+                    <i class="fa-solid fa-chevron-right" style="color: var(--text-light);"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchPage('home', event)"><i class="fa-solid fa-house-user"></i><span>ホーム</span></div>
-        <div class="nav-item" onclick="switchPage('calendar', event)"><i class="fa-solid fa-calendar-check"></i><span>予定</span></div>
         <div class="nav-item" onclick="switchPage('settings', event)"><i class="fa-solid fa-sliders"></i><span>設定</span></div>
     </nav>
 </div>
 
 <script>
-    let tasks = [];
+    let tasks = JSON.parse(localStorage.getItem('todo_list_data')) || [];
+    let config = JSON.parse(localStorage.getItem('todo_config')) || { darkMode: false, username: 'トドリスト' };
     let currentFilter = 'all';
 
-    const input = document.getElementById('task-input');
-    const addBtn = document.getElementById('add-btn');
-    const listElement = document.getElementById('task-list');
-
-    function loadData() {
+    function init() {
+        if (config.darkMode) document.body.classList.add('dark-mode');
+        document.getElementById('dark-toggle').className = config.darkMode ? 'toggle on' : 'toggle';
+        document.getElementById('username-input').value = config.username;
+        updateUsername();
+        
+        // 共有リンクチェック
         const params = new URLSearchParams(window.location.search);
-        const encodedData = params.get('data');
-        if (encodedData) {
+        const encoded = params.get('data');
+        if (encoded) {
             try {
-                const decoded = JSON.parse(decodeURIComponent(atob(encodedData)));
+                const decoded = JSON.parse(decodeURIComponent(atob(encoded)));
                 if (confirm("共有されたリストを読み込みますか？")) {
                     tasks = decoded;
                     save();
-                    window.history.replaceState({}, document.title, window.location.pathname);
                 }
+                window.history.replaceState({}, document.title, window.location.pathname);
             } catch (e) { }
-        } else {
-            tasks = JSON.parse(localStorage.getItem('todo_list_data')) || [];
         }
+        render();
     }
 
-    async function generateShareLink() {
-        if (tasks.length === 0) return alert("タスクがありません");
-        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
-        const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
-        if (navigator.share) {
-            try { await navigator.share({ title: 'トドリスト', url: url }); } catch (e) {}
-        } else {
-            await navigator.clipboard.writeText(url);
-            alert("コピーしました");
+    function save() {
+        localStorage.setItem('todo_list_data', JSON.stringify(tasks));
+        localStorage.setItem('todo_config', JSON.stringify(config));
+        render();
+    }
+
+    function toggleDarkMode() {
+        config.darkMode = !config.darkMode;
+        document.body.classList.toggle('dark-mode');
+        document.getElementById('dark-toggle').className = config.darkMode ? 'toggle on' : 'toggle';
+        save();
+    }
+
+    function updateUsername() {
+        const val = document.getElementById('username-input').value || 'トドリスト';
+        config.username = val;
+        document.getElementById('display-username').innerText = val;
+        save();
+    }
+
+    function clearAllData() {
+        if (confirm("すべてのタスクと設定を削除しますか？")) {
+            localStorage.clear();
+            location.reload();
         }
     }
 
@@ -208,12 +244,8 @@
         document.getElementById(pageId).classList.add('active');
     }
 
-    function save() {
-        localStorage.setItem('todo_list_data', JSON.stringify(tasks));
-        render();
-    }
-
     function addTask() {
+        const input = document.getElementById('task-input');
         if (!input.value.trim()) return;
         tasks.unshift({ id: Date.now(), text: input.value, done: false });
         input.value = '';
@@ -238,31 +270,35 @@
     }
 
     function render() {
-        listElement.innerHTML = '';
-        const filtered = tasks.filter(t => {
-            if (currentFilter === 'active') return !t.done;
-            if (currentFilter === 'done') return t.done;
-            return true;
-        });
+        const list = document.getElementById('task-list');
+        list.innerHTML = '';
+        tasks.filter(t => currentFilter === 'active' ? !t.done : currentFilter === 'done' ? t.done : true)
+             .forEach(task => {
+                const div = document.createElement('div');
+                div.className = `task-item ${task.done ? 'done' : ''}`;
+                div.innerHTML = `<div class="checkbox" onclick="toggleTask(${task.id})"></div><div class="task-text">${task.text}</div><i class="fa-solid fa-trash-can" style="color:var(--text-light); cursor:pointer;" onclick="deleteTask(${task.id})"></i>`;
+                list.appendChild(div);
+             });
 
-        filtered.forEach(task => {
-            const div = document.createElement('div');
-            div.className = `task-item ${task.done ? 'done' : ''}`;
-            div.innerHTML = `<div class="checkbox" onclick="toggleTask(${task.id})"></div><div class="task-text">${task.text}</div><button class="del-btn" onclick="deleteTask(${task.id})"><i class="fa-solid fa-trash-can"></i></button>`;
-            listElement.appendChild(div);
-        });
-
-        const doneCount = tasks.filter(t => t.done).length;
-        const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+        const done = tasks.filter(t => t.done).length;
+        const percent = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0;
         document.getElementById('progress-bar').style.width = percent + '%';
         document.getElementById('task-percent').innerText = percent + '%';
     }
 
-    addBtn.onclick = addTask;
-    input.onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
+    async function generateShareLink() {
+        const encoded = btoa(encodeURIComponent(JSON.stringify(tasks)));
+        const url = `${window.location.origin}${window.location.pathname}?data=${encoded}`;
+        if (navigator.share) {
+            try { await navigator.share({ title: config.username, url: url }); } catch (e) {}
+        } else {
+            await navigator.clipboard.writeText(url);
+            alert("リンクをコピーしました");
+        }
+    }
 
-    loadData();
-    render();
+    document.getElementById('task-input').onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
+    init();
 </script>
 </body>
 </html>
