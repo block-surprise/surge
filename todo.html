@@ -2,114 +2,170 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SURGE PRO - Simple Todo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SURGE PRO</title>
     <style>
-        /* === シンプル＆クリーンなデザイン === */
         :root {
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --text: #334155;
+            --bg: #f8f9fa;
+            --main: #ffffff;
             --accent: #4f46e5;
-            --border: #e2e8f0;
-            --delete: #94a3b8;
+            --text-dark: #1e293b;
+            --text-light: #94a3b8;
+            --success: #10b981;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-dark);
             display: flex;
             justify-content: center;
-            padding-top: 60px;
         }
 
-        .wrapper {
-            width: 90%;
-            max-width: 450px;
-        }
-
-        h1 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            margin-bottom: 20px;
-            color: var(--text);
-            letter-spacing: 0.5px;
-        }
-
-        /* 入力エリア：馴染みやすいフラット設計 */
-        .input-box {
+        /* アプリのコンテナ */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg);
+            min-height: 100vh;
             display: flex;
-            background: var(--card);
-            padding: 8px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 25px;
+            flex-direction: column;
+        }
+
+        /* ヘッダー周り */
+        header {
+            background: var(--main);
+            padding: 20px;
+            padding-top: env(safe-area-inset-top, 20px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid #eee;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        h1 { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+
+        .progress-container {
+            background: #e2e8f0;
+            height: 6px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            background: var(--accent);
+            width: 0%;
+            height: 100%;
+            transition: width 0.4s ease;
+        }
+
+        /* 入力エリア */
+        .input-area {
+            padding: 15px 20px;
+            background: var(--main);
+            display: flex;
+            gap: 10px;
         }
 
         input {
             flex: 1;
+            background: #f1f5f9;
             border: none;
-            padding: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
             font-size: 1rem;
             outline: none;
-            color: var(--text);
         }
 
-        input::placeholder {
-            color: #cbd5e1;
-        }
-
-        button#add-btn {
+        .add-btn {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 0 18px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        button#add-btn:hover {
-            opacity: 0.9;
-        }
-
-        /* リストエリア */
-        ul {
-            list-style: none;
-        }
-
-        li {
-            background: var(--card);
-            margin-bottom: 10px;
-            padding: 16px;
+            width: 45px;
             border-radius: 12px;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* タブ切り替え */
+        .tabs {
+            display: flex;
+            padding: 10px 20px;
+            gap: 20px;
+            background: var(--bg);
+        }
+
+        .tab {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-light);
+            cursor: pointer;
+            padding-bottom: 4px;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* リスト */
+        #task-list {
+            padding: 10px 20px;
+            flex: 1;
+        }
+
+        .task-item {
+            background: var(--main);
+            margin-bottom: 12px;
+            padding: 16px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            transition: transform 0.2s;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            animation: slideIn 0.3s ease-out;
         }
 
-        /* チェックボックス風の丸 */
-        .check-circle {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-radius: 50%;
-            margin-right: 15px;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
         }
 
-        li:hover .check-circle {
-            border-color: var(--accent);
+        .task-item.done .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .task-item.done .checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 0.8rem;
         }
 
         .task-text {
@@ -118,71 +174,122 @@
             font-weight: 500;
         }
 
-        /* 削除ボタン：控えめにして馴染ませる */
-        .del-btn {
-            background: transparent;
-            color: var(--delete);
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0 5px;
+        .task-item.done .task-text {
+            text-decoration: line-through;
+            color: var(--text-light);
         }
 
-        .del-btn:hover {
-            color: #ef4444;
+        .del-btn {
+            background: none;
+            border: none;
+            color: #fca5a5;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="wrapper">
-        <h1>SURGE PRO</h1>
-
-        <div class="input-box">
-            <input type="text" id="input" placeholder="なにをする？">
-            <button id="add-btn">追加</button>
+<div class="app-container">
+    <header>
+        <div class="header-top">
+            <h1>SURGE PRO</h1>
+            <span id="task-count" style="font-size: 0.8rem; font-weight: bold;">0% 完了</span>
         </div>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </header>
 
-        <ul id="list">
-            </ul>
+    <div class="input-area">
+        <input type="text" id="task-input" placeholder="タスクを追加..." autocomplete="off">
+        <button class="add-btn" id="add-btn">+</button>
     </div>
 
-    <script>
-        const btn = document.getElementById('add-btn');
-        const input = document.getElementById('input');
-        const list = document.getElementById('list');
+    <div class="tabs">
+        <div class="tab active" onclick="filterTasks('all')">すべて</div>
+        <div class="tab" onclick="filterTasks('active')">未完了</div>
+        <div class="tab" onclick="filterTasks('done')">完了済み</div>
+    </div>
 
-        // タスク追加のメイン機能
-        function addTask() {
-            if (input.value.trim() === "") return;
+    <div id="task-list"></div>
+</div>
 
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div class="check-circle"></div>
-                <span class="task-text">${input.value}</span>
-                <button class="del-btn">×</button>
-            `;
+<script>
+    let tasks = JSON.parse(localStorage.getItem('surge_tasks')) || [];
+    let currentFilter = 'all';
 
-            // 完了（クリックで消える演出）
-            li.querySelector('.check-circle').onclick = () => {
-                li.style.opacity = '0.4';
-                li.style.textDecoration = 'line-through';
-            };
+    const input = document.getElementById('task-input');
+    const addBtn = document.getElementById('add-btn');
+    const listElement = document.getElementById('task-list');
 
-            // 削除
-            li.querySelector('.del-btn').onclick = () => {
-                li.remove();
-            };
+    function save() {
+        localStorage.setItem('surge_tasks', JSON.stringify(tasks));
+        render();
+    }
 
-            list.appendChild(li);
-            input.value = "";
-        }
-
-        btn.onclick = addTask;
-
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addTask();
+    function addTask() {
+        if (!input.value.trim()) return;
+        tasks.unshift({
+            id: Date.now(),
+            text: input.value,
+            done: false
         });
-    </script>
+        input.value = '';
+        save();
+    }
+
+    function toggleTask(id) {
+        tasks = tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+        save();
+    }
+
+    function deleteTask(id) {
+        tasks = tasks.filter(t => t.id !== id);
+        save();
+    }
+
+    function filterTasks(type) {
+        currentFilter = type;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        render();
+    }
+
+    function render() {
+        listElement.innerHTML = '';
+        
+        const filtered = tasks.filter(t => {
+            if (currentFilter === 'active') return !t.done;
+            if (currentFilter === 'done') return t.done;
+            return true;
+        });
+
+        filtered.forEach(task => {
+            const div = document.createElement('div');
+            div.className = `task-item ${task.done ? 'done' : ''}`;
+            div.innerHTML = `
+                <div class="checkbox" onclick="toggleTask(${task.id})"></div>
+                <div class="task-text">${task.text}</div>
+                <button class="del-btn" onclick="deleteTask(${task.id})">×</button>
+            `;
+            listElement.appendChild(div);
+        });
+
+        // 進捗の更新
+        const doneCount = tasks.filter(t => t.done).length;
+        const percent = tasks.length > 0 ? Math.round((doneCount / tasks.length) * 100) : 0;
+        document.getElementById('progress-bar').style.width = percent + '%';
+        document.getElementById('task-count').innerText = percent + '% 完了';
+    }
+
+    addBtn.onclick = addTask;
+    input.onkeypress = (e) => { if(e.key === 'Enter') addTask(); };
+
+    // 初期表示
+    render();
+</script>
+
 </body>
 </html>
