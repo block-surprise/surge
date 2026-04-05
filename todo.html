@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SURGE PRO - Task Manager</title>
+    <style>
+        /* === デザイン設定 (CSS) === */
+        :root {
+            --bg-color: #0f172a;
+            --container-bg: #1e293b;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --high-color: #ef4444;
+            --medium-color: #f59e0b;
+            --low-color: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--container-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            height: fit-content;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 入力エリア */
+        .input-section {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-blue);
+        }
+
+        select {
+            background: #0f172a;
+            color: white;
+            border: 1px solid #334155;
+            padding: 0 10px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        #add-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.3s;
+        }
+
+        #add-btn:hover {
+            background: #2563eb;
+        }
+
+        #add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* リストエリア */
+        ul {
+            list-style: none;
+        }
+
+        li {
+            background: #0f172a;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 6px solid transparent;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 優先度別の色 */
+        li.p-high { border-left-color: var(--high-color); }
+        li.p-medium { border-left-color: var(--medium-color); }
+        li.p-low { border-left-color: var(--low-color); }
+
+        .task-text {
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        .delete-btn {
+            background: #334155;
+            color: #94a3b8;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: var(--high-color);
+            color: white;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #334155;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>SURGE PRO <span style="font-size: 0.8rem; color: var(--text-dim);">Task Manager</span></h1>
+            <div id="date-display" style="font-size: 0.9rem; color: var(--accent-blue);">2026.04.05</div>
+        </header>
+
+        <div class="input-section">
+            <input type="text" id="task-input" placeholder="実行するタスクを入力...">
+            <select id="priority-select">
+                <option value="p-high">高</option>
+                <option value="p-medium" selected>中</option>
+                <option value="p-low">低</option>
+            </select>
+            <button id="add-btn">追加</button>
+        </div>
+
+        <ul id="task-list">
+            </ul>
+    </div>
+
+    <script>
+        // === 機能設定 (JavaScript) ===
+        const addBtn = document.getElementById('add-btn');
+        const taskInput = document.getElementById('task-input');
+        const prioritySelect = document.getElementById('priority-select');
+        const taskList = document.getElementById('task-list');
+
+        addBtn.addEventListener('click', () => {
+            const text = taskInput.value;
+            const priority = prioritySelect.value;
+
+            if (text === "") {
+                alert("タスクを入力してください！");
+                return;
+            }
+
+            // タスク要素の作成
+            const li = document.createElement('li');
+            li.className = priority;
+            
+            li.innerHTML = `
+                <div class="task-text">${text}</div>
+                <span class="status-badge">${priority === 'p-high' ? '優先' : ''}</span>
+                <button class="delete-btn">×</button>
+            `;
+
+            // 削除機能
+            li.querySelector('.delete-btn').addEventListener('click', () => {
+                li.style.opacity = '0';
+                setTimeout(() => li.remove(), 200);
+            });
+
+            taskList.appendChild(li);
+            taskInput.value = ""; // 入力欄をクリア
+        });
+
+        // Enterキーでも追加できるようにする
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addBtn.click();
+        });
+    </script>
+</body>
+</html>
