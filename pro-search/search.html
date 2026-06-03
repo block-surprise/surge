@@ -571,8 +571,7 @@
       }
     };
 
-/* --- クラス付与＆2行目狙い撃ち非表示処理 --- */
-    const observer = new MutationObserver(() => {
+const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
@@ -582,22 +581,14 @@
         // 広告や非表示カードは無視
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
-        // カード内のURL要素「gs-visibleUrl」をすべて取得
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
         if (urlElements.length > 0) {
-          // ★1行目（www.minecraft.net など）だけを本物として扱う
+          // 1行目のクリーンなURLをターゲットにする
           const mainUrlEl = urlElements[0];
           mainUrlEl.classList.add('surge-first-url');
 
-          // ★2行目（https://... などのフルURL）がもし存在していれば、CSSを待たずに即座に非表示にする
-          if (urlElements.length > 1) {
-            for (let i = 1; i < urlElements.length; i++) {
-              urlElements[i].style.setProperty('display', 'none', 'important');
-            }
-          }
-
-          // ドメインを抽出してファビコンを準備
+          // ドメインを抽出してファビコン画像を用意
           let urlText = mainUrlEl.innerText.trim();
           let domain = "";
           try {
@@ -609,7 +600,6 @@
           }
 
           if (domain) {
-            // ファビコンの丸い枠を作成
             const faviconBox = document.createElement('div');
             faviconBox.className = 'surge-favicon-box';
             
@@ -619,11 +609,8 @@
             
             faviconBox.appendChild(faviconImg);
             
-            // 1行目のテキストの先頭にファビコンを合体
+            // ★HTMLの構造（並び順）は移動させず、文字の先頭にファビコンだけを合体させる
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
-            
-            // 検索タイトルの「上」に来るように、カードの一番上に移動
-            res.insertBefore(mainUrlEl, res.firstChild);
           }
         }
       });
