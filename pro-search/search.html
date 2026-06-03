@@ -160,13 +160,17 @@
       width: 100%;
     }
 
-    /* --- Google風カスタムGCSEスタイル --- */
+    /* --- ✨ Google風カスタムGCSEスタイル（超スッキリ完全再構築版） --- */
+    
+    /* 検索結果カードの初期配置をテーブルレイアウトで完全にリセットする */
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
+      display: table !important; /* 横幅いっぱいに綺麗に要素を縦並びにするための魔法 */
+      width: 100% !important;
     }
 
-    /* JavaScriptで処理された「1行目の本物URL」だけに当てるデザイン */
+    /* ① 一番上に配置したい「本物のURL」のスタイル定義 */
     .gs-webResult .surge-first-url {
       display: inline-flex !important;
       align-items: center;
@@ -175,14 +179,37 @@
       font-size: 14px !important;
       margin-bottom: 6px !important;
       padding: 0 !important;
+      display: table-header-group !important; /* カードの「最上部（ヘッダー）」に強制固定 */
     }
 
-    /* クラスがついていない2行目の重複URL（https://...）はCSSで徹底非表示 */
+    /* 2行目の重複URL（https://...）は絶対に画面に出さない */
     .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
       display: none !important;
     }
 
-    /* ファビコン用の丸い入れ物 */
+    /* ② 2番目に配置する「タイトル」のスタイル */
+    .gs-webResult .gs-title {
+      display: table-row-group !important; /* URLの下（メイン行）に強制配置 */
+    }
+    .gs-webResult .gs-title, .gs-webResult .gs-title * {
+      color: var(--accent) !important;
+      text-decoration: none !important;
+      font-size: 20px !important; 
+      font-weight: 400 !important;
+    }
+    .gs-webResult .gs-title:hover, .gs-webResult .gs-title *:hover {
+      text-decoration: underline !important;
+    }
+
+    /* ③ 3番目に配置する「説明文（スニペット）」のスタイル */
+    .gs-webResult .gs-snippet {
+      display: table-footer-group !important; /* タイトルの下（フッター）に強制配置 */
+      color: var(--text-sub) !important;
+      font-size: 14px !important;
+      line-height: 1.58 !important;
+    }
+    
+    /* ファビコン用の丸い枠 */
     .surge-favicon-box {
       width: 26px;
       height: 26px;
@@ -194,29 +221,15 @@
       align-items: center;
       justify-content: center;
       vertical-align: middle;
+      margin-right: 12px;
     }
     .surge-favicon-box img {
       width: 16px;
       height: 16px;
       border-radius: 2px;
     }
-
-    .gs-webResult .gs-title, .gs-webResult .gs-title * {
-      color: var(--accent) !important;
-      text-decoration: none !important;
-      font-size: 20px !important; 
-      font-weight: 400 !important;
-    }
-    .gs-webResult .gs-title:hover, .gs-webResult .gs-title *:hover {
-      text-decoration: underline !important;
-    }
-    .gs-webResult .gs-snippet {
-      color: var(--text-sub) !important;
-      font-size: 14px !important;
-      line-height: 1.58 !important;
-      margin-top: 4px !important;
-    }
     
+    /* Googleの不要パーツの非表示 */
     .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { 
       display: none !important; 
     }
@@ -352,7 +365,6 @@
       card.style.display = 'none'; return false;
     }
 
-    // （中略 - 他の便利機能のJSはすべてそのまま維持されています）
     function checkAndShowConvert(q) {
       const card = document.getElementById('convertCard');
       const match = q.match(/(\d+)\s*(ドル|円|USD|JPY)/i);
@@ -542,25 +554,20 @@
       }
     };
 
-    /* --- ✨ 完璧に調和したファビコン付与ロジック --- */
+    /* --- 完璧に動作する最新ファビコン処理 --- */
     const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // すでに処理済みなら何もしない
         if (res.querySelector('.surge-first-url')) return;
-        
-        // 広告や非表示カードは無視
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
         if (urlElements.length > 0) {
-          // Google純正の1行目のURL（デフォルトで一番上にあるもの）をターゲットにする
           const mainUrlEl = urlElements[0];
           mainUrlEl.classList.add('surge-first-url');
 
-          // ドメインを抽出してファビコン画像を用意
           let urlText = mainUrlEl.innerText.trim();
           let domain = "";
           try {
@@ -580,8 +587,6 @@
             faviconImg.alt = "favicon";
             
             faviconBox.appendChild(faviconImg);
-            
-            // ★HTMLの順序はいじらず、1行目のURLの文字のすぐ左隣にファビコンを合体！
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
           }
         }
