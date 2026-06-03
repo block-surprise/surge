@@ -575,7 +575,7 @@ const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // すでに処理済みのカードならスルー
+        // すでに処理済みなら何もしない
         if (res.querySelector('.surge-first-url')) return;
         
         // 広告や非表示カードは無視
@@ -584,7 +584,7 @@ const observer = new MutationObserver(() => {
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
         if (urlElements.length > 0) {
-          // 1行目のクリーンなURLをターゲットにする
+          // Google純正の1行目のURL（デフォルトで一番上にあるもの）をターゲットにする
           const mainUrlEl = urlElements[0];
           mainUrlEl.classList.add('surge-first-url');
 
@@ -609,7 +609,7 @@ const observer = new MutationObserver(() => {
             
             faviconBox.appendChild(faviconImg);
             
-            // ★HTMLの構造（並び順）は移動させず、文字の先頭にファビコンだけを合体させる
+            // ★HTMLの順序はいじらず、1行目のURLの文字のすぐ左隣にファビコンを合体！
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
           }
         }
