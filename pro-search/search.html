@@ -571,12 +571,12 @@
       }
     };
 
-    /* --- クラス付与方式による、絶対にバグらないファビコン表示処理 --- */
+/* --- クラス付与＆2行目狙い撃ち非表示処理 --- */
     const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // すでにクラスをつけた要素（処理済み）があればスルー
+        // すでに処理済みのカードならスルー
         if (res.querySelector('.surge-first-url')) return;
         
         // 広告や非表示カードは無視
@@ -586,11 +586,18 @@
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
         if (urlElements.length > 0) {
-          // ★提案通り、1つ目のURLだけに専用の特殊クラス（surge-first-url）を付与！
+          // ★1行目（www.minecraft.net など）だけを本物として扱う
           const mainUrlEl = urlElements[0];
           mainUrlEl.classList.add('surge-first-url');
 
-          // ドメインを抽出してファビコン用のHTMLを組み立てる
+          // ★2行目（https://... などのフルURL）がもし存在していれば、CSSを待たずに即座に非表示にする
+          if (urlElements.length > 1) {
+            for (let i = 1; i < urlElements.length; i++) {
+              urlElements[i].style.setProperty('display', 'none', 'important');
+            }
+          }
+
+          // ドメインを抽出してファビコンを準備
           let urlText = mainUrlEl.innerText.trim();
           let domain = "";
           try {
@@ -602,7 +609,7 @@
           }
 
           if (domain) {
-            // ファビコン用の丸い枠（HTML）を作成
+            // ファビコンの丸い枠を作成
             const faviconBox = document.createElement('div');
             faviconBox.className = 'surge-favicon-box';
             
@@ -612,10 +619,10 @@
             
             faviconBox.appendChild(faviconImg);
             
-            // 1つ目の短いURL（文字）の「中身の先頭」にファビコンを滑り込ませる
+            // 1行目のテキストの先頭にファビコンを合体
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
             
-            // 検索タイトルの「上」にこのURL要素が来るように、カードの一番上に移動
+            // 検索タイトルの「上」に来るように、カードの一番上に移動
             res.insertBefore(mainUrlEl, res.firstChild);
           }
         }
