@@ -160,13 +160,13 @@
       width: 100%;
     }
 
-    /* --- Google風カスタムGCSEスタイル --- */
+
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
       position: relative;
     }
-    /* タイトルの上部にファビコンとURLを並べるGoogleモダン配置 */
+
     .gsc-url-box {
       display: flex;
       align-items: center;
@@ -210,18 +210,18 @@
       line-height: 1.58 !important;
       margin-top: 4px !important;
     }
-    /* 既存のデフォルトアイコンや不要パーツを強制非表示 */
+ 
     .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
     .gsc-control-cse { padding: 0 !important; font-family: inherit !important; }
     
-    /* --- Google風ナレッジパネル（右側） --- */
+    
     .knowledge-panel {
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 24px;
       background: #ffffff;
       box-shadow: 0 1px 6px rgba(32,33,36,0.05);
-      display: none; /* 初期状態は非表示 */
+      display: none; 
     }
     .kp-title { font-size: 30px; font-weight: 400; margin: 0; color: #202124; }
     .kp-subtitle { font-size: 14px; color: #70757a; margin: 4px 0 16px 0; }
@@ -423,7 +423,7 @@
         webArea.style.display = 'none'; 
         summaryBox.style.display = 'none'; 
         document.querySelectorAll('.utility-card').forEach(c => c.style.display = 'none');
-        document.getElementById('knowledgePanel').style.display = 'none'; // AIモード時は非表示
+        document.getElementById('knowledgePanel').style.display = 'none'; 
         aiModeArea.style.display = 'block';
         
         if (!document.getElementById('aiChatHistory').hasChildNodes()) {
@@ -437,7 +437,7 @@
           summaryBox.style.display = isUtil ? 'none' : 'block';
           if (!isUtil) {
             getAIResponse(q, 'aiSummaryContent');
-            searchWikipedia(q); // 通常検索タブ切替時にもWikipedia取得
+            searchWikipedia(q); 
           }
         }
         if (element) element.execute(q);
@@ -500,23 +500,23 @@
       hist.scrollTop = hist.scrollHeight;
     }
 
-    /* --- Wikipediaナレッジパネル取得機能 --- */
+
     async function searchWikipedia(query) {
       const panel = document.getElementById('knowledgePanel');
-      // 「意味」や「とは」などの不要語をカットしてピュアな単語にする
+     
       const cleanQuery = query.replace(/(意味|とは|辞書|英語|翻訳|訳)/g, '').trim();
       if (!cleanQuery) { panel.style.display = 'none'; return; }
 
       try {
-        // 1. まずOpensearch APIで最も関連度の高い正確な記事名（表記揺れ修正）を取得
+        
         const searchUrl = `https://ja.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(cleanQuery)}&limit=1&namespace=0&format=json&origin=*`;
         const searchRes = await fetch(searchUrl);
         const searchData = await searchRes.json();
 
         if (searchData[1] && searchData[1].length > 0) {
-          const exactTitle = searchData[1][0]; // 正確なタイトル
+          const exactTitle = searchData[1][0]; 
 
-          // 2. そのタイトルを使って記事の概要(Extract)とカテゴリ(Description)を取得
+       
           const summaryUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=extracts|pageprops&exintro&explaintext&redirects=1&titles=${encodeURIComponent(exactTitle)}&format=json&origin=*`;
           const summaryRes = await fetch(summaryUrl);
           const summaryData = await summaryRes.json();
@@ -539,23 +539,23 @@
 
               document.getElementById('kpTitle').innerText = exactTitle;
               document.getElementById('kpSubtitle').innerText = subtitle;
-              // 概要が長すぎる場合は300文字でカットして丸める
+          
               document.getElementById('kpExtract').innerText = extractText.length > 300 ? extractText.substring(0, 300) + "..." : extractText;
               document.getElementById('kpLink').href = `https://ja.wikipedia.org/wiki/${encodeURIComponent(exactTitle)}`;
               
-              panel.style.display = 'block'; // データがあったので表示
+              panel.style.display = 'block';
               return;
             }
           }
         }
-        panel.style.display = 'none'; // ヒットしなかった場合は非表示
+        panel.style.display = 'none';
       } catch (e) {
         console.error("Wikipediaの取得に失敗しました:", e);
         panel.style.display = 'none';
       }
     }
 
-    /* --- Google検索結果（ファビコン動的生成）のコールバック --- */
+   
     window.__gcse = {
       callback: function() {
         const q = new URLSearchParams(location.search).get('q');
@@ -565,25 +565,25 @@
           if (!isUtil) { 
             document.getElementById('aiSummaryBox').style.display = 'block'; 
             getAIResponse(q, 'aiSummaryContent'); 
-            searchWikipedia(q); // Wikipediaナレッジパネルを検索
+            searchWikipedia(q);
           }
           google.search.cse.element.execute(q);
         }
       }
     };
 
-    // GCSEの描画完了を監視して、Googleの検索結果にファビコン（Favicon）をねじ込む処理
+
     const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       results.forEach(res => {
-        // すでにファビコン処理を行っている場合はスキップ
-        if (res.querySelector('.gsc-url-box')) return;
+      
+        if (res.querySelector('.gsc-url-box') || res.closest('.gsc-adBlock') || res.style.display === 'none') return;
 
-        const visibleUrlEl = res.querySelector('.gs-visibleUrl');
+ 
+        const visibleUrlEl = res.querySelector('.gs-webResult:not(.gsc-loading-results) .gs-visibleUrl');
         const titleEl = res.querySelector('.gs-title');
         
         if (visibleUrlEl && titleEl) {
-          // 表示URLのテキストからドメインを抽出して、Google公式のファビコンAPIを叩く
           let urlText = visibleUrlEl.innerText;
           let domain = "";
           try {
@@ -594,7 +594,7 @@
           }
 
           if (domain) {
-            // Google仕様のURL/ファビコンラッパーを生成
+          
             const urlBox = document.createElement('div');
             urlBox.className = 'gsc-url-box';
 
@@ -602,26 +602,26 @@
             faviconWrapper.className = 'custom-favicon';
             
             const faviconImg = document.createElement('img');
-            // Googleが一般提供しているファビコン取得APIを使用
+         
             faviconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
             faviconImg.alt = "favicon";
             
             faviconWrapper.appendChild(faviconImg);
             urlBox.appendChild(faviconWrapper);
             
-            // 元のURL要素を複製してラッパーに移動
+           
             const clonedUrl = visibleUrlEl.cloneNode(true);
             urlBox.appendChild(clonedUrl);
             
-            // 要素の並び替え（URLコンテナを一番上に配置する）
+           
             res.insertBefore(urlBox, res.firstChild);
-            visibleUrlEl.remove(); // 古いURL要素を削除
+            visibleUrlEl.remove(); 
           }
         }
       });
     });
 
-    // 検索結果エリアのDOM変化を継続的に監視
+   
     observer.observe(document.getElementById('webResultsArea'), { childList: true, subtree: true });
 
     document.getElementById('searchForm').addEventListener('submit', (e) => {
