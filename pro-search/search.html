@@ -574,72 +574,62 @@
 
 
 
-// GCSEの描画完了を監視して、Googleの検索結果にファビコン（Favicon）をねじ込む処理
-    const observer = new MutationObserver(() => {
+const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // すでにファビコン用のURLボックスを作ってある場合はスキップ
-        if (res.querySelector('.gsc-url-box')) return;
+        // 既に自作のURLバーを挿入済みの場合は処理しない
+        if (res.querySelector('.custom-url-bar')) return;
         
-        // 広告ブロックや、非表示の要素はスルー
+        // 広告ブロックやそもそも非表示の要素は完全に無視
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
-        // クラス名が「gs-visibleUrl」になっている要素をすべて取得
-        const urlElements = res.querySelectorAll('.gs-visibleUrl');
+        // 元々カードに入っているはずのURL要素を1つでもいいから探す
+        const originalUrlEl = res.querySelector('.gs-visibleUrl');
+        const titleEl = res.querySelector('.gs-title');
         
-        // 2つ以上ある場合、1つ目（上の段：短いURL）を表示用、2つ目（下の段：フルURL）を隠す用に分ける
-        if (urlElements.length >= 2) {
-          const mainUrlEl = urlElements[0];  // www.google.com
-          const subUrlEl = urlElements[1];   // https://www.google.com/?hl=ja
+        if (originalUrlEl && titleEl) {
+          // テキストを抽出してドメインを取り出す
+          let urlText = originalUrlEl.innerText.trim();
+          if (!urlText) return;
 
-          // 2つ目のフルURLは画面から非表示にする（これが2つ表示される原因）
-          subUrlEl.style.display = 'none';
+          let domain = "";
+          try {
+            let parseUrl = urlText;
+            if (!parseUrl.startsWith('http')) parseUrl = 'http://' + parseUrl;
+            domain = new URL(parseUrl).hostname;
+          } catch(e) {
+            domain = "";
+          }
 
-          const titleEl = res.querySelector('.gs-title');
-          
-          if (mainUrlEl && titleEl) {
-            // 表示URLのテキストからドメインを抽出
-            let urlText = mainUrlEl.innerText;
-            let domain = "";
-            try {
-              if (!urlText.startsWith('http')) urlText = 'http://' + urlText;
-              domain = new URL(urlText).hostname;
-            } catch(e) {
-              domain = "";
-            }
+          if (domain) {
+            // 1. 新しいファビコンとURLを横並びにするバーを自作する
+            const customUrlBar = document.createElement('div');
+            customUrlBar.className = 'custom-url-bar';
 
-            if (domain) {
-              // Google仕様のURL/ファビコンラッパー（入れ物）を生成
-              const urlBox = document.createElement('div');
-              urlBox.className = 'gsc-url-box';
-
-              const faviconWrapper = document.createElement('div');
-              faviconWrapper.className = 'custom-favicon';
-              
-              const faviconImg = document.createElement('img');
-              faviconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
-              faviconImg.alt = "favicon";
-              
-              faviconWrapper.appendChild(faviconImg);
-              urlBox.appendChild(faviconWrapper);
-              
-              // 1つ目の短いURL要素を複製してラッパーに移動
-              const clonedUrl = mainUrlEl.cloneNode(true);
-              urlBox.appendChild(clonedUrl);
-              
-              // カードの一番上に配置する
-              res.insertBefore(urlBox, res.firstChild);
-              
-              // 元の1つ目のURL要素は非表示にする（上に複製したため）
-              mainUrlEl.style.display = 'none';
-            }
+            const faviconWrapper = document.createElement('div');
+            faviconWrapper.className = 'custom-favicon';
+            
+            const faviconImg = document.createElement('img');
+            faviconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
+            faviconImg.alt = "favicon";
+            
+            faviconWrapper.appendChild(faviconImg);
+            customUrlBar.appendChild(faviconWrapper);
+            
+            // 短い方のURLテキスト（最初の階層）を見栄え良く配置
+            const urlTextDiv = document.createElement('div');
+            urlTextDiv.className = 'custom-url-text';
+            urlTextDiv.innerText = urlText.split(' ')[0]; // 余計な文字を排除して純粋なURLのみ抽出
+            customUrlBar.appendChild(urlTextDiv);
+            
+            // 2. カードの最上部に自作のバーをねじ込む
+            res.insertBefore(customUrlBar, res.firstChild);
           }
         }
       });
     });
 
-    // 検索結果エリアのDOM変化を継続的に監視
     observer.observe(document.getElementById('webResultsArea'), { childList: true, subtree: true });
 
     document.getElementById('searchForm').addEventListener('submit', (e) => {
