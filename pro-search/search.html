@@ -160,14 +160,20 @@
       width: 100%;
     }
 
-    /* --- 🌟 検索結果カード全体のレイアウト（CSS側は超シンプルに固定） --- */
+    /* --- 🌟 検索結果の並び替え構造（最新Google風） 🌟 --- */
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
     }
 
-    /* JavaScript側で最上部に強制移動されるURL行のスタイル */
-    .gs-webResult .surge-url-line {
+    /* 親要素をFlexboxの縦並びにして、表示順をコントロール */
+    .gs-webResult {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    /* 1行目：JavaScriptで処理された「ファビコン＋本物URL」 */
+    .gs-webResult .surge-first-url {
       display: inline-flex !important;
       align-items: center;
       gap: 12px;
@@ -175,10 +181,40 @@
       font-size: 14px !important;
       margin-bottom: 6px !important;
       padding: 0 !important;
-      width: 100%;
+      order: 1 !important; /* 最上部に配置 */
     }
 
-    /* ファビコン用の丸い外枠 */
+    /* 2行目：タイトル */
+    .gs-webResult .gs-title {
+      order: 2 !important; /* URLの下に配置 */
+      margin-bottom: 4px !important;
+    }
+
+    .gs-webResult .gs-title, .gs-webResult .gs-title * {
+      color: var(--accent) !important;
+      text-decoration: none !important;
+      font-size: 20px !important; 
+      font-weight: 400 !important;
+    }
+    .gs-webResult .gs-title:hover, .gs-webResult .gs-title *:hover {
+      text-decoration: underline !important;
+    }
+
+    /* 3行目：スニペット（説明文） */
+    .gs-webResult .gs-snippet {
+      color: var(--text-sub) !important;
+      font-size: 14px !important;
+      line-height: 1.58 !important;
+      margin-top: 0 !important;
+      order: 3 !important; /* タイトルの下に配置 */
+    }
+
+    /* 重複する不要なURLエリアは徹底非表示 */
+    .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
+      display: none !important;
+    }
+
+    /* ファビコン用の丸いコンテナ */
     .surge-favicon-box {
       width: 26px;
       height: 26px;
@@ -190,7 +226,6 @@
       align-items: center;
       justify-content: center;
       vertical-align: middle;
-      flex-shrink: 0;
     }
     .surge-favicon-box img {
       width: 16px;
@@ -198,31 +233,6 @@
       border-radius: 2px;
     }
 
-    /* タイトルのデザイン */
-    .gs-webResult .gs-title {
-      display: block !important;
-      margin-bottom: 4px !important;
-    }
-    .gs-webResult .gs-title, .gs-webResult .gs-title * {
-      color: var(--accent) !important;
-      text-decoration: none !important;
-      font-size: 20px !important; 
-      font-weight: 400 !important;
-    }
-    .gs-webResult .gs-title:hover, .gs-webResult .gs-title *:hover {
-      text-decoration: underline !important;
-    }
-
-    /* 説明文のデザイン */
-    .gs-webResult .gs-snippet {
-      display: block !important;
-      color: var(--text-sub) !important;
-      font-size: 14px !important;
-      line-height: 1.58 !important;
-      margin: 0 !important;
-    }
-    
-    /* Googleのデフォルトパーツ非表示設定 */
     .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { 
       display: none !important; 
     }
@@ -547,67 +557,40 @@
       }
     };
 
-    /* --- 🌟 100%崩れない物理ドム組み替えロジック 🌟 --- */
+    /* --- 🌟 ファビコンを一番上に配置するロジック --- */
     const observer = new MutationObserver(() => {
-      // 読み込まれた検索結果カードを取得
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // すでに並び替え処理済みの場合はスキップ
-        if (res.querySelector('.surge-url-line')) return;
-        // 広告ブロックや非表示要素はスキップ
+        if (res.querySelector('.surge-first-url')) return;
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
-        // 必要な構成要素を抽出
-        const titleEl = res.querySelector('.gs-title');
-        const snippetEl = res.querySelector('.gs-snippet');
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
-        if (titleEl && urlElements.length > 0) {
-          // 1行目の短いドメイン名テキストを取得
-          const rawUrlText = urlElements[0].innerText.trim();
-          
-          // ドメイン部分だけを抽出してファビコン用URLを作成
+        if (urlElements.length > 0) {
+          const mainUrlEl = urlElements[0];
+          mainUrlEl.classList.add('surge-first-url');
+
+          let urlText = mainUrlEl.innerText.trim();
           let domain = "";
           try {
-            let parseUrl = rawUrlText;
+            let parseUrl = urlText;
             if (!parseUrl.startsWith('http')) parseUrl = 'http://' + parseUrl;
             domain = new URL(parseUrl).hostname;
           } catch(e) {
             domain = "";
           }
 
-          // ① 新しい「ファビコン＋URL」の一体型行（コンテナ）を作成
-          const urlLine = document.createElement('div');
-          urlLine.className = 'surge-url-line';
-
           if (domain) {
             const faviconBox = document.createElement('div');
             faviconBox.className = 'surge-favicon-box';
+            
             const faviconImg = document.createElement('img');
             faviconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
             faviconImg.alt = "favicon";
+            
             faviconBox.appendChild(faviconImg);
-            urlLine.appendChild(faviconBox); // ファビコンを追加
-          }
-
-          // URLのテキスト表示用スパンを追加
-          const urlTextSpan = document.createElement('span');
-          urlTextSpan.innerText = rawUrlText;
-          urlLine.appendChild(urlTextSpan);
-
-          // ② 元の不要になった古いURL要素をすべて削除（マイクラ等の2行目URLもここで消滅）
-          urlElements.forEach(el => el.remove());
-
-          // ③ 【超重要】カード内の要素をすべて取り出し、正しい順番で再挿入する
-          // これによりCSSのバグに関係なく、100%この順番で上から強制描写されます
-          res.insertBefore(urlLine, res.firstChild); // 1段目: URLライン
-          
-          if (titleEl) {
-            res.appendChild(titleEl); // 2段目: タイトル
-          }
-          if (snippetEl) {
-            res.appendChild(snippetEl); // 3段目: 説明文
+            mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
           }
         }
       });
