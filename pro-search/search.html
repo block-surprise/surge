@@ -160,29 +160,40 @@
       width: 100%;
     }
 
-    /* --- 🌟 検索結果のデザイン調整 🌟 --- */
+    /* --- 🌟 検索結果のデザインバグ修正 🌟 --- */
     .gsc-webResult {
-      padding: 0 0 24px 0 !important;
+      padding: 0 0 20px 0 !important; /* サイトごとの間隔を適正（狭め）に設定 */
       margin: 0 !important;
     }
+    
+    /* Google CSEが自動付与する不要な内部テーブルやコンテナの巨大な余白をリセット */
+    .gsc-webResult table, .gs-webResult table {
+      margin-bottom: 0 !important;
+      margin-top: 0 !important;
+      border-spacing: 0 !important;
+    }
+    .gsc-table-result {
+      margin-bottom: 0 !important;
+      padding: 0 !important;
+    }
 
-    /* タイトルの上に移動させる本物URLのデザイン */
+    /* 最上部に移動させた「ファビコン＋本物URL」 */
     .gs-webResult .surge-first-url {
       display: inline-flex !important;
       align-items: center;
       gap: 12px;
       color: #202124 !important;
       font-size: 14px !important;
-      margin-top: 0 !important;
-      margin-bottom: 6px !important;
+      margin-top: 4px !important;
+      margin-bottom: 4px !important;
       padding: 0 !important;
       width: 100%;
     }
 
-    /* タイトルの微調整 */
+    /* メインのタイトル設定 */
     .gs-webResult .gs-title {
       margin-bottom: 4px !important;
-      display: block !important;
+      display: inline-block !important;
     }
     .gs-webResult .gs-title, .gs-webResult .gs-title * {
       color: var(--accent) !important;
@@ -194,12 +205,19 @@
       text-decoration: underline !important;
     }
 
+    /* ❌ 重複バグの修正：Googleが内部に隠し持っている2つ目以降の不要なタイトルリンクを徹底非表示 */
+    .gs-webResult .gs-title ~ .gs-title,
+    .gs-webResult td .gs-title:not(:first-child),
+    .gs-webResult .gs-div-link {
+      display: none !important;
+    }
+
     /* スニペット（説明文）の調整 */
     .gs-webResult .gs-snippet {
       color: var(--text-sub) !important;
       font-size: 14px !important;
       line-height: 1.58 !important;
-      margin-top: 4px !important;
+      margin-top: 2px !important;
       display: block !important;
     }
 
@@ -558,7 +576,6 @@
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // すでに処理済みならスキップ
         if (res.querySelector('.surge-first-url')) return;
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
@@ -591,7 +608,7 @@
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
           }
 
-          // 🌟 ここが変更点: 既存の順番を無視して、タイトルの手前にURL要素を物理的に引っ越しさせる
+          // タイトルの目の前にURLを移動
           titleElement.parentNode.insertBefore(mainUrlEl, titleElement);
         }
       });
