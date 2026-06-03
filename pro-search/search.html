@@ -160,36 +160,30 @@
       width: 100%;
     }
 
-    /* --- 🌟 検索結果の並び替え構造（最新Google風） 🌟 --- */
+    /* --- 🌟 検索結果のデザイン調整 🌟 --- */
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
     }
 
-    /* 親要素をFlexboxの縦並びにして、表示順をコントロール */
-    .gs-webResult {
-      display: flex !important;
-      flex-direction: column !important;
-    }
-
-    /* 1行目：JavaScriptで処理された「ファビコン＋本物URL」 */
+    /* タイトルの上に移動させる本物URLのデザイン */
     .gs-webResult .surge-first-url {
       display: inline-flex !important;
       align-items: center;
       gap: 12px;
       color: #202124 !important;
       font-size: 14px !important;
+      margin-top: 0 !important;
       margin-bottom: 6px !important;
       padding: 0 !important;
-      order: 1 !important; /* 最上部に配置 */
+      width: 100%;
     }
 
-    /* 2行目：タイトル */
+    /* タイトルの微調整 */
     .gs-webResult .gs-title {
-      order: 2 !important; /* URLの下に配置 */
       margin-bottom: 4px !important;
+      display: block !important;
     }
-
     .gs-webResult .gs-title, .gs-webResult .gs-title * {
       color: var(--accent) !important;
       text-decoration: none !important;
@@ -200,21 +194,21 @@
       text-decoration: underline !important;
     }
 
-    /* 3行目：スニペット（説明文） */
+    /* スニペット（説明文）の調整 */
     .gs-webResult .gs-snippet {
       color: var(--text-sub) !important;
       font-size: 14px !important;
       line-height: 1.58 !important;
-      margin-top: 0 !important;
-      order: 3 !important; /* タイトルの下に配置 */
+      margin-top: 4px !important;
+      display: block !important;
     }
 
-    /* 重複する不要なURLエリアは徹底非表示 */
+    /* 重複して下部に表示される元のURL（https://...）は非表示 */
     .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
       display: none !important;
     }
 
-    /* ファビコン用の丸いコンテナ */
+    /* ファビコン用の丸い入れ物 */
     .surge-favicon-box {
       width: 26px;
       height: 26px;
@@ -226,6 +220,7 @@
       align-items: center;
       justify-content: center;
       vertical-align: middle;
+      flex-shrink: 0;
     }
     .surge-favicon-box img {
       width: 16px;
@@ -233,6 +228,7 @@
       border-radius: 2px;
     }
 
+    /* Google標準の不要パーツ隠し */
     .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { 
       display: none !important; 
     }
@@ -557,17 +553,19 @@
       }
     };
 
-    /* --- 🌟 ファビコンを一番上に配置するロジック --- */
+    /* --- 🌟 ファビコンを配置して物理的にタイトルより上に移動させるロジック --- */
     const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
+        // すでに処理済みならスキップ
         if (res.querySelector('.surge-first-url')) return;
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
+        const titleElement = res.querySelector('.gs-title');
         
-        if (urlElements.length > 0) {
+        if (urlElements.length > 0 && titleElement) {
           const mainUrlEl = urlElements[0];
           mainUrlEl.classList.add('surge-first-url');
 
@@ -592,6 +590,9 @@
             faviconBox.appendChild(faviconImg);
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
           }
+
+          // 🌟 ここが変更点: 既存の順番を無視して、タイトルの手前にURL要素を物理的に引っ越しさせる
+          titleElement.parentNode.insertBefore(mainUrlEl, titleElement);
         }
       });
     });
