@@ -20,14 +20,14 @@
   
   <style>
     :root { 
-      --accent: #1a0dab; /* Googleの伝統的なリンクの青 */
+      --accent: #1a0dab; 
       --accent-hover: #150981;
       --bg: #ffffff; 
       --card-bg: #ffffff;
-      --border-color: #dadce0; /* Google風の薄いグレー */
-      --text-main: #202124; /* Google準拠の黒 */
-      --text-sub: #4d5156; /* Google準拠の補助テキスト色 */
-      --search-width: 652px; /* 本家Googleの検索結果エリアとほぼ同等 */
+      --border-color: #dadce0; 
+      --text-main: #202124; 
+      --text-sub: #4d5156; 
+      --search-width: 652px; 
     }
     
     body { 
@@ -39,7 +39,7 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ヘッダーエリア固定 */
+
     .header-wrapper {
       position: sticky;
       top: 0;
@@ -49,15 +49,15 @@
       z-index: 100;
     }
     
-    /* Google特有の左側インデントを再現 */
+    
     .main-contents {
       max-width: 1200px;
-      padding-left: 160px; /* PC版Googleの絶妙な左余白 */
+      padding-left: 160px; 
       padding-right: 20px;
       box-sizing: border-box;
     }
     
-    /* 検索入力欄のコンテナ */
+
     .search-container {
       max-width: 692px;
       margin-bottom: 12px;
@@ -79,7 +79,7 @@
       box-shadow: 0 1px 6px rgba(32,33,36,0.28);
     }
     
-    /* タブデザインをGoogle風に */
+
     .search-tabs { 
       display: flex; 
       gap: 20px; 
@@ -99,26 +99,25 @@
     .tab:hover { color: #1a73e8; }
     .tab.active { color: #1a73e8; border-bottom: 3px solid #1a73e8; font-weight: 500; }
     
-    /* コンテンツ全体のレイアウト */
     .content-body {
       margin-top: 24px;
       display: flex;
       gap: 60px;
     }
 
-    /* メインのカラム（検索結果やAI要約） */
+  
     .left-column {
       width: var(--search-width);
       flex-shrink: 0;
     }
 
-    /* 右側のナレッジパネル風カラム（将来用、または余白） */
+   
     .right-column {
       flex: 1;
       max-width: 368px;
     }
     
-    /* ユーティリティカード・AI要約のモダン化 */
+    
     .utility-card, #aiSummaryBox, #aiModeContainer {
       background: var(--card-bg); 
       border: 1px solid var(--border-color); 
@@ -138,7 +137,7 @@
     .trans-area { display: flex; gap: 20px; padding: 0 20px 20px; align-items: flex-start; }
     .trans-textarea { flex: 1; border: none; font-size: 16px; outline: none; resize: none; font-family: inherit; background: transparent; }
 
-    /* AI要約のGoogle「AI Overviews」風アレンジ */
+  
     #aiSummaryBox {
       background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
       border-color: #dadce0;
@@ -155,7 +154,7 @@
     }
     #aiSummaryContent { line-height: 1.6; color: var(--text-main); font-size: 15px; }
     
-    /* AIチャット画面 */
+   
     #aiModeContainer { display: none; }
     #aiChatHistory { max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
     .ai-bubble, .user-bubble { padding: 12px 16px; border-radius: 12px; max-width: 85%; line-height: 1.5; font-size: 15px; }
@@ -166,15 +165,15 @@
     .chat-input-style:focus { border-color: #1a73e8; }
     .chat-send-btn { background: #1a73e8; color: white; border: none; padding: 0 24px; border-radius: 24px; font-weight: 500; cursor: pointer; }
 
-    /* Google CSE (カスタム検索) の表示を強制カスタマイズ */
+   
     #webResultsArea {
       width: 100%;
     }
-    /* Googleの標準的な文字サイズや色に強制上書き */
+   
     .gs-webResult .gs-title, .gs-webResult .gs-title * {
       color: var(--accent) !important;
       text-decoration: none !important;
-      font-size: 20px !important; /* Googleのタイトルサイズ */
+      font-size: 20px !important; 
       font-weight: 400 !important;
     }
     .gs-webResult .gs-title:hover, .gs-webResult .gs-title *:hover {
@@ -190,22 +189,54 @@
       line-height: 1.58 !important;
     }
     .gsc-webResult {
-      padding: 0 0 28px 0 !important; /* 検索結果同士の間隔 */
+      padding: 0 0 28px 0 !important;
       margin: 0 !important;
     }
     .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
     .gsc-control-cse { padding: 0 !important; font-family: inherit !important; }
     
-    /* ローディングアニメーション */
+ 
     .pulse-loader { display: inline-block; color: #70757a; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
 
-    /* レスポンシブ対応 */
+   
     @media (max-width: 900px) {
       .main-contents { padding-left: 20px; padding-right: 20px; }
       .content-body { flex-direction: column; gap: 20px; }
       .left-column { width: 100%; }
       .right-column { max-width: 100%; }
+    }
+  
+    .gsc-webResult {
+      position: relative;
+      padding-left: 36px !important; 
+    }
+    
+   
+    .gs-webResult .gsc-favicon {
+      display: inline-block !important;
+      position: absolute;
+      left: 0;
+      top: 4px; 
+      width: 26px !important;
+      height: 26px !important;
+      background-color: #f1f3f4;
+      border-radius: 50%; 
+      padding: 4px;
+      box-sizing: border-box;
+    }
+    .gs-webResult .gsc-favicon-image {
+      width: 100% !important;
+      height: 100% !important;
+      vertical-align: top;
+    }
+
+    
+    .gs-webResult .gs-visibleUrl {
+      color: #202124 !important;
+      font-size: 14px !important;
+      margin-bottom: 4px !important;
+      display: block;
     }
   </style>
 </head>
