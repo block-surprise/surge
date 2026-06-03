@@ -160,41 +160,48 @@
       width: 100%;
     }
 
-
+    /* --- Google風カスタムGCSEスタイル --- */
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
       position: relative;
     }
 
-    .gsc-url-box {
-      display: flex;
+    /* JavaScriptで「本物のURL」と判定された要素にだけ付く特製スタイル */
+    .gs-webResult .surge-first-url {
+      display: inline-flex !important;
       align-items: center;
       gap: 12px;
-      margin-bottom: 4px;
+      color: #202124 !important;
+      font-size: 14px !important;
+      margin-bottom: 4px !important;
+      padding: 0 !important;
     }
-    .custom-favicon {
+
+    /* クラスがついていない方のURL（2つ目の重複URL）はCSSで徹底的に非表示にする */
+    .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
+      display: none !important;
+    }
+
+    /* ファビコン用の丸い入れ物 */
+    .surge-favicon-box {
       width: 26px;
       height: 26px;
       background-color: #f1f3f4;
       border-radius: 50%;
       padding: 4px;
       box-sizing: border-box;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
+      vertical-align: middle;
     }
-    .custom-favicon img {
+    .surge-favicon-box img {
       width: 16px;
       height: 16px;
       border-radius: 2px;
     }
-    .gs-webResult .gs-visibleUrl {
-      color: #202124 !important;
-      font-size: 14px !important;
-      padding: 0 !important;
-      display: inline-block !important;
-    }
+
     .gs-webResult .gs-title, .gs-webResult .gs-title * {
       color: var(--accent) !important;
       text-decoration: none !important;
@@ -210,20 +217,20 @@
       line-height: 1.58 !important;
       margin-top: 4px !important;
     }
- 
- .gs-webResult .gs-visibleUrl, .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { 
+    
+    .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { 
       display: none !important; 
     }
     .gsc-control-cse { padding: 0 !important; font-family: inherit !important; }
     
-    
+    /* --- Google風ナレッジパネル（右側） --- */
     .knowledge-panel {
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 24px;
       background: #ffffff;
       box-shadow: 0 1px 6px rgba(32,33,36,0.05);
-      display: none; 
+      display: none;
     }
     .kp-title { font-size: 30px; font-weight: 400; margin: 0; color: #202124; }
     .kp-subtitle { font-size: 14px; color: #70757a; margin: 4px 0 16px 0; }
@@ -425,7 +432,7 @@
         webArea.style.display = 'none'; 
         summaryBox.style.display = 'none'; 
         document.querySelectorAll('.utility-card').forEach(c => c.style.display = 'none');
-        document.getElementById('knowledgePanel').style.display = 'none'; 
+        document.getElementById('knowledgePanel').style.display = 'none';
         aiModeArea.style.display = 'block';
         
         if (!document.getElementById('aiChatHistory').hasChildNodes()) {
@@ -439,7 +446,7 @@
           summaryBox.style.display = isUtil ? 'none' : 'block';
           if (!isUtil) {
             getAIResponse(q, 'aiSummaryContent');
-            searchWikipedia(q); 
+            searchWikipedia(q);
           }
         }
         if (element) element.execute(q);
@@ -502,23 +509,18 @@
       hist.scrollTop = hist.scrollHeight;
     }
 
-
     async function searchWikipedia(query) {
       const panel = document.getElementById('knowledgePanel');
-     
       const cleanQuery = query.replace(/(意味|とは|辞書|英語|翻訳|訳)/g, '').trim();
       if (!cleanQuery) { panel.style.display = 'none'; return; }
 
       try {
-        
         const searchUrl = `https://ja.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(cleanQuery)}&limit=1&namespace=0&format=json&origin=*`;
         const searchRes = await fetch(searchUrl);
         const searchData = await searchRes.json();
 
         if (searchData[1] && searchData[1].length > 0) {
-          const exactTitle = searchData[1][0]; 
-
-       
+          const exactTitle = searchData[1][0];
           const summaryUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=extracts|pageprops&exintro&explaintext&redirects=1&titles=${encodeURIComponent(exactTitle)}&format=json&origin=*`;
           const summaryRes = await fetch(summaryUrl);
           const summaryData = await summaryRes.json();
@@ -530,9 +532,7 @@
             const page = pages[pageId];
             const extractText = page.extract ? page.extract.trim() : "";
             
-            // 概要が空でなければパネルを生成
             if (extractText.length > 0) {
-              // 簡単な「属性/サブタイトル」をAIや文字列から簡易分類（あるいはデフォルト名）
               let subtitle = "百科事典";
               if (extractText.includes("企業") || extractText.includes("会社")) subtitle = "企業";
               else if (extractText.includes("サービス") || extractText.includes("サイト")) subtitle = "ウェブサービス";
@@ -541,7 +541,6 @@
 
               document.getElementById('kpTitle').innerText = exactTitle;
               document.getElementById('kpSubtitle').innerText = subtitle;
-          
               document.getElementById('kpExtract').innerText = extractText.length > 300 ? extractText.substring(0, 300) + "..." : extractText;
               document.getElementById('kpLink').href = `https://ja.wikipedia.org/wiki/${encodeURIComponent(exactTitle)}`;
               
@@ -557,7 +556,6 @@
       }
     }
 
-   
     window.__gcse = {
       callback: function() {
         const q = new URLSearchParams(location.search).get('q');
@@ -574,27 +572,27 @@
       }
     };
 
-
-
-const observer = new MutationObserver(() => {
+    /* --- クラス付与方式による、絶対にバグらないファビコン表示処理 --- */
+    const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
-        // 既に自作のURLバーを挿入済みの場合は処理しない
-        if (res.querySelector('.custom-url-bar')) return;
+        // すでにクラスをつけた要素（処理済み）があればスルー
+        if (res.querySelector('.surge-first-url')) return;
         
-        // 広告ブロックやそもそも非表示の要素は完全に無視
+        // 広告や非表示カードは無視
         if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
 
-        // 元々カードに入っているはずのURL要素を1つでもいいから探す
-        const originalUrlEl = res.querySelector('.gs-visibleUrl');
-        const titleEl = res.querySelector('.gs-title');
+        // カード内のURL要素「gs-visibleUrl」をすべて取得
+        const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
-        if (originalUrlEl && titleEl) {
-          // テキストを抽出してドメインを取り出す
-          let urlText = originalUrlEl.innerText.trim();
-          if (!urlText) return;
+        if (urlElements.length > 0) {
+          // ★提案通り、1つ目のURLだけに専用の特殊クラス（surge-first-url）を付与！
+          const mainUrlEl = urlElements[0];
+          mainUrlEl.classList.add('surge-first-url');
 
+          // ドメインを抽出してファビコン用のHTMLを組み立てる
+          let urlText = mainUrlEl.innerText.trim();
           let domain = "";
           try {
             let parseUrl = urlText;
@@ -605,28 +603,21 @@ const observer = new MutationObserver(() => {
           }
 
           if (domain) {
-            // 1. 新しいファビコンとURLを横並びにするバーを自作する
-            const customUrlBar = document.createElement('div');
-            customUrlBar.className = 'custom-url-bar';
-
-            const faviconWrapper = document.createElement('div');
-            faviconWrapper.className = 'custom-favicon';
+            // ファビコン用の丸い枠（HTML）を作成
+            const faviconBox = document.createElement('div');
+            faviconBox.className = 'surge-favicon-box';
             
             const faviconImg = document.createElement('img');
             faviconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
             faviconImg.alt = "favicon";
             
-            faviconWrapper.appendChild(faviconImg);
-            customUrlBar.appendChild(faviconWrapper);
+            faviconBox.appendChild(faviconImg);
             
-            // 短い方のURLテキスト（最初の階層）を見栄え良く配置
-            const urlTextDiv = document.createElement('div');
-            urlTextDiv.className = 'custom-url-text';
-            urlTextDiv.innerText = urlText.split(' ')[0]; // 余計な文字を排除して純粋なURLのみ抽出
-            customUrlBar.appendChild(urlTextDiv);
+            // 1つ目の短いURL（文字）の「中身の先頭」にファビコンを滑り込ませる
+            mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
             
-            // 2. カードの最上部に自作のバーをねじ込む
-            res.insertBefore(customUrlBar, res.firstChild);
+            // 検索タイトルの「上」にこのURL要素が来るように、カードの一番上に移動
+            res.insertBefore(mainUrlEl, res.firstChild);
           }
         }
       });
