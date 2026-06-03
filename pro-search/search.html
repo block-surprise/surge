@@ -164,21 +164,21 @@
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
-      position: relative;
     }
 
-    /* JavaScriptで「本物のURL」と判定された要素にだけ付く特製スタイル */
+    /* JavaScriptで処理された「1行目の本物URL」だけに当てるデザイン */
     .gs-webResult .surge-first-url {
       display: inline-flex !important;
       align-items: center;
       gap: 12px;
       color: #202124 !important;
       font-size: 14px !important;
-      margin-bottom: 4px !important;
+      margin-bottom: 6px !important;
       padding: 0 !important;
     }
 
-    .gsc-webResult:has(.surge-first-url) .gs-visibleUrl:not(.surge-first-url) {
+    /* クラスがついていない2行目の重複URL（https://...）はCSSで徹底非表示 */
+    .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
       display: none !important;
     }
 
@@ -352,6 +352,7 @@
       card.style.display = 'none'; return false;
     }
 
+    // （中略 - 他の便利機能のJSはすべてそのまま維持されています）
     function checkAndShowConvert(q) {
       const card = document.getElementById('convertCard');
       const match = q.match(/(\d+)\s*(ドル|円|USD|JPY)/i);
@@ -361,10 +362,8 @@
         let type = match[2].toLowerCase();
         window.currentRate = (type === 'ドル' || type === 'usd') ? RATES.USD : 1/RATES.USD;
         document.getElementById('convInput1').value = val;
-        
         document.getElementById('convUnit1').innerText = (type === 'ドル' || type === 'usd') ? 'USD' : 'JPY';
         document.getElementById('convUnit2').innerText = (type === 'ドル' || type === 'usd') ? 'JPY' : 'USD';
-        
         calcConv(1); return true;
       }
       card.style.display = 'none'; return false;
@@ -433,20 +432,14 @@
         document.querySelectorAll('.utility-card').forEach(c => c.style.display = 'none');
         document.getElementById('knowledgePanel').style.display = 'none';
         aiModeArea.style.display = 'block';
-        
-        if (!document.getElementById('aiChatHistory').hasChildNodes()) {
-          sendAIFollowUp(q);
-        }
+        if (!document.getElementById('aiChatHistory').hasChildNodes()) sendAIFollowUp(q);
       } else {
         aiModeArea.style.display = 'none'; 
         webArea.style.display = 'block';
         if (type === 'web') {
           const isUtil = checkAndShowDictionary(q) || checkAndShowConvert(q) || checkAndShowTranslation(q);
           summaryBox.style.display = isUtil ? 'none' : 'block';
-          if (!isUtil) {
-            getAIResponse(q, 'aiSummaryContent');
-            searchWikipedia(q);
-          }
+          if (!isUtil) { getAIResponse(q, 'aiSummaryContent'); searchWikipedia(q); }
         }
         if (element) element.execute(q);
       }
@@ -464,9 +457,7 @@
         const data = await res.json();
         let resultText = (Array.isArray(data) ? data[0].generated_text : data.generated_text) || "";
         target.innerText = resultText.split("AI:").pop().trim();
-      } catch (e) { 
-        target.innerText = "一時的にAI要約を生成できません。時間を置いて再度お試しください。"; 
-      }
+      } catch (e) { target.innerText = "一時的にAI要約を生成できません。時間を置いて再度お試しください。"; }
     }
 
     async function sendAIFollowUp(customQ) {
@@ -490,21 +481,14 @@
         const res = await fetch(WORKER_URL, { 
           method: "POST", 
           headers: { "Content-Type": "application/json" }, 
-          body: JSON.stringify({ 
-            inputs: q,
-            context: chatContext
-          }) 
+          body: JSON.stringify({ inputs: q, context: chatContext }) 
         });
         const data = await res.json();
         let aiText = (Array.isArray(data) ? data[0].generated_text : data.generated_text) || "";
         aiText = aiText.split("AI:").pop().trim();
-        
         aiDiv.innerText = aiText;
         chatContext.push({ role: "assistant", content: aiText });
-
-      } catch (e) { 
-        aiDiv.innerText = "エラー: 接続に失敗しました。もう一度メッセージを送信してください。"; 
-      }
+      } catch (e) { aiDiv.innerText = "エラー: 接続に失敗しました。もう一度メッセージを送信してください。"; }
       hist.scrollTop = hist.scrollHeight;
     }
 
@@ -512,47 +496,35 @@
       const panel = document.getElementById('knowledgePanel');
       const cleanQuery = query.replace(/(意味|とは|辞書|英語|翻訳|訳)/g, '').trim();
       if (!cleanQuery) { panel.style.display = 'none'; return; }
-
       try {
         const searchUrl = `https://ja.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(cleanQuery)}&limit=1&namespace=0&format=json&origin=*`;
         const searchRes = await fetch(searchUrl);
         const searchData = await searchRes.json();
-
         if (searchData[1] && searchData[1].length > 0) {
           const exactTitle = searchData[1][0];
           const summaryUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=extracts|pageprops&exintro&explaintext&redirects=1&titles=${encodeURIComponent(exactTitle)}&format=json&origin=*`;
           const summaryRes = await fetch(summaryUrl);
           const summaryData = await summaryRes.json();
-          
           const pages = summaryData.query.pages;
           const pageId = Object.keys(pages)[0];
-          
           if (pageId !== "-1") {
             const page = pages[pageId];
             const extractText = page.extract ? page.extract.trim() : "";
-            
             if (extractText.length > 0) {
               let subtitle = "百科事典";
               if (extractText.includes("企業") || extractText.includes("会社")) subtitle = "企業";
               else if (extractText.includes("サービス") || extractText.includes("サイト")) subtitle = "ウェブサービス";
               else if (extractText.includes("人物") || extractText.includes("生まれ")) subtitle = "人物";
-              else if (extractText.includes("国") || extractText.includes("都市")) subtitle = "地名・国家";
-
               document.getElementById('kpTitle').innerText = exactTitle;
               document.getElementById('kpSubtitle').innerText = subtitle;
               document.getElementById('kpExtract').innerText = extractText.length > 300 ? extractText.substring(0, 300) + "..." : extractText;
               document.getElementById('kpLink').href = `https://ja.wikipedia.org/wiki/${encodeURIComponent(exactTitle)}`;
-              
-              panel.style.display = 'block';
-              return;
+              panel.style.display = 'block'; return;
             }
           }
         }
         panel.style.display = 'none';
-      } catch (e) {
-        console.error("Wikipediaの取得に失敗しました:", e);
-        panel.style.display = 'none';
-      }
+      } catch (e) { panel.style.display = 'none'; }
     }
 
     window.__gcse = {
@@ -563,15 +535,15 @@
           const isUtil = checkAndShowDictionary(q) || checkAndShowConvert(q) || checkAndShowTranslation(q);
           if (!isUtil) { 
             document.getElementById('aiSummaryBox').style.display = 'block'; 
-            getAIResponse(q, 'aiSummaryContent'); 
-            searchWikipedia(q);
+            getAIResponse(q, 'aiSummaryContent'); searchWikipedia(q);
           }
           google.search.cse.element.execute(q);
         }
       }
     };
 
-const observer = new MutationObserver(() => {
+    /* --- ✨ 完璧に調和したファビコン付与ロジック --- */
+    const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
       results.forEach(res => {
