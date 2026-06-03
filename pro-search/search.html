@@ -573,17 +573,33 @@
     };
 
 
-    const observer = new MutationObserver(() => {
-      const results = document.querySelectorAll('.gsc-webResult');
-      results.forEach(res => {
-      
-        if (res.querySelector('.gsc-url-box') || res.closest('.gsc-adBlock') || res.style.display === 'none') return;
 
- 
-        const visibleUrlEl = res.querySelector('.gs-webResult:not(.gsc-loading-results) .gs-visibleUrl');
+    const observer = new MutationObserver(() => {
+    
+      const results = document.querySelectorAll('.gsc-webResult');
+      
+      results.forEach(res => {
+       
+        if (res.querySelector('.gsc-url-box')) return;
+        
+   
+        if (res.closest('.gsc-adBlock') || res.style.display === 'none' || res.offsetHeight === 0) return;
+
+        
+        const urlElements = res.querySelectorAll('.gs-visibleUrl');
+        let visibleUrlEl = null;
+
+        for (let el of urlElements) {
+          if (el.offsetWidth > 0 || el.offsetHeight > 0) {
+            visibleUrlEl = el;
+            break;
+          }
+        }
+
         const titleEl = res.querySelector('.gs-title');
         
         if (visibleUrlEl && titleEl) {
+          
           let urlText = visibleUrlEl.innerText;
           let domain = "";
           try {
@@ -594,7 +610,7 @@
           }
 
           if (domain) {
-          
+         
             const urlBox = document.createElement('div');
             urlBox.className = 'gsc-url-box';
 
@@ -602,7 +618,6 @@
             faviconWrapper.className = 'custom-favicon';
             
             const faviconImg = document.createElement('img');
-         
             faviconImg.src = `https://www.google.com/s2/favicons?sz=32&domain=${domain}`;
             faviconImg.alt = "favicon";
             
@@ -613,15 +628,17 @@
             const clonedUrl = visibleUrlEl.cloneNode(true);
             urlBox.appendChild(clonedUrl);
             
-           
+            
             res.insertBefore(urlBox, res.firstChild);
-            visibleUrlEl.remove(); 
+            
+           
+            urlElements.forEach(el => el.remove());
           }
         }
       });
     });
 
-   
+
     observer.observe(document.getElementById('webResultsArea'), { childList: true, subtree: true });
 
     document.getElementById('searchForm').addEventListener('submit', (e) => {
