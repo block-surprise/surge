@@ -178,8 +178,7 @@
       padding: 0 !important;
     }
 
-    /* クラスがついていない方のURL（2つ目の重複URL）はCSSで徹底的に非表示にする */
-    .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
+    .gsc-webResult:has(.surge-first-url) .gs-visibleUrl:not(.surge-first-url) {
       display: none !important;
     }
 
