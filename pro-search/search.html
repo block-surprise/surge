@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>SURGE - 検索結果</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/1.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="/1.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-D6SC2D5KK4"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-D6SC2D5KK4');
+  </script>
+  
+  <style>
+    :root { 
+      --accent: #4f46e5; 
+      --accent-hover: #4338ca;
+      --bg: #fdfdfd; 
+      --card-bg: #ffffff;
+      --border-color: #e5e7eb;
+      --text-main: #222222;
+      --text-sub: #5f6368;
+    }
+    
+    body { 
+      margin: 0; 
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif; 
+      background: var(--bg); 
+      color: var(--text-main); 
+      padding: 20px; 
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer, .utility-card {
+      max-width: 1000px;
+      margin-left: 100px;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
+      .search-container, .search-tabs, #aiSummaryBox, #aiModeContainer, .utility-card {
+        margin-left: 0 !important; width: 100%;
+      }
+      body { padding: 12px; }
+    }
+
+    /* 検索入力欄の強化 */
+    #searchInput { 
+      width: 100%; 
+      padding: 14px 24px; 
+      font-size: 18px; 
+      border-radius: 32px; 
+      border: 1px solid #ccc; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); 
+      outline: none; 
+      box-sizing: border-box; 
+      transition: all 0.2s ease;
+    }
+    #searchInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+    
+    /* タブアニメーション */
+    .search-tabs { display: flex; gap: 24px; margin-top: 18px; margin-bottom: 25px; font-size: 14px; color: var(--text-sub); overflow-x: auto; white-space: nowrap; }
+    .tab { cursor: pointer; padding-bottom: 8px; border-bottom: 3px solid transparent; transition: all 0.2s ease; flex-shrink: 0; }
+    .tab:hover { color: var(--text-main); }
+    .tab.active { color: var(--accent); border-bottom: 3px solid var(--accent); font-weight: 600; }
+    
+    /* ユーティリティカードの微調整 */
+    .utility-card {
+      display: none; 
+      background: var(--card-bg) !important; 
+      border: 1px solid var(--border-color) !important; 
+      border-radius: 16px !important; 
+      padding: 0 !important; 
+      margin-bottom: 25px !important; 
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04) !important;
+      overflow: hidden;
+      transition: transform 0.2s ease;
+    }
+    .card-label { font-size: 11px; color: #888; text-transform: uppercase; padding: 15px 20px 5px; font-weight: bold; letter-spacing: 1px; }
+
+    #dictIframe { width: 100%; height: 400px; border: none; display: block; }
+
+    .conv-flex { display: flex; align-items: center; gap: 15px; padding: 0 20px 20px; }
+    .conv-group { flex: 1; }
+    .conv-input { width: 100%; border: none; border-bottom: 2px solid #eee; font-size: 24px; outline: none; font-weight: bold; color: var(--accent); background: transparent; }
+    
+    /* 翻訳エリア */
+    .trans-area { display: flex; gap: 20px; padding: 0 20px 20px; align-items: flex-start; }
+    .trans-textarea { flex: 1; border: none; font-size: 18px; outline: none; resize: none; font-family: inherit; background: transparent; }
+
+    /* AIコンポーネント */
+    #aiSummaryBox { 
+      display: none; 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      border-radius: 16px; 
+      padding: 20px; 
+      margin-bottom: 30px; 
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+    .ai-badge { background: linear-gradient(135deg, #6e8efb, #a777e3); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 12px; display: inline-block; }
+    #aiSummaryContent { line-height: 1.6; color: #333; }
+    
+    #aiModeContainer { 
+      display: none; 
+      background: var(--card-bg); 
+      border: 1px solid var(--border-color); 
+      border-radius: 16px; 
+      padding: 24px; 
+      margin-bottom: 30px; 
+      box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+    }
+    #aiChatHistory { max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px; }
+    
+    /* チャットバブルの進化 */
+    .ai-bubble, .user-bubble { padding: 12px 18px; border-radius: 18px; max-width: 80%; line-height: 1.5; font-size: 15px; }
+    .ai-bubble { background: #f3f4f6; align-self: flex-start; color: #1f2937; border-top-left-radius: 4px; }
+    .user-bubble { background: #e0e7ff; color: #1e3a8a; align-self: flex-end; border-top-right-radius: 4px; }
+
+    .chat-input-group { display: flex; gap: 10px; margin-top: 20px; }
+    .chat-input-style { flex: 1; padding: 12px 20px; border-radius: 24px; border: 1px solid #ddd; outline: none; font-size: 15px; transition: border 0.2s; }
+    .chat-input-style:focus { border-color: var(--accent); }
+    .chat-send-btn { background: var(--accent); color: white; border: none; padding: 0 24px; border-radius: 24px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+    .chat-send-btn:hover { background: var(--accent-hover); }
+
+    .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { display: none !important; }
+    .gsc-control-cse { padding: 0 !important; }
+    
+    /* ローディングアニメーション */
+    .pulse-loader { display: inline-block; color: #999; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
+  </style>
+</head>
+<body>
+
+  <div class="search-container">
+    <form id="searchForm">
+      <input type="search" id="searchInput" placeholder="SURGE で検索…" autocomplete="off">
+    </form>
+  </div>
+
+  <div class="search-tabs">
+    <div class="tab active" data-type="web" id="tab-web" onclick="clickTab(this)">すべて</div>
+    <div class="tab" data-type="image" id="tab-image" onclick="clickTab(this)">画像</div>
+    <div class="tab" data-type="video" onclick="clickTab(this)">動画</div>
+    <div class="tab tab-ai" data-type="ai" id="tab-ai" onclick="clickTab(this)">✨ AIチャット</div>
+  </div>
+
+  <div id="dictionaryCard" class="utility-card">
+    <div class="card-label" style="display: flex; justify-content: space-between; align-items: center;">
+      <span>SURGE Dictionary</span>
+      <a id="dictOpenLink" href="#" target="_blank" style="color: var(--accent); text-decoration: none; font-size: 10px; margin-right: 20px; border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px;">別タブで開く ↗</a>
+    </div>
+    <iframe id="dictIframe"></iframe>
+  </div>
+
+  <div id="convertCard" class="utility-card">
+    <div class="card-label" id="convTitle">換算</div>
+    <div class="conv-flex">
+      <div class="conv-group"><input type="number" id="convInput1" class="conv-input" oninput="calcConv(1)"><div id="convUnit1" style="font-size:12px; color:#999;">---</div></div>
+      <div style="font-size:20px; color:#ccc;">＝</div>
+      <div class="conv-group"><input type="number" id="convInput2" class="conv-input" oninput="calcConv(2)"><div id="convUnit2" style="font-size:12px; color:#999;">---</div></div>
+    </div>
+  </div>
+
+  <div id="translationCard" class="utility-card">
+    <div class="card-label">翻訳 (Enterで実行 / Shift+Enterで改行)</div>
+    <div class="trans-area">
+      <textarea id="transInput" class="trans-textarea" rows="2" placeholder="翻訳したいテキストを入力..."></textarea>
+      <div style="color:#ccc; padding-top: 2px;">→</div>
+      <div id="transOutput" style="flex:1; font-size:18px; color:var(--accent); font-weight:500; white-space: pre-wrap;">...</div>
+    </div>
+  </div>
+
+  <div id="aiSummaryBox">
+    <span class="ai-badge">SURGE AI 要約</span>
+    <div id="aiSummaryContent"><span class="pulse-loader">思考中...</span></div>
+  </div>
+
+  <div id="aiModeContainer">
+    <div id="aiChatHistory"></div>
+    <div class="chat-input-group">
+      <input type="text" id="aiReplyInput" class="chat-input-style" placeholder="AIにさらに質問する..." onkeydown="if(event.key==='Enter'&&!event.isComposing) sendAIFollowUp()">
+      <button onclick="sendAIFollowUp()" class="chat-send-btn">送信</button>
+    </div>
+  </div>
+
+  <div id="webResultsArea">
+    <div class="gcse-searchresults-only" data-gname="searchresults-only"></div>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://surge.proluce.workers.dev/";
+    const RATES = { USD: 150.2, EUR: 162.5 };
+    
+    // AIの文脈維持（履歴）を格納する配列
+    let chatContext = [];
+
+    // 辞書判定
+    function checkAndShowDictionary(q) {
+      const card = document.getElementById('dictionaryCard');
+      const iframe = document.getElementById('dictIframe');
+      const openLink = document.getElementById('dictOpenLink');
+      const match = q.match(/(.+)(意味|とは|辞書)/);
+      if (match) {
+        const word = match[1].trim();
+        const dictUrl = `https://surge.ad-hub.f5.si/dictionary/?q=${encodeURIComponent(word)}`;
+        card.style.display = 'block';
+        iframe.src = dictUrl;
+        openLink.href = dictUrl;
+        return true;
+      }
+      card.style.display = 'none'; return false;
+    }
+
+    // 通貨換算判定
+    function checkAndShowConvert(q) {
+      const card = document.getElementById('convertCard');
+      const match = q.match(/(\d+)\s*(ドル|円|USD|JPY)/i);
+      if (match) {
+        card.style.display = 'block';
+        let val = parseFloat(match[1]);
+        let type = match[2].toLowerCase();
+        window.currentRate = (type === 'ドル' || type === 'usd') ? RATES.USD : 1/RATES.USD;
+        document.getElementById('convInput1').value = val;
+        
+        // 単位ラベルの上書き
+        document.getElementById('convUnit1').innerText = (type === 'ドル' || type === 'usd') ? 'USD' : 'JPY';
+        document.getElementById('convUnit2').innerText = (type === 'ドル' || type === 'usd') ? 'JPY' : 'USD';
+        
+        calcConv(1); return true;
+      }
+      card.style.display = 'none'; return false;
+    }
+
+    function calcConv(s) {
+      const i1 = document.getElementById('convInput1'), i2 = document.getElementById('convInput2');
+      if (!i1.value && !i2.value) return;
+      if (s === 1) i2.value = (parseFloat(i1.value) * window.currentRate).toFixed(2);
+      else i1.value = (parseFloat(i2.value) / window.currentRate).toFixed(2);
+    }
+
+    // 翻訳実行コアロジック
+    async function runTranslation(text) {
+      if (!text.trim()) return;
+      const output = document.getElementById('transOutput'); 
+      output.innerHTML = '<span class="pulse-loader">翻訳中...</span>';
+      try {
+        const res = await fetch(WORKER_URL, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ inputs: `翻訳して。結果のみ出力すること。翻訳対象: ${text}` }) 
+        });
+        const data = await res.json();
+        let resultText = (Array.isArray(data) ? data[0].generated_text : data.generated_text) || "";
+        output.innerText = resultText.split("AI:").pop().trim();
+      } catch (e) { 
+        output.innerText = "翻訳エラーが発生しました。接続を確認してください。"; 
+      }
+    }
+
+    // 翻訳カード判定
+    function checkAndShowTranslation(q) {
+      const match = q.match(/(.+)(英語|翻訳|訳)/);
+      if (match) {
+        document.getElementById('translationCard').style.display = 'block';
+        const targetText = match[1].trim();
+        document.getElementById('transInput').value = targetText;
+        runTranslation(targetText); return true;
+      }
+      document.getElementById('translationCard').style.display = 'none'; return false;
+    }
+
+    // 翻訳カード内でのEnterキー発火用イベントリスナーの紐付け
+    document.getElementById('transInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        runTranslation(e.target.value);
+      }
+    });
+
+    // タブ切り替え
+    function clickTab(el) {
+      const type = el.getAttribute('data-type');
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) return;
+      if (type === 'image') { location.href = `https://surge.ad-hub.f5.si/results?q=${encodeURIComponent(q)}#gsc.tab=1&gsc.q=${encodeURIComponent(q)}`; return; }
+      
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); 
+      el.classList.add('active');
+      
+      const summaryBox = document.getElementById('aiSummaryBox');
+      const aiModeArea = document.getElementById('aiModeContainer');
+      const webArea = document.getElementById('webResultsArea');
+      const element = google.search.cse.element.getElement("searchresults-only");
+
+      if (type === 'ai') {
+        webArea.style.display = 'none'; 
+        summaryBox.style.display = 'none'; 
+        document.querySelectorAll('.utility-card').forEach(c => c.style.display = 'none');
+        aiModeArea.style.display = 'block';
+        
+        // 初回切り替え時にチャットが空なら自動で検索ワードを投げる
+        if (!document.getElementById('aiChatHistory').hasChildNodes()) {
+          sendAIFollowUp(q);
+        }
+      } else {
+        aiModeArea.style.display = 'none'; 
+        webArea.style.display = 'block';
+        if (type === 'web') {
+          const isUtil = checkAndShowDictionary(q) || checkAndShowConvert(q) || checkAndShowTranslation(q);
+          summaryBox.style.display = isUtil ? 'none' : 'block';
+          if (!isUtil) getAIResponse(q, 'aiSummaryContent');
+        }
+        if (element) element.execute(q);
+      }
+    }
+
+    // 通常のAI要約 (「すべて」タブ用)
+    async function getAIResponse(q, id) {
+      const target = document.getElementById(id); 
+      target.innerHTML = '<span class="pulse-loader">思考中...</span>';
+      try {
+        const res = await fetch(WORKER_URL, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ inputs: `SURGE AI。以下の質問に簡潔に答えて。質問: ${q}` }) 
+        });
+        const data = await res.json();
+        let resultText = (Array.isArray(data) ? data[0].generated_text : data.generated_text) || "";
+        target.innerText = resultText.split("AI:").pop().trim();
+      } catch (e) { 
+        target.innerText = "一時的にAI要約を生成できません。時間を置いて再度お試しください。"; 
+      }
+    }
+
+    // ✨ AIチャット専用の双方向通信（文脈維持対応型）
+    async function sendAIFollowUp(customQ) {
+      const input = document.getElementById('aiReplyInput');
+      const q = customQ || input.value.trim();
+      if (!q) return;
+
+      const hist = document.getElementById('aiChatHistory');
+      hist.innerHTML += `<div class="user-bubble">${q}</div>`;
+      if(!customQ) input.value = "";
+      
+      const aiDiv = document.createElement('div');
+      aiDiv.className = 'ai-bubble'; 
+      aiDiv.innerHTML = '<span class="pulse-loader">・ ・ ・</span>';
+      hist.appendChild(aiDiv);
+      hist.scrollTop = hist.scrollHeight;
+
+      // 文脈履歴にユーザーのメッセージを追加
+      chatContext.push({ role: "user", content: q });
+
+      try {
+        // バックエンドが対話型フォーマット(messages)または単純な結合テキストを受け取れるよう最適化
+        const res = await fetch(WORKER_URL, { 
+          method: "POST", 
+          headers: { "Content-Type": "application/json" }, 
+          body: JSON.stringify({ 
+            inputs: q,
+            context: chatContext // 将来的にWorker側で履歴を参照できるよう付与
+          }) 
+        });
+        const data = await res.json();
+        let aiText = (Array.isArray(data) ? data[0].generated_text : data.generated_text) || "";
+        aiText = aiText.split("AI:").pop().trim();
+        
+        aiDiv.innerText = aiText;
+        // 文脈履歴にAIのメッセージを追加
+        chatContext.push({ role: "assistant", content: aiText });
+
+      } catch (e) { 
+        aiDiv.innerText = "エラー: 接続に失敗しました。もう一度メッセージを送信してください。"; 
+      }
+      hist.scrollTop = hist.scrollHeight;
+    }
+
+    // Google CSE 読み込み完了時コールバック
+    window.__gcse = {
+      callback: function() {
+        const q = new URLSearchParams(location.search).get('q');
+        if (q) {
+          document.getElementById('searchInput').value = q;
+          const isUtil = checkAndShowDictionary(q) || checkAndShowConvert(q) || checkAndShowTranslation(q);
+          if (!isUtil) { 
+            document.getElementById('aiSummaryBox').style.display = 'block'; 
+            getAIResponse(q, 'aiSummaryContent'); 
+          }
+          google.search.cse.element.getElement("searchresults-only").execute(q);
+        }
+      }
+    };
+
+    // フォーム送信
+    document.getElementById('searchForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const val = document.getElementById('searchInput').value.trim();
+      if (val) location.href = "?q=" + encodeURIComponent(val);
+    });
+  </script>
+  <script async src="https://cse.google.com/cse.js?cx=818be131768c247f3"></script>
+</body>
+</html>
