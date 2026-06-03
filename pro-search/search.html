@@ -160,36 +160,29 @@
       width: 100%;
     }
 
-    /* --- 🌟 さっき完璧に並んでいたFlexbox構造を完全復元 --- */
+    /* --- 🌟 ここが「さっきできていた」CSS構造です 🌟 --- */
     .gsc-webResult {
       padding: 0 0 24px 0 !important;
       margin: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
     }
 
-    /* 順番指定（1:URL ➔ 2:タイトル ➔ 3:説明文） */
-    .gs-webResult .surge-first-url { order: 1 !important; }
-    .gs-webResult .gs-title { order: 2 !important; margin-top: 4px !important; }
-    .gs-webResult .gs-snippet { order: 3 !important; margin-top: 4px !important; }
-
-    /* 本物のURL（1行目）のスタイル設定 */
+    /* JavaScriptで処理された「1行目の本物URL」だけに当てるデザイン */
     .gs-webResult .surge-first-url {
       display: inline-flex !important;
       align-items: center;
       gap: 12px;
       color: #202124 !important;
       font-size: 14px !important;
-      margin-bottom: 4px !important;
+      margin-bottom: 6px !important;
       padding: 0 !important;
     }
 
-    /* マイクラなどの2行目の重複URL（https://...）はCSSで絶対に非表示 */
+    /* 2行目の重複URL（https://...）はCSSで徹底非表示 */
     .gs-webResult .gs-visibleUrl:not(.surge-first-url) {
       display: none !important;
     }
 
-    /* ファビコン用の丸い枠 */
+    /* ファビコン用の丸い入れ物 */
     .surge-favicon-box {
       width: 26px;
       height: 26px;
@@ -216,6 +209,12 @@
     }
     .gs-webResult .gs-title:hover, .gs-webResult .gs-title *:hover {
       text-decoration: underline !important;
+    }
+    .gs-webResult .gs-snippet {
+      color: var(--text-sub) !important;
+      font-size: 14px !important;
+      line-height: 1.58 !important;
+      margin-top: 4px !important;
     }
     
     .gs-webResult .gsc-favicon, .gsc-tabsArea, .gsc-result-info, .gsc-orderby-container, .gcsc-find-more-on-google { 
@@ -542,7 +541,7 @@
       }
     };
 
-    /* --- 🛠️ 修正：Googleを絶対に怒らせない、純粋なファビコン合体JS --- */
+    /* --- 🌟 ファビコンを一番上に配置するロジック --- */
     const observer = new MutationObserver(() => {
       const results = document.querySelectorAll('.gsc-webResult');
       
@@ -553,7 +552,6 @@
         const urlElements = res.querySelectorAll('.gs-visibleUrl');
         
         if (urlElements.length > 0) {
-          // 1行目のキレイなドメイン（www.minecraft.netなど）をターゲットにする
           const mainUrlEl = urlElements[0];
           mainUrlEl.classList.add('surge-first-url');
 
@@ -576,8 +574,6 @@
             faviconImg.alt = "favicon";
             
             faviconBox.appendChild(faviconImg);
-            
-            // ★HTML要素の移動は一切せず、URL文字のすぐ左隣にファビコンを差し込む
             mainUrlEl.insertBefore(faviconBox, mainUrlEl.firstChild);
           }
         }
