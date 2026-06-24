@@ -167,6 +167,13 @@
         .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 44px; min-width: 0; }
         .send-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; }
+        .a {
+  position: fixed;   /* 画面に対して位置を固定する */
+  bottom: 0;         /* 画面の最下部にぴったりくっつける */
+  left: 0;           /* 左端から配置して隙間をなくす */
+  width: 100%;       /* 横幅を画面いっぱいに広げる */
+}
+
     </style>
 </head>
 <body>
@@ -183,6 +190,11 @@
             <div class="history-label">最近</div>
             <div id="history-list"></div>
         </div>
+        <div class="a">
+        <!-- admax -->
+<script src="https://adm.shinobi.jp/s/d51754f45f161140591a44107af133fb"></script>
+<!-- admax -->
+</div>
     </nav>
 
     <div id="main-container">
