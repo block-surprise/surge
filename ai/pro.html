@@ -167,12 +167,12 @@
         .input-wrapper:focus-within { background: #fff; border-color: #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         input { flex: 1; border: none; background: transparent; outline: none; font-size: 16px; height: 44px; min-width: 0; }
         .send-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #4285f4; }
- .a {
-  margin-top: auto;   /* これで上の要素（履歴など）を押し上げて一番下に配置されます */
-  padding-top: 15px;  /* 上の履歴リストとの間に少し余白を作ります */
-  text-align: center; /* 広告を中央寄せにします */
-  width: 100%;        /* サイドバーの幅に合わせます */
-  min-height: 60px;   /* 広告が読み込まれる前の表示崩れを防ぐための最低限の高さ */
+.a{
+    margin-top:auto;
+    padding:15px 0;
+    width:100%;
+    text-align:center;
+    min-height:60px;
 }
 
 
@@ -193,7 +193,17 @@
             <div id="history-list"></div>
         </div>
 
-   
+       <!-- ↓ここに追加 -->
+
+    <div class="a">
+
+        <!-- admax -->
+
+        <script src="https://adm.shinobi.jp/s/d51754f45f161140591a44107af133fb"></script>
+
+        <!-- admax -->
+
+    </div>
     </nav>
 
 
